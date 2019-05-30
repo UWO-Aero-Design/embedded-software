@@ -1,0 +1,3 @@
+[submodule "western-aero-2019-2020/src/aero/aero-cpp-lib"]
+	path = western-aero-2019-2020/src/aero/aero-cpp-lib
+	url = https://github.com/UWO-Aero-Design/aero-cpp-lib

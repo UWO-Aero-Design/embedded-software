@@ -1,14 +1,14 @@
-#include "libraries/MPU9250/MPU9250.h"
+#include "src/aero/aero-cpp-lib/include/Message.hpp"
 
-MPU9250 imu;
 
 #define led 13
+
+aero::Message msg;
 
 void setup() {
   Serial.begin(9600);
   pinMode(led, OUTPUT);
   Serial.println("Hello World!"); 
-  imu.setup();
 }
 void loop() {
   digitalWrite(led, HIGH);
