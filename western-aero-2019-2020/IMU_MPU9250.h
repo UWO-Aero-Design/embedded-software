@@ -14,11 +14,26 @@ class IMU_MPU9250 : public Sensor {
     ~IMU_MPU9250();
     void initSensor() override;
     void updateSensor() override;
+    String type = String("This is an IMU");
   
   protected:
 
   
   private:
-    String type = String("This is an IMU");
+  
+};
+
+class TEST_IMU_MPU9250 : public Sensor {
+  public:
+    TEST_IMU_MPU9250();
+    ~TEST_IMU_MPU9250();
+    void initSensor() override;
+    void updateSensor() override;
+    String type = String("This is a test IMU");
+  
+  protected:
+
+  
+  private:
   
 };
