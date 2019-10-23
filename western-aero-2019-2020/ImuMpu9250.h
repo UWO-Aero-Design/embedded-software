@@ -6,9 +6,9 @@
  #pragma once
 
 #include "Arduino.h"
-#include "libraries/MPU9250/MPU9250.h"
+#include "src/MPU9250/MPU9250.h"
 
-class ImuMpu9250{
+class ImuMpu9250 {
   public:
     ImuMpu9250();
     ~ImuMpu9250();

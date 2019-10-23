@@ -19,19 +19,19 @@ void ImuMpu9250::update() {
 
 
 
-TestImuMpu9250::TestImuMpu9250() {
-  
-}
-
-TestImuMpu9250::~TestImuMpu9250() {
-  
-}
-
-
-void TestImuMpu9250::init() {
-  
-}
-
-void TestImuMpu9250::update() {
-  Serial.println(type);
-}
+//TestImuMpu9250::TestImuMpu9250() {
+//  
+//}
+//
+//TestImuMpu9250::~TestImuMpu9250() {
+//  
+//}
+//
+//
+//void TestImuMpu9250::init() {
+//  
+//}
+//
+//void TestImuMpu9250::update() {
+//  Serial.println(type);
+//}
