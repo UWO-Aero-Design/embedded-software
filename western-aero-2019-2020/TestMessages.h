@@ -23,13 +23,12 @@ aero::def::IMU_t random_imu(void) {
         0x0C
     };
 
-    imu.yaw = 0xff;
     return imu;
 }
 
 aero::def::Pitot_t random_pitot(void) {
     aero::def::Pitot_t pitot {
-        0xFFFF
+        0x0000
     };
     return pitot;
 }
