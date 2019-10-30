@@ -7,20 +7,30 @@ int16_t random_int16(void) {
     return static_cast<int16_t>(random(-32768, 32768));
 }
 
+const uint8_t TEST_UINT8 = 123;
+const int8_t TEST_INT8 = -123;
+
+const uint16_t TEST_UINT16 = 12345;
+const int16_t TEST_INT16 = -12345;
+
+const uint32_t TEST_UINT32 = 1234567890;
+const int32_t TEST_INT32 = -1234567890;
+
+
 aero::def::IMU_t random_imu(void) {
     aero::def::IMU_t imu {
-        0x01,
-        0x02,
-        0x03,
-        0x04,
-        0x05,
-        0x06,
-        0x07,
-        0x08,
-        0x09,
-        0x0A,
-        0x0B,
-        0x0C
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16,
+        TEST_INT16
     };
 
     return imu;
@@ -28,7 +38,7 @@ aero::def::IMU_t random_imu(void) {
 
 aero::def::Pitot_t random_pitot(void) {
     aero::def::Pitot_t pitot {
-        0x0000
+        TEST_INT16
     };
     return pitot;
 }
@@ -36,17 +46,19 @@ aero::def::Pitot_t random_pitot(void) {
 aero::def::GPS_t test_gps(void) {
     aero::def::GPS_t gps;
     // int32_t
-    gps.lat = 0xABCDEFAB;
+    gps.lat = TEST_INT32;
     // int32_t
-    gps.lon = 0xCDEFABCD;
+    gps.lon = TEST_INT32;
     // uint16_t
-    gps.speed = 0xEFAB;
+    gps.speed = TEST_UINT16;
     // uint8_t
-    gps.satellites = 0xCD;
+    gps.satellites = TEST_UINT8;
+    // uint16_t
+    gps.altitude = TEST_UINT16;
     // uint32_t
-    gps.time = 0xEFABCDEF;
+    gps.time = TEST_UINT32;
     // uint32_t
-    gps.date = 0xABCDEFAB;
+    gps.date = TEST_UINT32;
 
     return gps;
 }
@@ -54,9 +66,9 @@ aero::def::GPS_t test_gps(void) {
 aero::def::Enviro_t test_enviro(void) {
     aero::def::Enviro_t enviro;
     // uint16_t for all
-    enviro.pressure = 0xABCD;
-    enviro.humidity = 0xEFAB;
-    enviro.temperature = 0xCDEF;
+    enviro.pressure = TEST_UINT16;
+    enviro.humidity = TEST_UINT16;
+    enviro.temperature = TEST_UINT16;
 
     return enviro;
 }
@@ -64,8 +76,8 @@ aero::def::Enviro_t test_enviro(void) {
 aero::def::Battery_t test_battery(void) {
     aero::def::Battery_t batt;
     // uint16_t for all
-    batt.voltage = 0xABCD;
-    batt.current = 0xEFAB;
+    batt.voltage = TEST_UINT16;
+    batt.current = TEST_UINT16;
 
     return batt;
 }
@@ -79,9 +91,9 @@ aero::def::SystemConfig_t test_system(void) {
 aero::def::Status_t test_status(void) {
     aero::def::Status_t status;
     // int16_t
-    status.rssi = 0xABCD;
+    status.rssi = TEST_INT16;
     // uint32_t
-    status.state = 0xEFABCDEF;
+    status.state = TEST_UINT32;
 
     return status;
 }
@@ -89,22 +101,22 @@ aero::def::Status_t test_status(void) {
 aero::def::Servos_t test_servos(void) {
     aero::def::Servos_t servos;
     // All uint32
-    servos.servo0 = 0xABCDEFAB;
-    servos.servo1 = 0xCDEFABCD;
-    servos.servo2 = 0xABCDEFAB;
-    servos.servo3 = 0xCDEFABCD;
-    servos.servo4 = 0xABCDEFAB;
-    servos.servo5 = 0xCDEFABCD;
-    servos.servo6 = 0xABCDEFAB;
-    servos.servo7 = 0xCDEFABCD;
-    servos.servo8 = 0xABCDEFAB;
-    servos.servo9 = 0xCDEFABCD;
-    servos.servo10 = 0xABCDEFAB;
-    servos.servo11 = 0xCDEFABCD;
-    servos.servo12 = 0xABCDEFAB;
-    servos.servo13 = 0xCDEFABCD;
-    servos.servo14 = 0xABCDEFAB;
-    servos.servo15 = 0xCDEFABCD;
+    servos.servo0 = TEST_UINT32;
+    servos.servo1 = TEST_UINT32;
+    servos.servo2 = TEST_UINT32;
+    servos.servo3 = TEST_UINT32;
+    servos.servo4 = TEST_UINT32;
+    servos.servo5 = TEST_UINT32;
+    servos.servo6 = TEST_UINT32;
+    servos.servo7 = TEST_UINT32;
+    servos.servo8 = TEST_UINT32;
+    servos.servo9 = TEST_UINT32;
+    servos.servo10 = TEST_UINT32;
+    servos.servo11 = TEST_UINT32;
+    servos.servo12 = TEST_UINT32;
+    servos.servo13 = TEST_UINT32;
+    servos.servo14 = TEST_UINT32;
+    servos.servo15 = TEST_UINT32;
 
     return servos;
 }
@@ -112,15 +124,15 @@ aero::def::Servos_t test_servos(void) {
 aero::def::AirData_t test_airdata(void) {
     aero::def::AirData_t airdata;
     // All uint32
-    airdata.ias = 0xABCDEFAB;
-    airdata.eas = 0xCDEFABCD;
-    airdata.tas = 0xABCDEFAB;
-    airdata.agl = 0xCDEFABCD;
-    airdata.pressure_alt = 0xABCDEFAB;
-    airdata.msl = 0xCDEFABCD;
-    airdata.density_alt = 0xABCDEFAB;
-    airdata.approx_temp = 0xCDEFABCD;
-    airdata.density = 0xABCDEFAB;
+    airdata.ias = TEST_UINT32;
+    airdata.eas = TEST_UINT32;
+    airdata.tas = TEST_UINT32;
+    airdata.agl = TEST_UINT32;
+    airdata.pressure_alt = TEST_UINT32;
+    airdata.msl = TEST_UINT32;
+    airdata.density_alt = TEST_UINT32;
+    airdata.approx_temp = TEST_UINT32;
+    airdata.density = TEST_UINT32;
     
     return airdata;
 }
@@ -128,11 +140,11 @@ aero::def::AirData_t test_airdata(void) {
 aero::def::Commands_t test_commands(void) {
     aero::def::Commands_t commands;
     // uint8_t
-    commands.drop = 0xAB;
+    commands.drop = TEST_UINT8;
     // uint16_t
-    commands.servos = 0xCDEF;
+    commands.servos = TEST_UINT16;
     // uint8_t
-    commands.pitch = 0xAB;
+    commands.pitch = TEST_UINT8;
 
     return commands;
 }
@@ -140,9 +152,9 @@ aero::def::Commands_t test_commands(void) {
 aero::def::DropAlgo_t test_dropalgo(void) {
     aero::def::DropAlgo_t dropalgo;
     // int16_t
-    dropalgo.heading = 0xABCD;
+    dropalgo.heading = TEST_INT16;
     // uint16_t
-    dropalgo.distance = 0xEFAB;
+    dropalgo.distance = TEST_UINT16;
 
     return dropalgo;
 }
