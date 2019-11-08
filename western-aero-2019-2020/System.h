@@ -12,16 +12,20 @@
 #include "Rfm95w.h"
 
 
-// abstract class for defining how a system should be structured
+/**
+ * @brief Astract class for defining how a system should be structured
+ */
 class System {
   public:
-    System(){}
-    virtual ~System(){}
+    System(){};
+    virtual ~System(){};
     virtual void init() = 0;
     virtual void update() = 0;  
 };
 
-// implementation of the competiton system
+/*!
+  @brief Implementation of a competition system
+*/
 class CompSystem : public System {
   public:
     CompSystem();
@@ -34,9 +38,9 @@ class CompSystem : public System {
     void CompSystem::remove_msg_padding(RawMessage_t msg, char *new_buf);
     void build_message();
     void temp_fill_data();
-    ImuMpu9250 *imu;
-    Rfm95w *radio;
-    Message msg_handler;
+    ImuMpu9250 *imu; /*!< An imu sensor */
+    Rfm95w *radio; /*!< A radio */
+    Message msg_handler; /*!< A message handler for creating messages */
 
     // data containers - to be removed upon sensor implementation
     Pitot_t pitot_data;
@@ -53,12 +57,20 @@ class CompSystem : public System {
   
 };
 
-// implementation of the test system
+/*!
+  @brief Implementation of the test system
+*/
 class TestSystem : public System {
   public:
     TestSystem();
     ~TestSystem();
+    /**  
+     *  @brief Initialize the test system
+     */
     void init() override;
+    /**  
+     *  @brief Update the test system
+     */
     void update() override;
 
   private:
@@ -67,13 +79,26 @@ class TestSystem : public System {
   
 };
 
-// factory-styled pattern for creating a system
 class SystemSelect {
   public:
     SystemSelect();
     ~SystemSelect();
-    enum SystemType { CompSystem_t = 0b00001111, TestSystem_t = 0b00000000 };
-    static System *system_select(uint8_t type) {
+
+    /**  
+     *  @brief The different valid systems the onboard code can boot into
+     */
+    enum SystemType {
+      CompSystem_t = 0b00001111,
+      TestSystem_t = 0b00000000
+      };
+      
+     /**
+     * @brief Used to get a system object from a valid system type
+     * 
+     * @param type Type of system to return (SystemType)
+     * @return System pointer of the correct type
+    */
+    static System *system_select(SystemType type) {
       switch(type) {
         case TestSystem_t:
           return new TestSystem();
@@ -84,7 +109,14 @@ class SystemSelect {
           break;
       }
     };
-    static String get_system_name(uint8_t type) {
+    
+    /**
+     * @brief Used to get the name of a system from a valid system type. Purely for printing to the serial monitor.
+     * 
+     * @param type Type of system to return (SystemType)
+     * @return String containing the name of the system
+     */
+    static String get_system_name(SystemType type) {
       switch(type) {
         switch(type) {
         case TestSystem_t:

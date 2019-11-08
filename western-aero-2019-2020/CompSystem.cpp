@@ -11,13 +11,18 @@ CompSystem::~CompSystem() {
   delete radio;
 }
 
-
+ /**
+  * @brief Initialize the Competition System
+  */
 void CompSystem::init() {
   Wire.begin();
   imu->init();
   radio->init();
 }
 
+ /**
+  * @brief Update the Competition system
+  */
 void CompSystem::update() {
   RawMessage_t raw_msg = msg_handler.build(ID::Plane, ID::Gnd);
 
@@ -28,6 +33,11 @@ void CompSystem::update() {
   radio->send(buf);
 }
 
+ /**
+  * @brief Remove any unused bytes in the RawMessage
+  * 
+  * @param msg 
+  */
 void CompSystem::remove_msg_padding(RawMessage_t msg, char *new_buf) {
   char *buf = (char *) &msg;
   for(int i = 0, j = 0; i < sizeof(msg); ++i, ++j) {

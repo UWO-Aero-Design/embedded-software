@@ -9,7 +9,9 @@ Rfm95w::~Rfm95w() {
   delete rf95;
 }
 
-
+ /**
+  * @brief Initialize the radio
+  */
 void Rfm95w::init() {
   pinMode(RESET_PIN, OUTPUT);
   pinMode(led, OUTPUT); // temp
@@ -28,6 +30,11 @@ void Rfm95w::init() {
   }
 }
 
+ /**
+  * @brief Send data via radio
+  * 
+  * @param buf A (max 256 byte) buffer containing the message to be sent
+  */
 void Rfm95w::send(char *buf) {
   digitalWrite(led, HIGH);    
   rf95->send((char *)&buf, sizeof(buf));
