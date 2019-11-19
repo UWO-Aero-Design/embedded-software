@@ -17,7 +17,7 @@ const uint32_t TEST_UINT32 = 1234567890;
 const int32_t TEST_INT32 = -1234567890;
 
 
-aero::def::IMU_t random_imu(void) {
+aero::def::IMU_t test_imu(void) {
     aero::def::IMU_t imu {
         TEST_INT16,
         TEST_INT16,
@@ -36,7 +36,7 @@ aero::def::IMU_t random_imu(void) {
     return imu;
 }
 
-aero::def::Pitot_t random_pitot(void) {
+aero::def::Pitot_t test_pitot(void) {
     aero::def::Pitot_t pitot {
         TEST_INT16
     };
