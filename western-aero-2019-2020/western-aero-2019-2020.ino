@@ -1,18 +1,28 @@
-#include "System_Select.h"
-#include "txSerialSystem.h"
+#include "Arduino.h"
+#include "System.hpp"
 
-#define led 13
+const uint8_t BUILTIN_LED = 13;
 
-txSerial tx_test;
+// will eventually be read from 4 pos dip switch
+#define SYSTEM_SELECTION SystemSelect::TesttxSerial_t
+
+System *sys = NULL;
 
 void setup() {
-  tx_test.initSystem();
-
-  pinMode(led, OUTPUT);
-  Serial.println("Hello World!");
+  // create the system specified by user input
+  sys = SystemSelect::system_select(SYSTEM_SELECTION);
+  sys->init();
+  
+  if(!Serial) {
+    Serial.begin(9600);
+  }
+  Serial.print("Booting in ");
+  Serial.print(SystemSelect::get_system_name(SYSTEM_SELECTION));
+  Serial.println(" mode");
   
 }
 
 void loop() {
-  tx_test.updateSystem();
+  sys->update();
+  //delay(1000);
 }

@@ -31,5 +31,11 @@
 *.out
 *.app
 
+<<<<<<< HEAD
 # VSCODE
 .vscode/
+=======
+# Documentation
+docs/html/*
+docs/latex/*
+>>>>>>> develop
