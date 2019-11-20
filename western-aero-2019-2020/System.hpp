@@ -80,30 +80,42 @@ class TestSystem : public System {
   
 };
 
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* SYSTEM FOR TESTING SERIAL TRANSMITTING TO GROUND STATION WITH TEST DATA */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
 class txSerial : public System {
+  
 public:
+    // Description of the system for printing
+    static constexpr const char* DESCRIPTION = "Serial Transmit Test System";
+    
     txSerial() {
         // Empty constructor
     }
 
+    // Init method starts serial and builds test data
     void init() override {
+        // Serial object initialization
         Serial.begin(115200);
 
-        imu = MockData::test_imu();
-        pitot = MockData::test_pitot();
-        gps = MockData::test_gps();
-        enviro = MockData::test_enviro();
-        batt = MockData::test_battery();
+        // Generating test data
+        imu     = MockData::test_imu();
+        pitot   = MockData::test_pitot();
+        gps     = MockData::test_gps();
+        enviro  = MockData::test_enviro();
+        batt    = MockData::test_battery();
         system_config = MockData::test_system();
-        status_state = MockData::test_status();
-        servos = MockData::test_servos();
-        airdata = MockData::test_airdata();
-        commands = MockData::test_commands();
-        dropalgo = MockData::test_dropalgo();
+        status_state  = MockData::test_status();
+        servos    = MockData::test_servos();
+        airdata   = MockData::test_airdata();
+        commands  = MockData::test_commands();
+        dropalgo  = MockData::test_dropalgo();
     }
 
     void update() override {
-        // Add to message buffer
+        // Add to message buffer if configured to do so
         if(SEND_IMU) 
             msg_handler.add_imu(imu);
         if(SEND_PITOT)
@@ -146,8 +158,12 @@ public:
         // Message every second
         delay(1000);
     }
+    
 protected:
+    // None
+  
 private:
+    // Flags to tell message builder whether or not to add certain data. If TRUE, will add data. Else, will not
     const static bool SEND_IMU = true;
     const static bool SEND_PITOT = true;
     const static bool SEND_GPS = true;
@@ -160,6 +176,7 @@ private:
     const static bool SEND_CMDS = true;
     const static bool SEND_DROPALGO = true;
 
+    // Structs for data
     aero::def::IMU_t imu;
     aero::def::Pitot_t pitot;
     aero::def::GPS_t gps;
@@ -172,6 +189,7 @@ private:
     aero::def::Commands_t commands;
     aero::def::DropAlgo_t dropalgo;
 
+    // Message handler
     aero::Message msg_handler;
 };
 
@@ -196,16 +214,6 @@ class SystemSelect {
      * @return System pointer of the correct type
     */
     static System *system_select(SystemType type) {
-      switch(type) {
-        case TestSystem_t:
-          return new TestSystem();
-          break;
-        case CompSystem_t:
-        default:
-          return new CompSystem();
-          break;
-      }
-
       switch(type) {
         case TestSystem_t: {
           return new TestSystem();
@@ -237,7 +245,7 @@ class SystemSelect {
           return "full test";
           break;
         case TesttxSerial_t: {
-          return "Test Tx";
+          return txSerial::DESCRIPTION;
           break;
         }
         case CompSystem_t:
