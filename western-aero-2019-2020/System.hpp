@@ -212,7 +212,7 @@ public:
     pinMode(DEBUG_LED, OUTPUT);
     pinMode(RFM95W_RST, OUTPUT);
     digitalWrite(DEBUG_LED, HIGH);
-    delay(3000);
+    delay(1000);
     digitalWrite(DEBUG_LED, LOW);
 
     // Reset radio
@@ -231,7 +231,7 @@ public:
   }
 
   void update() override {
-    uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+    uint8_t buf[RH_RF95_MAX_MESSAGE_LEN] = {0};
     uint8_t len = sizeof(buf);
 
     if (radio.waitAvailableTimeout(3000)) {
@@ -239,8 +239,15 @@ public:
         // Radio receive here
         digitalWrite(DEBUG_LED, HIGH);
 
+        aero::def::RawMessage_t *tmp_msg = (RawMessage_t *) &buf;
+        
         // Send message. Make sure to skip the part of the buffer that is empty
-        for(int i = 0; i < sizeof(buf); ++i) {
+        for(int i = 0; i < 209; ++i) {
+            // Skip empty parts
+            if(i == tmp_msg->length+6) {
+                i = 200+6;
+            }
+            
             Serial.print((char)buf[i], HEX);
             Serial.print(' ');
         }
@@ -334,7 +341,6 @@ class SystemSelect {
         case ZTRDemo1Gnd: {
           return ZTRDemo1GndStation::DESCRIPTION;
         } break;
-        
         case CompSystem_t:
         default:
           return "competition";
