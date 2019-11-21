@@ -13,6 +13,8 @@
 #include "Rfm95w.hpp"
 #include "MockData.hpp"
 
+#include "src/Rfm95w/RH_RF95.h"
+
 /**
  * @brief Astract class for defining how a system should be structured
  */
@@ -55,7 +57,7 @@ class CompSystem : public System {
     AirData_t air_data;
     Commands_t commands_data;
     DropAlgo_t drop_algo_data;
-  
+
 };
 
 /*!
@@ -193,6 +195,80 @@ private:
     aero::Message msg_handler;
 };
 
+class ZTRDemo1GndStation : public System {
+public:
+  // Description of the system for printing
+  static constexpr const char* DESCRIPTION = "ZTR Demo #1 Ground Station Transmitter System";
+    
+  ZTRDemo1GndStation() {
+
+  }
+
+  void init() override {
+    // Default baudrate required
+    Serial.begin(115200);
+
+    // Setup radio pins
+    pinMode(DEBUG_LED, OUTPUT);
+    pinMode(RFM95W_RST, OUTPUT);
+    digitalWrite(DEBUG_LED, HIGH);
+    delay(3000);
+    digitalWrite(DEBUG_LED, LOW);
+
+    // Reset radio
+    digitalWrite(RFM95W_RST, LOW);
+    delay(20);
+    digitalWrite(RFM95W_RST, HIGH);
+    delay(20);
+
+    if(!radio.init()) {
+      Serial.println("LoRa radio init failed");
+      while(1);
+    }
+    else {
+      Serial.println("LoRa radio init OK!");
+    }
+  }
+
+  void update() override {
+    uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+    uint8_t len = sizeof(buf);
+
+    if (radio.waitAvailableTimeout(3000)) {
+      if (radio.recv(buf, &len)) {
+        // Radio receive here
+        digitalWrite(DEBUG_LED, HIGH);
+
+        // Send message. Make sure to skip the part of the buffer that is empty
+        for(int i = 0; i < sizeof(buf); ++i) {
+            Serial.print((char)buf[i], HEX);
+            Serial.print(' ');
+        }
+
+        Serial.print("\n");
+
+        digitalWrite(DEBUG_LED, LOW);
+      }
+      else {
+        // Serial.println("recv failed");
+      }
+    }
+    else {
+      // Serial.println("No reply, is the plane running?");
+    }
+  }
+
+private:
+  // Teensy pin 13
+  static const int DEBUG_LED = 13;
+  // Radio pins
+  static const int RFM95W_RST = 2;
+  static const int RFM95W_INT = 9;
+  static const int RFM95W_CS = 10;
+  
+  // Radio object to receive data
+  RH_RF95 radio{RFM95W_CS, RFM95W_INT};
+};
 class SystemSelect {
   public:
     SystemSelect();
@@ -204,7 +280,8 @@ class SystemSelect {
     enum SystemType {
       CompSystem_t = 0b00001111,
       TestSystem_t = 0b00000000,
-      TesttxSerial_t = 0b00000001
+      TesttxSerial_t = 0b00000001,
+      ZTRDemo1Gnd = 0b00000010
     };
       
      /**
@@ -227,6 +304,10 @@ class SystemSelect {
           return new CompSystem();
         } break;
 
+        case ZTRDemo1Gnd: {
+          return new ZTRDemo1GndStation();
+        } break;
+
         default: {
           return new CompSystem();
         } break;
@@ -244,10 +325,16 @@ class SystemSelect {
         case TestSystem_t:
           return "full test";
           break;
+
         case TesttxSerial_t: {
           return txSerial::DESCRIPTION;
           break;
         }
+
+        case ZTRDemo1Gnd: {
+          return ZTRDemo1GndStation::DESCRIPTION;
+        } break;
+        
         case CompSystem_t:
         default:
           return "competition";
