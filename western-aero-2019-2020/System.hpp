@@ -6,9 +6,9 @@
 #define SYSTEM_H
 
 #include "Arduino.h"
-#include "src/aero/aero-cpp-lib/include/Pins.hpp"
-#include "src/aero/aero-cpp-lib/include/Data.hpp"
-#include "src/aero/aero-cpp-lib/include/Message.hpp"
+#include "src/aero-cpp-lib/include/Pins.hpp"
+#include "src/aero-cpp-lib/include/Data.hpp"
+#include "src/aero-cpp-lib/include/Message.hpp"
 #include "ImuMpu9250.hpp"
 #include "Rfm95w.hpp"
 #include "MockData.hpp"
@@ -38,7 +38,7 @@ class CompSystem : public System {
 
   private:
     const String type = String("This is a competition system");
-    void CompSystem::remove_msg_padding(RawMessage_t msg, char *new_buf);
+    int CompSystem::remove_msg_padding(RawMessage_t msg, char *new_buf);
     void build_message();
     void temp_fill_data();
     ImuMpu9250 *imu; /*!< An imu sensor */

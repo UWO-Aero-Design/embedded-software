@@ -6,9 +6,9 @@
 
 #include "Arduino.h"
 #include "src/Rfm95w/RH_RF95.h"
-#include "src/aero/aero-cpp-lib/include/Pins.hpp"
-#include "src/aero/aero-cpp-lib/include/Data.hpp"
-#include "src/aero/aero-cpp-lib/include/Message.hpp"
+#include "src/aero-cpp-lib/include/Pins.hpp"
+#include "src/aero-cpp-lib/include/Data.hpp"
+#include "src/aero-cpp-lib/include/Message.hpp"
 
 using namespace aero;
 using namespace aero::teensy35;
@@ -51,8 +51,8 @@ class Rfm95w{
      * 
      * @param buf A (max 256 byte) buffer containing the message to be sent
      */
-    void send(char *msg) {
-      digitalWrite(led, HIGH);    
+    void send(RawMessage_t msg) {
+      digitalWrite(led, HIGH);   
       rf95->send((char *)&msg, sizeof(msg));
       rf95->waitPacketSent();
       digitalWrite(led, LOW);
