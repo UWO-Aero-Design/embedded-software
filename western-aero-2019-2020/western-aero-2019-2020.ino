@@ -4,7 +4,7 @@
 const uint8_t BUILTIN_LED = 13;
 
 // will eventually be read from 4 pos dip switch
-#define SYSTEM_SELECTION SystemSelect::TesttxSerial_t
+#define SYSTEM_SELECTION SystemSelect::ZTRDemo1Gnd
 
 System *sys = NULL;
 
