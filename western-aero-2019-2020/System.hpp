@@ -12,7 +12,7 @@
 #include "ImuMpu9250.hpp"
 #include "Rfm95w.hpp"
 #include "MockData.hpp"
-
+#include "PitotTube.hpp"
 #include "src/Rfm95w/RH_RF95.h"
 
 /**
@@ -276,6 +276,37 @@ private:
   // Radio object to receive data
   RH_RF95 radio{RFM95W_CS, RFM95W_INT};
 };
+
+class PitotTubeDemo : public System {
+public:
+  static constexpr const char* DESCRIPTION = "Pitot Demo";
+  
+  PitotTubeDemo() {
+    // Constructor
+  }
+
+  void init() override {
+    pitot.init();
+    Serial.begin(9600);
+  }
+
+  void update() override {
+    pitot.update();
+
+    Serial.print("Differential pressure: ");
+    Serial.print(pitot.pressure());
+    Serial.print(" kPa and for message protocol: ");
+    Serial.println(pitot.data());
+
+    delay(500);
+  }
+
+protected:
+private:
+  static const int PITOT_PIN = 23;
+  PhidgetPitotTube pitot {PITOT_PIN};
+};
+
 class SystemSelect {
   public:
     SystemSelect();
@@ -288,7 +319,8 @@ class SystemSelect {
       CompSystem_t = 0b00001111,
       TestSystem_t = 0b00000000,
       TesttxSerial_t = 0b00000001,
-      ZTRDemo1Gnd = 0b00000010
+      ZTRDemo1Gnd = 0b00000010,
+      PitotDemo = 0b00000100
     };
       
      /**
@@ -313,6 +345,10 @@ class SystemSelect {
 
         case ZTRDemo1Gnd: {
           return new ZTRDemo1GndStation();
+        } break;
+
+        case PitotDemo: {
+          return new PitotTubeDemo();
         } break;
 
         default: {
@@ -341,6 +377,11 @@ class SystemSelect {
         case ZTRDemo1Gnd: {
           return ZTRDemo1GndStation::DESCRIPTION;
         } break;
+
+        case PitotDemo: {
+          return PitotTubeDemo::DESCRIPTION;
+        } break;
+        
         case CompSystem_t:
         default:
           return "competition";
