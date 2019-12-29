@@ -18,8 +18,8 @@ public:
         int pitotVal = analogRead(m_pin);
 
         // Convert pitot value to voltage (0 to SCALED_VOLTAGE)
-        float scaledVal = map(pitotVal, 0, 1023, 0, SCALED_VOLTAGE);
-        float voltageVal = map(scaledVal, 0, SCALED_VOLTAGE, 0, PITOT_VOLTAGE);
+        float scaledVal = mapf(pitotVal, 0, 1023, 0, SCALED_VOLTAGE);
+        float voltageVal = mapf(scaledVal, 0, SCALED_VOLTAGE, 0, PITOT_VOLTAGE);
         float voltageRatio = voltageVal/PITOT_VOLTAGE;
 
         // Now we apply the pitot equation
@@ -49,17 +49,22 @@ private:
         return ( ( voltRatio*2.538 ) - 1.269 );
     }
 
+    double mapf(double val, double in_min, double in_max, double out_min, double out_max) {
+        return (val - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+
+
     int m_pin;
     float m_pressure_kpa = 0.0f;
 
     // Values that need to be modified
-    constexpr double R1 = 10000;
-    constexpr double R2 = 10000*2;
+    constexpr static double R1 = 10000;
+    constexpr static double R2 = 10000*2;
 
     // No need to touch
-    constexpr double PITOT_VOLTAGE = 5.00;
-    constexpr double VOLTAGE_RATIO = R2/(R1+R2);
-    constexpr double SCALED_VOLTAGE = VOLTAGE_RATIO*PITOT_VOLTAGE; 
+    constexpr static double PITOT_VOLTAGE = 5.00;
+    constexpr static double VOLTAGE_RATIO = R2/(R1+R2);
+    constexpr static double SCALED_VOLTAGE = VOLTAGE_RATIO*PITOT_VOLTAGE; 
 
 };
 

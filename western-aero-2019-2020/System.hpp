@@ -296,7 +296,7 @@ public:
     Serial.print("Differential pressure: ");
     Serial.print(pitot.pressure());
     Serial.print(" kPa and for message protocol: ");
-    Serial.println(pitot.data());
+    Serial.println(pitot.data().differential_pressure);
 
     delay(500);
   }
