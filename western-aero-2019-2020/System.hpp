@@ -277,33 +277,57 @@ private:
   RH_RF95 radio{RFM95W_CS, RFM95W_INT};
 };
 
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/************* SYSTEM FOR TESTING ANALOG PITOT TUBE CONNECTION *************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
 class PitotTubeDemo : public System {
 public:
-  static constexpr const char* DESCRIPTION = "Pitot Demo";
-  
-  PitotTubeDemo() {
-    // Constructor
-  }
+  // Description string
+  static constexpr const char* DESCRIPTION = "Analog Pitot Tube Demo";
 
+  /**
+   * @brief System initialization that verifies sensor is connected properly
+   * 
+   */
   void init() override {
-    pitot.init();
     Serial.begin(9600);
+
+    // Check if pitot initialized properly
+    bool init_result = pitot.init();
+
+    if(!init_result) {
+      Serial.println("Pitot tube seems to be not connected. Check wiring.");
+      while(true);
+    } 
   }
 
+  /**
+   * @brief Update system and update sensor value. Print out data
+   * 
+   */
   void update() override {
-    pitot.update();
+    // Check if pitot updated properly
+    bool update_result = pitot.update();
 
-    Serial.print("Differential pressure: ");
-    Serial.print(pitot.pressure());
-    Serial.print(" kPa and for message protocol: ");
-    Serial.println(pitot.data().differential_pressure);
+    if(!update_result) {
+      Serial.println("Pitot tube update failed");
+    } else {
+      Serial.print("Differential pressure: ");
+      Serial.print(pitot.pressure());
+      Serial.print(" kPa and for message protocol: ");
+      Serial.println(pitot.data().differential_pressure);
+    }
 
     delay(500);
   }
 
-protected:
 private:
-  static const int PITOT_PIN = 23;
+  // Pin for the analog sensor
+  static constexpr int PITOT_PIN = 23;
+
+  // Pitot object
   PhidgetPitotTube pitot {PITOT_PIN};
 };
 
