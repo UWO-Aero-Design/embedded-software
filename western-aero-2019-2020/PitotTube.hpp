@@ -41,7 +41,7 @@ public:
             m_initialized = true;
         } 
 
-        m_initialized true;
+        return m_initialized;
     }
 
     /**
@@ -60,16 +60,16 @@ public:
         int pitot_val = analogRead(m_pin);
 
         // Convert the analog reading to the actual voltage based on analog resolution
-        double scaledVal = mapf(pitotVal, 0, 1023, 0, SCALED_VOLTAGE);
+        double scaled_val = mapf(pitot_val, 0, 1023, 0, SCALED_VOLTAGE);
 
         // Convert the voltage to the 0 to 5 range of the pitot tube
-        double voltageVal = mapf(scaledVal, 0, SCALED_VOLTAGE, 0, PITOT_VOLTAGE);
+        double voltage_val = mapf(scaled_val, 0, SCALED_VOLTAGE, 0, PITOT_VOLTAGE);
 
         // Calculate the voltage ratio of the sensor reading to calculate pressure
-        double voltageRatio = voltageVal/PITOT_VOLTAGE;
+        double voltage_ratio = voltage_val/PITOT_VOLTAGE;
 
         // Pressure calculations
-        m_pressure_kpa = tokPa(voltageRatio);
+        m_pressure_kpa = tokPa(voltage_ratio);
         m_data.differential_pressure = (int)(m_pressure_kpa*DIF_PRES_SCALAR);
         
         return true;

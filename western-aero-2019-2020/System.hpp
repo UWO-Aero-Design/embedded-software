@@ -331,20 +331,22 @@ private:
   PhidgetPitotTube pitot {PITOT_PIN};
 };
 
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/********************* SYSTEM SELECT MECHANISM/FACTORY *********************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
 class SystemSelect {
   public:
-    SystemSelect();
-    ~SystemSelect();
-
     /**  
      *  @brief The different valid systems the onboard code can boot into
      */
-    enum SystemType {
-      CompSystem_t = 0b00001111,
-      TestSystem_t = 0b00000000,
-      TesttxSerial_t = 0b00000001,
-      ZTRDemo1Gnd = 0b00000010,
-      PitotDemo = 0b00000100
+    enum Type {
+      TestSystem_t    = 0b00000000, // System for testing system select
+      TesttxSerial_t  = 0b00000001, // System for sending messages based on protocol over serial
+      ZTRDemo1Gnd_t   = 0b00000010, // System for first ZTR target demo
+      PitotDemo_t     = 0b00000100, // System for testing the analog phidget pitot tube
+      CompSystem_t    = 0b00001111  // System for competition
     };
       
      /**
@@ -353,7 +355,7 @@ class SystemSelect {
      * @param type Type of system to return (SystemType)
      * @return System pointer of the correct type
     */
-    static System *system_select(SystemType type) {
+    static System *select(Type type) {
       switch(type) {
         case TestSystem_t: {
           return new TestSystem();
@@ -367,11 +369,11 @@ class SystemSelect {
           return new CompSystem();
         } break;
 
-        case ZTRDemo1Gnd: {
+        case ZTRDemo1Gnd_t: {
           return new ZTRDemo1GndStation();
         } break;
 
-        case PitotDemo: {
+        case PitotDemo_t: {
           return new PitotTubeDemo();
         } break;
 
@@ -387,22 +389,21 @@ class SystemSelect {
      * @param type Type of system to return (SystemType)
      * @return String containing the name of the system
      */
-    static String get_system_name(SystemType type) {
+    static String get_description(Type type) {
       switch(type) {
-        case TestSystem_t:
-          return "full test";
-          break;
-
+        case TestSystem_t: {
+          return "Test system";
+        } break;
+        
         case TesttxSerial_t: {
           return txSerial::DESCRIPTION;
-          break;
-        }
+        } break;
 
-        case ZTRDemo1Gnd: {
+        case ZTRDemo1Gnd_t: {
           return ZTRDemo1GndStation::DESCRIPTION;
         } break;
 
-        case PitotDemo: {
+        case PitotDemo_t: {
           return PitotTubeDemo::DESCRIPTION;
         } break;
         
