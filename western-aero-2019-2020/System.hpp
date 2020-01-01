@@ -293,6 +293,8 @@ public:
    */
   void init() override {
     Serial.begin(9600);
+    // Delay so Serial has time to begin. Without it, any init/setup prints do not work
+    delay(1000);
 
     // Check if pitot initialized properly
     bool init_result = pitot.init();
