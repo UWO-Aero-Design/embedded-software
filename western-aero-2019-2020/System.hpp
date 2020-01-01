@@ -330,7 +330,7 @@ private:
   static constexpr int PITOT_PIN = 23;
 
   // Pitot object
-  PhidgetPitotTube pitot {PITOT_PIN};
+  PhidgetPitotTube pitot {aero::teensy35::A9_PWM};
 };
 
 /***************************************************************************/
