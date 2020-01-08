@@ -333,6 +333,30 @@ private:
   PhidgetPitotTube pitot {aero::teensy35::A9_PWM};
 };
 
+class AdafruitGPSDemo : public System {
+public:
+  // Description string
+  static constexpr const char* DESCRIPTION = "Adafruit GPS Demo";
+
+  /**
+   * @brief System init 
+   * 
+   */
+  void init() override {
+    
+  }
+
+  /**
+   * @brief System update
+   * 
+   */
+  void update() override {
+    
+  }
+protected:
+private:
+};
+
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /********************* SYSTEM SELECT MECHANISM/FACTORY *********************/
