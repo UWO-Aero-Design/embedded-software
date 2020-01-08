@@ -8,6 +8,8 @@
 // Adafruit library
 #include "src/Adafruit_GPS/Adafruit_GPS.h"
 
+#include <SoftwareSerial.h>
+
 class AdafruitGPS : public aero::sensor::GPS {
 public:
 
@@ -25,19 +27,27 @@ public:
     struct Coord {
         double lat;
         double lon;
-    }
+    };
 
     struct Connection {
         bool fix;
-        uint8_t quality;
+        uint8_t quality; // (0, 1, 2 = Invalid, GPS, DGPS)
         uint8_t satellites;
+    };
+
+    AdafruitGPS(HardwareSerial& port) : m_gps(&port){
+        // m_port = port;
+
+        // m_gps = Adafruit_GPS(port);
     }
 
-    AdafruitGPS(Stream* port) {
-        m_port = port;
-
-        m_gps = Adafruit_GPS(port);
-    }
+    #if (defined(__AVR__) || defined(ESP8266)) && defined(USE_SW_SERIAL)
+      AdafruitGPS(SoftwareSerial& port) : m_gps(&port){
+          // m_port = port;
+  
+          // m_gps = Adafruit_GPS(port);
+      }
+    #endif
 
     bool init() override {
         
@@ -63,7 +73,7 @@ public:
     // Fails if no update occured
     bool update() override {
         if (m_gps.newNMEAreceived()) {
-            if (!GPS.parse(GPS.lastNMEA())) {
+            if (!m_gps.parse(m_gps.lastNMEA())) {
                 // Failed to parse a new message
                 return false;
             }
@@ -132,11 +142,11 @@ public:
         return m_speed;
     }
 
-    double altitude const {
+    double altitude() const {
         return m_altitude;
     }
 
-    double angle const {
+    double angle() const {
         return m_angle;
     }
 
@@ -151,6 +161,6 @@ private:
     double m_speed, m_altitude, m_angle;
     
     constexpr static unsigned int BAUD_RATE = 9600;
-}
+};
 
 #endif

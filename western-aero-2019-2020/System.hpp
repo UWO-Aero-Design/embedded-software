@@ -13,6 +13,7 @@
 #include "Rfm95w.hpp"
 #include "MockData.hpp"
 #include "PitotTube.hpp"
+#include "GPS.hpp"
 #include "src/Rfm95w/RH_RF95.h"
 
 /**
@@ -343,7 +344,17 @@ public:
    * 
    */
   void init() override {
-    
+    Serial.begin(115200);
+    // Delay so Serial has time to begin. Without it, any init/setup prints do not work
+    delay(1000);
+
+    // Check if pitot initialized properly
+    bool init_result = gps.init();
+
+    if(!init_result) {
+      Serial.println("GPS failed hardware initialization. Check wiring.");
+      while(true);
+    } 
   }
 
   /**
@@ -351,10 +362,68 @@ public:
    * 
    */
   void update() override {
-    
+    // Check if pitot updated properly
+    bool update_result = gps.update();
+
+    if(!update_result) {
+      Serial.println("Pitot tube update failed");
+    } else {
+      
+      AdafruitGPS::TimeStamp timestamp = gps.timestamp();
+      AdafruitGPS::Coord coord = gps.coord();
+      AdafruitGPS::Connection connection = gps.connection();
+      double speed = gps.speed();
+      double alt = gps.altitude();
+      double course = gps.angle();
+
+      // Print connection
+      Serial.println("Connection Status:");
+      Serial.print("    Fix: "); Serial.print(connection.fix);
+      Serial.print("    Quality: "); Serial.print(connection.quality);
+      Serial.print("    Satellites: "); Serial.println(connection.satellites);
+
+      // Print time stamp
+      Serial.println("Date:");
+      Serial.print("    (MM/DD/YY): "); Serial.print(timestamp.month);
+      Serial.print("/"); Serial.print(timestamp.day);
+      Serial.print("/"); Serial.print(timestamp.year);
+
+      Serial.print("    Time:");
+      Serial.print("    "); Serial.print(timestamp.hr);
+      Serial.print(":"); Serial.print(timestamp.min);
+      Serial.print(":"); Serial.println(timestamp.sec);
+
+      // Print coordinate
+      Serial.println("Coordinate:");
+      Serial.print("    Lat: "); Serial.print(coord.lat);
+      Serial.print("    Lon: "); Serial.println(coord.lon);
+
+      // Print other data
+      Serial.println("Misc Data:");
+      Serial.print("    Speed (m/s): "); Serial.print(speed);
+      Serial.print("    Altitude (m): "); Serial.print(alt);
+      Serial.print("    Course (deg): "); Serial.print(course);
+
+      // Print message data
+      aero::def::GPS_t data = gps.data();
+
+      Serial.println("Formatted Data:");
+      Serial.print("    Connection: "); Serial.println(data.satellites);
+      Serial.print("    Date: "); Serial.println(data.date);
+      Serial.print("    Time: "); Serial.println(data.time);
+      Serial.print("    Lat: "); Serial.print(data.lat);
+      Serial.print("    Lon: "); Serial.println(data.lon);
+      Serial.print("    Speed: "); Serial.println(data.speed);
+      Serial.print("    Altitude: "); Serial.println(data.altitude);
+      
+    }
+
+    delay(500);
   }
+
 protected:
 private:
+  AdafruitGPS gps {Serial4};
 };
 
 /***************************************************************************/
