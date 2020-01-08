@@ -437,11 +437,12 @@ class SystemSelect {
      *  @brief The different valid systems the onboard code can boot into
      */
     enum Type {
-      TestSystem_t    = 0b00000000, // System for testing system select
-      TesttxSerial_t  = 0b00000001, // System for sending messages based on protocol over serial
-      ZTRDemo1Gnd_t   = 0b00000010, // System for first ZTR target demo
-      PitotDemo_t     = 0b00000100, // System for testing the analog phidget pitot tube
-      CompSystem_t    = 0b00001111  // System for competition
+      TestSystem_t      = 0b00000000, // System for testing system select
+      TesttxSerial_t    = 0b00000001, // System for sending messages based on protocol over serial
+      ZTRDemo1Gnd_t     = 0b00000010, // System for first ZTR target demo
+      PitotDemo_t       = 0b00000100, // System for testing the analog phidget pitot tube
+      AdafruitGPSDemo_t = 0b00001000, // System for testing the adafruit gps module
+      CompSystem_t      = 0b00001111  // System for competition
     };
       
      /**
@@ -472,6 +473,10 @@ class SystemSelect {
           return new PitotTubeDemo();
         } break;
 
+        case AdafruitGPSDemo_t: {
+          return new AdafruitGPSDemo();
+        } break;
+
         default: {
           return new CompSystem();
         } break;
@@ -487,7 +492,7 @@ class SystemSelect {
     static String get_description(Type type) {
       switch(type) {
         case TestSystem_t: {
-          return "Test system";
+          return "Test System";
         } break;
         
         case TesttxSerial_t: {
@@ -501,10 +506,14 @@ class SystemSelect {
         case PitotDemo_t: {
           return PitotTubeDemo::DESCRIPTION;
         } break;
+
+        case AdafruitGPSDemo_t: {
+          return AdafruitGPSDemo::DESCRIPTION;
+        } break;
         
         case CompSystem_t:
         default:
-          return "competition";
+          return "Competition System";
           break;
     }
   }
