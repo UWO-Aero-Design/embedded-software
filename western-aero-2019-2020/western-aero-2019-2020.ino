@@ -5,7 +5,7 @@ const uint8_t BUILTIN_LED = 13;
 const int DEFAULT_BAUD = 9600;
 
 // will eventually be read from 4 pos dip switch
-#define SYSTEM_SELECTION SystemSelect::PitotDemo_t
+#define SYSTEM_SELECTION SystemSelect::AdafruitGPSDemo_t
 
 System *sys = NULL;
 
