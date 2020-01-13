@@ -7,21 +7,29 @@
 
 // Adafruit library
 #include "src/Adafruit_GPS/Adafruit_GPS.h"
-
+#include <Arduino.h>
 #include <SoftwareSerial.h>
+
+#include <TinyGPS.h>
 
 class AdafruitGPS : public aero::sensor::GPS {
 public:
 
     // GMT Time Stamp
     struct TimeStamp {
-        uint8_t hr;                                     
-        uint8_t min;                                   
-        uint8_t sec;                                  
-        uint16_t msec;                            
-        uint8_t year;                                     
-        uint8_t month;                                    
-        uint8_t day;                                      
+        byte hr;                                     
+        byte min;                                   
+        byte sec;                                  
+        byte msec;                            
+        int year;                                     
+        byte month;                                    
+        byte day;                                      
+    };
+
+    struct Stats {
+      unsigned long chars;
+      unsigned short seqs;
+      unsigned short fails;
     };
 
     struct Coord {
@@ -29,100 +37,82 @@ public:
         double lon;
     };
 
-    struct Connection {
-        bool fix;
-        uint8_t quality; // (0, 1, 2 = Invalid, GPS, DGPS)
-        uint8_t satellites;
-    };
-
-    AdafruitGPS(HardwareSerial& port) : m_gps(&port){
-        // m_port = port;
-
-        // m_gps = Adafruit_GPS(port);
+    AdafruitGPS(HardwareSerial *port) {
+      this->port = port;
     }
 
-    #if (defined(__AVR__) || defined(ESP8266)) && defined(USE_SW_SERIAL)
-      AdafruitGPS(SoftwareSerial& port) : m_gps(&port){
-          // m_port = port;
-  
-          // m_gps = Adafruit_GPS(port);
-      }
-    #endif
-
     bool init() override {
-        
         // Begin GPS connection; check if hardware init succeeded
-        bool success = m_gps.begin(BAUD_RATE);
-
-        if(!success) {
-            return false;
-        }
-
-        // RMC (Recommended minimum) and GGA (fix data)
-        m_gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-        // Update rate, keep low for ebtter parsing
-        m_gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
-        // Antenna status
-        m_gps.sendCommand(PGCMD_ANTENNA); 
-        m_gps.sendCommand(PMTK_API_SET_FIX_CTL_5HZ);
+        Serial.begin(115200);
         delay(1000);
 
+        port->begin(9600);
+        
         return true;
     }
 
     // Fails if no update occured
     bool update() override {
-        if (m_gps.newNMEAreceived()) {
-            if (!m_gps.parse(m_gps.lastNMEA())) {
-                // Failed to parse a new message
-                return false;
-            }
-            // Failed to receive a new message (in time)
-            return false;
-        }
+        float flat, flon;
+        unsigned long age, chars = 0;
+        unsigned short sentences = 0, failed = 0;
 
-        // Grab data from sensor
-        m_timestamp.hr = m_gps.hour;
-        m_timestamp.min = m_gps.minute;
-        m_timestamp.sec = m_gps.seconds;
-        m_timestamp.msec = m_gps.milliseconds;
-        m_timestamp.year = m_gps.year;
-        m_timestamp.month = m_gps.month;
-        m_timestamp.day = m_gps.day;
+        // Get position data and statistics
+        gps.f_get_position(&flat, &flon, &age);
+        gps.stats(&chars, &sentences, &failed);
 
-        m_coord.lat = m_gps.latitudeDegrees;
-        m_coord.lon = m_gps.longitudeDegrees;
-        m_speed = m_gps.speed / 1.944;  // In knots; convert to m/s
-        m_altitude = m_gps.altitude;
-        m_angle = m_gps.angle;
+        // Satellites
+        m_satellites = gps.satellites();
+        m_data.satellites = m_satellites;
+        
+        // Latitude
+        m_coord.lat = flat;
+        m_data.lat = (int32_t)(m_coord.lat * 10000000);
 
-        m_connection.fix = (bool) m_gps.fix;
-        m_connection.quality = m_gps.fixquality;
-        m_connection.satellites = m_gps.satellites;
+        // Longitude
+        m_coord.lon = flon;
+        m_data.lon = (int32_t)(m_coord.lon * 10000000);
 
-        // Prepare data for message protocol
-        m_data.lat = m_coord.lat / 100000;
-        m_data.lon = m_coord.lon / 100000;
-        m_data.speed = (uint32_t)(m_speed * 100); // max 2 decimal precision, is around ~ 650 m/s
-        m_data.altitude = (uint32_t)(m_speed * 10); // max is 1 decimal precision, ~6500 m
+        // Altitude
+        m_altitude = gps.f_altitude();
+        m_data.altitude = (uint16_t)(m_altitude * 10); // max is 1 decimal precision, ~6500 m
 
-        m_data.satellites = m_connection.satellites;
-        // Set MSB of satellites if fix
-        if(m_connection.fix) {
-            m_data.satellites = aero::bit::set(m_data.satellites, 7);
-        } else {
-            m_data.satellites = aero::bit::clear(m_data.satellites, 7);
-        }
+        // Speed; in m/s
+        m_speed = gps.f_speed_kmph()/3.6;
+        m_data.speed = (uint16_t)(m_speed * 100); // max 2 decimal precision, is around ~ 650 m/s
 
+        // Course; not a part of data
+        m_angle = gps.f_course();
+
+        gps.crack_datetime(&m_timestamp.year, 
+          &m_timestamp.month, 
+          &m_timestamp.day, 
+          &m_timestamp.hr, 
+          &m_timestamp.min, 
+          &m_timestamp.sec, 
+          &m_timestamp.msec, 
+          &age);
+        
         m_data.time = ((uint32_t)m_timestamp.hr << 16) | 
-                        ((uint32_t)m_timestamp.min << 8) | 
-                        (uint32_t)m_timestamp.sec;
+                       ((uint32_t)m_timestamp.min << 8) | 
+                       (uint32_t)m_timestamp.sec;
 
         m_data.date = ((uint32_t)m_timestamp.year << 16) | 
-                        ((uint32_t)m_timestamp.month << 8) | 
-                        (uint32_t)m_timestamp.day;
+                       ((uint32_t)m_timestamp.month << 8) | 
+                       (uint32_t)m_timestamp.day;
+
+        //smartdelay(1000);
 
         return true;
+    }
+
+    void delay(unsigned long ms)
+    {
+      unsigned long start = millis();
+      do {
+        while (port->available())
+          gps.encode(port->read());
+      } while (millis() - start < ms);
     }
 
     
@@ -134,8 +124,8 @@ public:
         return m_coord;
     }
 
-    Connection connection() const {
-        return m_connection;
+    unsigned int satellites() const {
+        return m_satellites;
     }   
 
     double speed() const {
@@ -150,14 +140,18 @@ public:
         return m_angle;
     }
 
+    Stats stats() const {
+      return m_stats;
+    }
+
 protected:
 private:
-    Adafruit_GPS m_gps;
-    Stream* m_port;
-
+    TinyGPS gps;
+    HardwareSerial* port;
     TimeStamp m_timestamp;
     Coord m_coord;
-    Connection m_connection;
+    unsigned int m_satellites;
+    Stats m_stats;
     double m_speed, m_altitude, m_angle;
     
     constexpr static unsigned int BAUD_RATE = 9600;

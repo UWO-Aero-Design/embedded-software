@@ -338,7 +338,7 @@ class AdafruitGPSDemo : public System {
 public:
   // Description string
   static constexpr const char* DESCRIPTION = "Adafruit GPS Demo";
-
+  AdafruitGPSDemo(){}
   /**
    * @brief System init 
    * 
@@ -362,68 +362,65 @@ public:
    * 
    */
   void update() override {
-    // Check if pitot updated properly
+    // Use gps delay to let buffer fill up
+    gps.delay(1000);
     bool update_result = gps.update();
 
     if(!update_result) {
-      Serial.println("Pitot tube update failed");
+      //Serial.println("GPS update failed");
     } else {
       
       AdafruitGPS::TimeStamp timestamp = gps.timestamp();
       AdafruitGPS::Coord coord = gps.coord();
-      AdafruitGPS::Connection connection = gps.connection();
+      int sats = gps.satellites();
       double speed = gps.speed();
       double alt = gps.altitude();
       double course = gps.angle();
 
-      // Print connection
-      Serial.println("Connection Status:");
-      Serial.print("    Fix: "); Serial.print(connection.fix);
-      Serial.print("    Quality: "); Serial.print(connection.quality);
-      Serial.print("    Satellites: "); Serial.println(connection.satellites);
+     // Print connection
+     Serial.println("Connection Status:");
+     Serial.print("    Satellites: "); Serial.println(sats);
 
-      // Print time stamp
-      Serial.println("Date:");
-      Serial.print("    (MM/DD/YY): "); Serial.print(timestamp.month);
-      Serial.print("/"); Serial.print(timestamp.day);
-      Serial.print("/"); Serial.print(timestamp.year);
+     // Print time stamp
+     Serial.println("Date:");
+     Serial.print("    (MM/DD/YY): "); Serial.print(timestamp.month);
+     Serial.print("/"); Serial.print(timestamp.day);
+     Serial.print("/"); Serial.print(timestamp.year);
 
-      Serial.print("    Time:");
-      Serial.print("    "); Serial.print(timestamp.hr);
-      Serial.print(":"); Serial.print(timestamp.min);
-      Serial.print(":"); Serial.println(timestamp.sec);
+     Serial.print("    Time:");
+     Serial.print("    "); Serial.print(timestamp.hr);
+     Serial.print(":"); Serial.print(timestamp.min);
+     Serial.print(":"); Serial.println(timestamp.sec);
 
-      // Print coordinate
-      Serial.println("Coordinate:");
-      Serial.print("    Lat: "); Serial.print(coord.lat);
-      Serial.print("    Lon: "); Serial.println(coord.lon);
+     // Print coordinate
+     Serial.println("Coordinate:");
+     Serial.print("    Lat: "); Serial.print(coord.lat, 7);
+     Serial.print("    Lon: "); Serial.println(coord.lon, 7);
 
-      // Print other data
-      Serial.println("Misc Data:");
-      Serial.print("    Speed (m/s): "); Serial.print(speed);
-      Serial.print("    Altitude (m): "); Serial.print(alt);
-      Serial.print("    Course (deg): "); Serial.print(course);
+     // Print other data
+     Serial.println("Misc Data:");
+     Serial.print("    Speed (m/s): "); Serial.print(speed);
+     Serial.print("    Altitude (m): "); Serial.print(alt);
+     Serial.print("    Course (deg): "); Serial.println(course);
 
-      // Print message data
-      aero::def::GPS_t data = gps.data();
+     // Print message data
+     aero::def::GPS_t data = gps.data();
 
-      Serial.println("Formatted Data:");
-      Serial.print("    Connection: "); Serial.println(data.satellites);
-      Serial.print("    Date: "); Serial.println(data.date);
-      Serial.print("    Time: "); Serial.println(data.time);
-      Serial.print("    Lat: "); Serial.print(data.lat);
-      Serial.print("    Lon: "); Serial.println(data.lon);
-      Serial.print("    Speed: "); Serial.println(data.speed);
-      Serial.print("    Altitude: "); Serial.println(data.altitude);
+     Serial.println("Formatted Data:");
+     Serial.print("    Connection: "); Serial.println(data.satellites);
+     Serial.print("    Date: "); Serial.println(data.date);
+     Serial.print("    Time: "); Serial.println(data.time);
+     Serial.print("    Lat: "); Serial.print(data.lat);
+     Serial.print("    Lon: "); Serial.println(data.lon);
+     Serial.print("    Speed: "); Serial.println(data.speed);
+     Serial.print("    Altitude: "); Serial.println(data.altitude);
       
     }
-
-    delay(500);
   }
 
 protected:
 private:
-  AdafruitGPS gps {Serial4};
+  AdafruitGPS gps{&Serial4};
 };
 
 /***************************************************************************/
