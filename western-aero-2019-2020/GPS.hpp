@@ -13,7 +13,13 @@
  * @details Communication to the sensor is handled via serial and parsing using TinyGPS
  */
 class AdafruitGPS : public aero::sensor::GPS {
-public:
+public: 
+
+    // Scalars for message protocol
+    static constexpr unsigned int LAT_SCALAR = 10000000;
+    static constexpr unsigned int LON_SCALAR = 10000000;
+    static constexpr unsigned int ALT_SCALAR = 10;
+    static constexpr unsigned int SPEED_SCALAR = 100;
 
     /**
      * @brief GMT Time Stamp from GPS 
@@ -25,7 +31,26 @@ public:
         byte msec;                            
         int year;                                     
         byte month;                                    
-        byte day;                                      
+        byte day;
+        
+        /**
+         * @brief Extract a timestamp struct from date, time values
+         * 
+         * @param date byte field representing date
+         * @param time byte field representing time
+         * @return TimeStamp timestamp based on date/time encoded values
+         */
+        static TimeStamp extract(uint32_t date, uint32_t time) {
+            TimeStamp ts;
+
+            ts.day = (date & 0x000000ff);
+            ts.month = (date & 0x0000ff00) >> 8;
+            ts.year = (date & 0x00ff0000) >> 16;
+
+            ts.sec = (time & 0x000000ff);
+            ts.min = (time & 0x0000ff00) >> 8;
+            ts.hr = (time & 0x00ff0000) >> 16;
+        }                                      
     };
 
     /**
@@ -92,20 +117,20 @@ public:
         
         // Latitude
         m_coord.lat = flat;
-        m_data.lat = (int32_t)(m_coord.lat * 10000000);
+        m_data.lat = (int32_t)(m_coord.lat * LAT_SCALAR);
 
         // Longitude
         m_coord.lon = flon;
-        m_data.lon = (int32_t)(m_coord.lon * 10000000);
+        m_data.lon = (int32_t)(m_coord.lon * LON_SCALAR);
 
         // Altitude
         m_altitude = gps.f_altitude();
-        m_data.altitude = (uint16_t)(m_altitude * 10); // max is 1 decimal precision, ~6500 m
+        m_data.altitude = (uint16_t)(m_altitude * ALT_SCALAR); // max is 1 decimal precision, ~6500 m
 
         // Speed; in m/s
         m_speed = gps.f_speed_kmph()/3.6;
-        m_data.speed = (uint16_t)(m_speed * 100); // max 2 decimal precision, is around ~ 650 m/s
-
+        m_data.speed = (uint16_t)(m_speed * SPEED_SCALAR); // max 2 decimal precision, is around ~ 650 m/s
+        
         // Course; not a part of data
         m_angle = gps.f_course();
 

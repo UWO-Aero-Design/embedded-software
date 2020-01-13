@@ -16,6 +16,9 @@
 class PhidgetPitotTube : public aero::sensor::Pitot {
 public:
 
+    // Value that scales the differential pressure reading to the message protocol
+    constexpr static int DIF_PRES_SCALAR = 1000;
+
     /**
      * @brief Construct a new Phidget Pitot Tube object
      * 
@@ -122,9 +125,6 @@ private:
 
     // Min value that is assumed not to be floating
     constexpr static int NON_FLOATING_READING = 100;
-
-    // Value that scales the differential pressure reading to the message protocol
-    constexpr static int DIF_PRES_SCALAR = 1000;
 };
 
 #endif
