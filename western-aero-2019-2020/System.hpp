@@ -2,8 +2,7 @@
  * abstract class for defining how a system should be structured
  */
 
-#ifndef SYSTEM_H
-#define SYSTEM_H
+#pragma once
 
 #include "Arduino.h"
 #include "src/aero-cpp-lib/include/Pins.hpp"
@@ -13,6 +12,7 @@
 #include "Rfm95w.hpp"
 #include "MockData.hpp"
 #include "PitotTube.hpp"
+#include "Enviro.hpp"
 #include "src/Rfm95w/RH_RF95.h"
 
 /**
@@ -293,8 +293,8 @@ public:
    */
   void init() override {
     Serial.begin(9600);
-    // Delay so Serial has time to begin. Without it, any init/setup prints do not work
-    delay(1000);
+    // Wait for Serial to begin. Without it, any init/setup prints do not work
+    while(!Serial){}
 
     // Check if pitot initialized properly
     bool init_result = pitot.init();
@@ -333,6 +333,65 @@ private:
   PhidgetPitotTube pitot {aero::teensy35::A9_PWM};
 };
 
+
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/************* SYSTEM FOR TESTING ENVIRONMENT SENSOR CONNECTION ************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
+class EnviroSensorDemo : public System {
+public:
+  // Description string
+  static constexpr const char* DESCRIPTION = "Environment Sensor Demo";
+
+  /**
+   * @brief System initialization that verifies sensor is connected properly
+   * 
+   */
+  void init() override {
+    Serial.begin(9600);
+    // Wait for Serial to begin. Without it, any init/setup prints do not work
+    while(!Serial){}
+
+    // Check if environment sensor initialized properly
+    bool init_result = enviro.init();
+
+    if(!init_result) {
+      Serial.println("Environment sensor seems to not be connected. Check wiring.");
+      while(true);
+    } 
+    else {
+      Serial.println("Environment sensor init complete.");
+    }
+  }
+
+  /**
+   * @brief Update system and update sensor value. Print out data
+   * 
+   */
+  void update() override {
+    // Check if environment sensor updated properly
+    bool update_result = enviro.update();
+
+    if(!update_result) {
+      Serial.println("Environment sensor update failed");
+    } else {
+      Serial.print("Altitude: ");
+      Serial.print(enviro.data().altitude / enviro.ALTITUDE_OFFSET);
+      Serial.print(" [M] Temperature: ");
+      Serial.print(enviro.data().temperature / enviro.TEMPERATURE_OFFSET);
+      Serial.println(" [C]");
+    }
+
+    delay(500);
+  }
+
+private:
+
+  // Enviro object
+  Mpl3115a2EnviroSensor enviro;
+};
+
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /********************* SYSTEM SELECT MECHANISM/FACTORY *********************/
@@ -348,6 +407,7 @@ class SystemSelect {
       TesttxSerial_t  = 0b00000001, // System for sending messages based on protocol over serial
       ZTRDemo1Gnd_t   = 0b00000010, // System for first ZTR target demo
       PitotDemo_t     = 0b00000100, // System for testing the analog phidget pitot tube
+      EnviroDemo_t    = 0b00001000, // System for testing the environment sensor
       CompSystem_t    = 0b00001111  // System for competition
     };
       
@@ -379,6 +439,10 @@ class SystemSelect {
           return new PitotTubeDemo();
         } break;
 
+        case EnviroDemo_t: {
+          return new EnviroSensorDemo();
+        } break;
+
         default: {
           return new CompSystem();
         } break;
@@ -408,6 +472,10 @@ class SystemSelect {
         case PitotDemo_t: {
           return PitotTubeDemo::DESCRIPTION;
         } break;
+
+        case EnviroDemo_t: {
+          return EnviroSensorDemo::DESCRIPTION;
+        } break;
         
         case CompSystem_t:
         default:
@@ -416,5 +484,3 @@ class SystemSelect {
     }
   }
 };
-
-#endif

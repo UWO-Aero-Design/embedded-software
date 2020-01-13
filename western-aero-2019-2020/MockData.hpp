@@ -54,8 +54,7 @@ public:
   static aero::def::Enviro_t test_enviro(void) {
       aero::def::Enviro_t enviro;
       // uint16_t for all
-      enviro.pressure = TEST_UINT16;
-      enviro.humidity = TEST_UINT16;
+      enviro.altitude = TEST_UINT16;
       enviro.temperature = TEST_UINT16;
   
       return enviro;

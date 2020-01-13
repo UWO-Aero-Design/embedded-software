@@ -84,8 +84,7 @@ void CompSystem::temp_fill_data() {
   gps_data.altitude = 18;
   gps_data.time = 19;
   gps_data.date = 20;
-  enviro_data.pressure = 21;
-  enviro_data.humidity = 22;
+  enviro_data.altitude = 22;
   enviro_data.temperature = 23;
   battery_data.voltage = 24;
   battery_data.current = 25;
