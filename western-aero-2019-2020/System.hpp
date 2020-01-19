@@ -8,7 +8,7 @@
 #include "src/aero-cpp-lib/include/Pins.hpp"
 #include "src/aero-cpp-lib/include/Data.hpp"
 #include "src/aero-cpp-lib/include/Message.hpp"
-#include "ImuMpu9250.hpp"
+#include "Imu.hpp"
 #include "Rfm95w.hpp"
 #include "MockData.hpp"
 #include "PitotTube.hpp"
@@ -79,7 +79,6 @@ class TestSystem : public System {
 
   private:
     String type = String("This is a test system");
-    TestImuMpu9250 *imu;
   
 };
 
@@ -393,95 +392,153 @@ private:
   Mpl3115a2EnviroSensor enviro;
 };
 
-class AdafruitGPSDemo : public System {
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************** SYSTEM FOR TESTING IMU SENSOR CONNECTION ****************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
+class IMUSensorDemo : public System {
 public:
   // Description string
-  static constexpr const char* DESCRIPTION = "Adafruit GPS Demo";
-  AdafruitGPSDemo(){}
+  static constexpr const char* DESCRIPTION = "IMU Sensor Demo";
+
   /**
-   * @brief System init 
+   * @brief System initialization that verifies sensor is connected properly
    * 
    */
   void init() override {
-    Serial.begin(115200);
-    // Delay so Serial has time to begin. Without it, any init/setup prints do not work
-    delay(1000);
+    Serial.begin(9600);
+    // Wait for Serial to begin. Without it, any init/setup prints do not work
+    while(!Serial){}
 
-    // Check if pitot initialized properly
-    bool init_result = gps.init();
+    // Check if environment sensor initialized properly
+    bool init_result = m_imu.init();
 
     if(!init_result) {
-      Serial.println("GPS failed hardware initialization. Check wiring.");
+      Serial.println("IMU sensor seems to not be connected. Check wiring.");
       while(true);
     } 
+    else {
+      Serial.println("IMU sensor init complete.");
+    }
   }
 
   /**
-   * @brief System update
+   * @brief Update system and update sensor value. Print out data
    * 
    */
   void update() override {
-    // Use gps delay to let buffer fill up
-    gps.delay(1000);
-    bool update_result = gps.update();
+    // Check if environment sensor updated properly
+    bool update_result = m_imu.update();
 
     if(!update_result) {
-      Serial.println("GPS update failed");
+      Serial.println("IMU sensor update failed");
     } else {
-      
-        AdafruitGPS::TimeStamp timestamp = gps.timestamp();
-        AdafruitGPS::Coord coord = gps.coord();
-        int sats = gps.satellites();
-        double speed = gps.speed();
-        double alt = gps.altitude();
-        double course = gps.angle();
+      Serial.print(m_imu.data().yaw);
+      Serial.print(" ");
+      Serial.print(m_imu.data().pitch);
+      Serial.print(" ");
+      Serial.println(m_imu.data().roll);
+    }
 
-        Serial.println("******************************");
-        // Print connection
-        Serial.println("Connection Status:");
-        Serial.print("    Satellites: "); Serial.println(sats);
-
-        // Print time stamp
-        Serial.println("Date:");
-        Serial.print("    (MM/DD/YY): "); Serial.print(timestamp.month);
-        Serial.print("/"); Serial.print(timestamp.day);
-        Serial.print("/"); Serial.print(timestamp.year);
-
-        Serial.print("    Time:");
-        Serial.print("    "); Serial.print(timestamp.hr);
-        Serial.print(":"); Serial.print(timestamp.min);
-        Serial.print(":"); Serial.println(timestamp.sec);
-
-        // Print coordinate
-        Serial.println("Coordinate:");
-        Serial.print("    Lat: "); Serial.print(coord.lat, 7);
-        Serial.print("    Lon: "); Serial.println(coord.lon, 7);
-
-        // Print other data
-        Serial.println("Misc Data:");
-        Serial.print("    Speed (m/s): "); Serial.print(speed);
-        Serial.print("    Altitude (m): "); Serial.print(alt);
-        Serial.print("    Course (deg): "); Serial.println(course);
-
-        // Print message data
-        aero::def::GPS_t data = gps.data();
-
-        Serial.println("Formatted Data:");
-        Serial.print("    Connection: "); Serial.println(data.satellites);
-        Serial.print("    Date: "); Serial.println(data.date);
-        Serial.print("    Time: "); Serial.println(data.time);
-        Serial.print("    Lat: "); Serial.print(data.lat);
-        Serial.print("    Lon: "); Serial.println(data.lon);
-        Serial.print("    Speed: "); Serial.println(data.speed);
-        Serial.print("    Altitude: "); Serial.println(data.altitude);
-        Serial.println("***********************************");
-      }
+    delay(500);
   }
 
-protected:
 private:
-  AdafruitGPS gps{&Serial4};
+
+  // Enviro object
+  ImuMpu9250 m_imu;
 };
+
+//class AdafruitGPSDemo : public System {
+//public:
+//  // Description string
+//  static constexpr const char* DESCRIPTION = "Adafruit GPS Demo";
+//  AdafruitGPSDemo(){}
+//  /**
+//   * @brief System init 
+//   * 
+//   */
+//  void init() override {
+//    Serial.begin(115200);
+//    // Delay so Serial has time to begin. Without it, any init/setup prints do not work
+//    delay(1000);
+//
+//    // Check if pitot initialized properly
+//    bool init_result = gps.init();
+//
+//    if(!init_result) {
+//      Serial.println("GPS failed hardware initialization. Check wiring.");
+//      while(true);
+//    } 
+//  }
+//
+//  /**
+//   * @brief System update
+//   * 
+//   */
+//  void update() override {
+//    // Use gps delay to let buffer fill up
+//    gps.delay(1000);
+//    bool update_result = gps.update();
+//
+//    if(!update_result) {
+//      Serial.println("GPS update failed");
+//    } else {
+//      
+//        AdafruitGPS::TimeStamp timestamp = gps.timestamp();
+//        AdafruitGPS::Coord coord = gps.coord();
+//        int sats = gps.satellites();
+//        double speed = gps.speed();
+//        double alt = gps.altitude();
+//        double course = gps.angle();
+//
+//        Serial.println("******************************");
+//        // Print connection
+//        Serial.println("Connection Status:");
+//        Serial.print("    Satellites: "); Serial.println(sats);
+//
+//        // Print time stamp
+//        Serial.println("Date:");
+//        Serial.print("    (MM/DD/YY): "); Serial.print(timestamp.month);
+//        Serial.print("/"); Serial.print(timestamp.day);
+//        Serial.print("/"); Serial.print(timestamp.year);
+//
+//        Serial.print("    Time:");
+//        Serial.print("    "); Serial.print(timestamp.hr);
+//        Serial.print(":"); Serial.print(timestamp.min);
+//        Serial.print(":"); Serial.println(timestamp.sec);
+//
+//        // Print coordinate
+//        Serial.println("Coordinate:");
+//        Serial.print("    Lat: "); Serial.print(coord.lat, 7);
+//        Serial.print("    Lon: "); Serial.println(coord.lon, 7);
+//
+//        // Print other data
+//        Serial.println("Misc Data:");
+//        Serial.print("    Speed (m/s): "); Serial.print(speed);
+//        Serial.print("    Altitude (m): "); Serial.print(alt);
+//        Serial.print("    Course (deg): "); Serial.println(course);
+//
+//        // Print message data
+//        aero::def::GPS_t data = gps.data();
+//
+//        Serial.println("Formatted Data:");
+//        Serial.print("    Connection: "); Serial.println(data.satellites);
+//        Serial.print("    Date: "); Serial.println(data.date);
+//        Serial.print("    Time: "); Serial.println(data.time);
+//        Serial.print("    Lat: "); Serial.print(data.lat);
+//        Serial.print("    Lon: "); Serial.println(data.lon);
+//        Serial.print("    Speed: "); Serial.println(data.speed);
+//        Serial.print("    Altitude: "); Serial.println(data.altitude);
+//        Serial.println("***********************************");
+//      }
+//  }
+//
+//protected:
+//private:
+//  AdafruitGPS gps{&Serial4};
+//};
 
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -499,6 +556,7 @@ class SystemSelect {
       ZTRDemo1Gnd_t     = 0b00000010, // System for first ZTR target demo
       PitotDemo_t       = 0b00000100, // System for testing the analog phidget pitot tube
       EnviroDemo_t      = 0b00001000, // System for testing the environment sensor
+      IMUDemo_t      = 0b00001100, // System for testing the imu sensor
       AdafruitGPSDemo_t = 0b00001001, // System for testing the adafruit gps module
       CompSystem_t      = 0b00001111  // System for competition
     };
@@ -534,10 +592,14 @@ class SystemSelect {
         case EnviroDemo_t: {
           return new EnviroSensorDemo();
         } break;
-        
-        case AdafruitGPSDemo_t: {
-          return new AdafruitGPSDemo();
+
+        case IMUDemo_t: {
+          return new IMUSensorDemo();
         } break;
+        
+//        case AdafruitGPSDemo_t: {
+//          return new AdafruitGPSDemo();
+//        } break;
 
         default: {
           return new CompSystem();
@@ -572,10 +634,14 @@ class SystemSelect {
         case EnviroDemo_t: {
           return EnviroSensorDemo::DESCRIPTION;
         } break;
-        
-        case AdafruitGPSDemo_t: {
-          return AdafruitGPSDemo::DESCRIPTION;
+
+        case IMUDemo_t: {
+          return IMUSensorDemo::DESCRIPTION;
         } break;
+        
+//        case AdafruitGPSDemo_t: {
+//          return AdafruitGPSDemo::DESCRIPTION;
+//        } break;
         
         case CompSystem_t:
         default:

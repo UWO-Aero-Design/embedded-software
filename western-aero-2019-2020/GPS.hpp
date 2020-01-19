@@ -3,7 +3,7 @@
 
 // Sensor interface
 #include "src/aero-cpp-lib/include/Sensors.hpp"
-#include "src/aero-cpp-lib/include/Utility.hpp"
+//#include "src/aero-cpp-lib/include/Utility.hpp"
 
 #include "Arduino.h"
 #include "src/TinyGPS/TinyGPS.h"
