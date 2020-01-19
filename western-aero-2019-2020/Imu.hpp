@@ -42,7 +42,7 @@ public:
        
         if (c == 0x71) // WHO_AM_I should always be 0x71
         {
-          Serial.println(F("MPU9250 is online..."));
+          // Serial.println(F("MPU9250 is online..."));
       
       
           // Calibrate gyro and accelerometers, load biases in bias registers
@@ -80,7 +80,7 @@ public:
         
             // The next call delays for 4 seconds, and then records about 15 seconds of
             // data to calculate bias and scale.
-            m_imu.magCalMPU9250(m_imu.magBias, m_imu.magScale);
+            // m_imu.magCalMPU9250(m_imu.magBias, m_imu.magScale);
           } 
         } // if (c == 0x71)
         else
@@ -195,14 +195,14 @@ public:
             m_data.yaw = m_imu.ax;
             m_data.pitch = m_imu.ax;
             m_data.roll = m_imu.ax;
-      
+            Serial.println(m_data.ax);
       
             //Serial.print("Yaw, Pitch, Roll: ");
-            Serial.print(m_imu.yaw, 2);
-            Serial.print(" ");
-            Serial.print(m_imu.pitch, 2);
-            Serial.print(" ");
-            Serial.println(m_imu.roll, 2);
+//            Serial.print(m_imu.yaw, 2);
+//            Serial.print(" ");
+//            Serial.print(m_imu.pitch, 2);
+//            Serial.print(" ");
+//            Serial.println(m_imu.roll, 2);
 
       
       
@@ -219,6 +219,8 @@ private:
     
     // Track whether sensor has been initialized
     bool m_initialized = false;
+    bool m_mpu_initialized = false;
+    bool m_mag_initialized = false;
 
     const int m_int_pin = 28;
 

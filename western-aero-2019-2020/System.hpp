@@ -16,6 +16,7 @@
 #include "GPS.hpp"
 #include "src/Rfm95w/RH_RF95.h"
 
+
 /**
  * @brief Astract class for defining how a system should be structured
  */
@@ -27,39 +28,7 @@ class System {
     virtual void update() = 0;  
 };
 
-/*!
-  @brief Implementation of a competition system
-*/
-class CompSystem : public System {
-  public:
-    CompSystem();
-    ~CompSystem();
-    void init() override;
-    void update() override;
-
-  private:
-    const String type = String("This is a competition system");
-    int CompSystem::remove_msg_padding(RawMessage_t msg, char *new_buf);
-    void build_message();
-    void temp_fill_data();
-    ImuMpu9250 *imu; /*!< An imu sensor */
-    Rfm95w *radio; /*!< A radio */
-    Message msg_handler; /*!< A message handler for creating messages */
-
-    // data containers - to be removed upon sensor implementation
-    Pitot_t pitot_data;
-    Enviro_t enviro_data;
-    IMU_t imu_data;
-    GPS_t gps_data;
-    Battery_t battery_data;
-    SystemConfig_t system_config_data;
-    Status_t status_data;
-    Servos_t servos_data;
-    AirData_t air_data;
-    Commands_t commands_data;
-    DropAlgo_t drop_algo_data;
-
-};
+#include "CompSystem.hpp"
 
 /*!
   @brief Implementation of the test system

@@ -16,7 +16,7 @@ using namespace aero::def;
 
 #define led 33 // temp
 
-class Rfm95w{
+class Rfm95w {
   public:
     Rfm95w() {
       rf95 = new RH_RF95(SPI0.CS, INTERRUPT_PIN);
@@ -28,7 +28,7 @@ class Rfm95w{
     /**
      * @brief Initialize the radio
      */
-    void init() {
+    bool init() {
       pinMode(RESET_PIN, OUTPUT);
       pinMode(led, OUTPUT); // temp
     
@@ -38,12 +38,8 @@ class Rfm95w{
       digitalWrite(RESET_PIN, HIGH);
       delay(10);
     
-      if(!rf95->init()) {
-        Serial.println("LoRa radio init failed");
-      }
-      else {
-        Serial.println("LoRa radio init OK!");
-      }
+      m_initialized = rf95->init();
+      return m_initialized;
     };
 
     /**
@@ -51,11 +47,15 @@ class Rfm95w{
      * 
      * @param buf A (max 256 byte) buffer containing the message to be sent
      */
-    void send(RawMessage_t msg) {
+    bool send(RawMessage_t msg) {
+      if(!m_initialized) {
+        return false;
+      }
       digitalWrite(led, HIGH);   
       rf95->send((char *)&msg, sizeof(msg));
       rf95->waitPacketSent();
       digitalWrite(led, LOW);
+      return true;
     };
     
     String type = String("This is a radio");
@@ -63,4 +63,6 @@ class Rfm95w{
   private: 
     RH_RF95 *rf95;
     const unsigned int RESET_PIN = P32, INTERRUPT_PIN = P32;
+    // Track whether radio has been initialized
+    bool m_initialized = false;
 };
