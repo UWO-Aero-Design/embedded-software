@@ -4,6 +4,7 @@
 #include "src/aero-cpp-lib/include/Data.hpp"
 #include "src/ServoDriver/Adafruit_PWMServoDriver.h"
 #include "ServoDef.hpp"
+#include "Wire.h"
 
 using namespace aero::def;
 using namespace aero::servos;
@@ -20,10 +21,20 @@ class ServoController{
     /**
      * @brief Initialize the servo controller
      */
-    void init() {
+    bool init() {
+      Wire.begin();
+      Wire.beginTransmission(ADDRESS);
+      int result = Wire.endTransmission();
+      if(result != 0) {
+        m_initilized = false;
+      }
+      else {
+        m_initilized = true;
+      }
       m_pwm.begin();
       m_pwm.setOscillatorFrequency(27000000);
       m_pwm.setPWMFreq(1600);
+      return m_initilized;
     };
 
     /**
@@ -61,7 +72,9 @@ class ServoController{
     }
 
   private: 
-    Adafruit_PWMServoDriver m_pwm;
+    bool m_initilized = false;
+    constexpr static int ADDRESS = 0x47;
+    Adafruit_PWMServoDriver m_pwm = Adafruit_PWMServoDriver(ADDRESS);
     Servo_t m_servos[16] = { servo0, servo1, servo2, servo3, servo4, servo5, servo6, servo7, servo8, servo9, servo10, servo11, servo12, servo13, servo14, servo15 };
     
 };

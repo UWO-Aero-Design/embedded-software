@@ -195,7 +195,6 @@ public:
             m_data.yaw = m_imu.ax;
             m_data.pitch = m_imu.ax;
             m_data.roll = m_imu.ax;
-            Serial.println(m_data.ax);
       
             //Serial.print("Yaw, Pitch, Roll: ");
 //            Serial.print(m_imu.yaw, 2);

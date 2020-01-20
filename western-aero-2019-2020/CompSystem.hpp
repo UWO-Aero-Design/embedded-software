@@ -48,7 +48,13 @@ public:
           Serial.println("Radio online.");
         }
         else {
-          Serial.println("Error connecting to radio");
+          Serial.println("Error connecting to radio.");
+        }
+        if(servos.init()) {
+          Serial.println("Servo controller online.");
+        }
+        else {
+          Serial.println("Error connecting to servo controller.");
         }
     }
 
