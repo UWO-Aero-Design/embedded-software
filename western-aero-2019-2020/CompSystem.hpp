@@ -1,9 +1,6 @@
 #pragma once
 
 #include "System.hpp"
-#include "Wire.h"
-#include "src/aero-cpp-lib/include/Data.hpp"
-#include "src/aero-cpp-lib/include/Message.hpp"
 
 
 /*!
@@ -25,7 +22,6 @@ public:
     // Init method starts serial and builds test data
     void init() override {
         // Serial object initialization
-        Serial.begin(9600);
         if(imu.init()) {
           Serial.println("IMU online.");
         }

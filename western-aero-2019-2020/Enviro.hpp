@@ -31,7 +31,9 @@ public:
         m_data.temperature = 0;
         
         // Init the sensor and return it's status
-        Wire.begin();
+        if (TWCR & _BV(TWEN) == 0) {
+          Wire.begin();
+        }
         enviro.begin();
         enviro.setModeAltimeter();
         enviro.setOversampleRate(7);

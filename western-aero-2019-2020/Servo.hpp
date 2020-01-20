@@ -22,7 +22,11 @@ class ServoController{
      * @brief Initialize the servo controller
      */
     bool init() {
-      Wire.begin();
+      if (TWCR & _BV(TWEN) == 0) {
+        Wire.begin();
+      }
+
+      // quickly begin and end a transmission to determine if chip is connected
       Wire.beginTransmission(ADDRESS);
       int result = Wire.endTransmission();
       if(result != 0) {
@@ -31,6 +35,8 @@ class ServoController{
       else {
         m_initilized = true;
       }
+
+      // init pwm library
       m_pwm.begin();
       m_pwm.setOscillatorFrequency(27000000);
       m_pwm.setPWMFreq(1600);

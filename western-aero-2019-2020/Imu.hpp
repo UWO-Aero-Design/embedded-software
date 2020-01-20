@@ -29,10 +29,9 @@ public:
      */
     bool init() override {
 
-        Wire.begin();
-        Serial.begin(9600);
-      
-        while(!Serial){};
+        if (TWCR & _BV(TWEN) == 0) {
+          Wire.begin();
+        }
       
         pinMode(m_int_pin, INPUT);
         digitalWrite(m_int_pin, LOW);
