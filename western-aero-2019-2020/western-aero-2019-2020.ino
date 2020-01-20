@@ -12,20 +12,20 @@ uint8_t selection = 0;
 System *sys = NULL;
 
 void setup() {
-  if(!Serial) {
-    Serial.begin(DEFAULT_BAUD);
-  }
+  Serial.begin(DEFAULT_BAUD);
+
+  // read dip switches
   for(int i = 3; i >= 0; i--) {
     pinMode(DIP_SWITCHES[i], INPUT);
     selection = selection | (digitalRead(DIP_SWITCHES[i]) << i);
   }
-  Serial.println(selection, BIN);
+  
   Serial.print("Booting in ");
-  Serial.print(SystemSelect::get_description(selection));
+  Serial.print(SystemSelect::get_description(SYSTEM_SELECTION));
   Serial.println(" mode");
   
   // create the system specified by user input
-  sys = SystemSelect::select(selection);
+  sys = SystemSelect::select(SYSTEM_SELECTION);
   sys->init();
 }
 
