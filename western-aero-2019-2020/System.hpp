@@ -15,6 +15,7 @@
 #include "Enviro.hpp"
 #include "GPS.hpp"
 #include "src/Rfm95w/RH_RF95.h"
+#include "Servo.hpp"
 
 
 /**

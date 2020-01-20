@@ -94,6 +94,9 @@ private:
     // Message handler
     aero::Message msg_handler;
 
+    // Servo controller
+    ServoController servos;
+
     // Sensors
     ImuMpu9250 imu;
     PhidgetPitotTube pitot { aero::teensy35::A9_PWM };
