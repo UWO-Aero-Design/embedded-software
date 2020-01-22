@@ -30,10 +30,6 @@ public:
         m_data.altitude = 0;
         m_data.temperature = 0;
         
-        // Init the sensor and return it's status
-        if (TWCR & _BV(TWEN) == 0) {
-          Wire.begin();
-        }
         enviro.begin();
         enviro.setModeAltimeter();
         enviro.setOversampleRate(7);
@@ -56,8 +52,11 @@ public:
         
         float altitude = enviro.readAltitude();
         float temperature = enviro.readTemp();
+        
         // check if error
-        if(altitude == -999 || temperature == -999) return false;
+        if(altitude == -999 || temperature == -999) {
+          return false;
+        }
         
         // retreive data from sensor
         m_data.altitude = (uint16_t)(altitude * ALTITUDE_OFFSET);

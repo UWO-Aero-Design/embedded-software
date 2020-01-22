@@ -22,9 +22,6 @@ class ServoController{
      * @brief Initialize the servo controller
      */
     bool init() {
-      if (TWCR & _BV(TWEN) == 0) {
-        Wire.begin();
-      }
 
       // quickly begin and end a transmission to determine if chip is connected
       Wire.beginTransmission(ADDRESS);

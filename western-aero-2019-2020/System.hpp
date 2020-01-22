@@ -25,8 +25,8 @@ class System {
   public:
     System(){};
     virtual ~System(){};
-    virtual void init() = 0;
-    virtual void update() = 0;  
+    virtual bool init() = 0;
+    virtual bool update() = 0;  
 };
 
 #include "CompSystem.hpp"

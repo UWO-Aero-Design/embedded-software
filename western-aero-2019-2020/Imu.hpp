@@ -27,12 +27,7 @@ public:
      * @return true If init succeeded
      * @return false If init failed
      */
-    bool init() override {
-
-        if (TWCR & _BV(TWEN) == 0) {
-          Wire.begin();
-        }
-      
+    bool init() override {    
         pinMode(m_int_pin, INPUT);
         digitalWrite(m_int_pin, LOW);
       
@@ -182,18 +177,18 @@ public:
       
             
       
-            m_data.ax = m_imu.ax;
-            m_data.ay = m_imu.ay;
-            m_data.az = m_imu.az;
-            m_data.gx = m_imu.ax;
-            m_data.gx = m_imu.ax;
-            m_data.gx = m_imu.ax;
-            m_data.mx = m_imu.ax;
-            m_data.mx = m_imu.ax;
-            m_data.mx = m_imu.ax;
-            m_data.yaw = m_imu.ax;
-            m_data.pitch = m_imu.ax;
-            m_data.roll = m_imu.ax;
+            m_data.ax = m_imu.ax*100;
+            m_data.ay = m_imu.ay*100;
+            m_data.az = m_imu.az*100;
+            m_data.gx = m_imu.gx*100;
+            m_data.gx = m_imu.gy*100;
+            m_data.gx = m_imu.gz*100;
+            m_data.mx = m_imu.mx*100;
+            m_data.mx = m_imu.my*100;
+            m_data.mx = m_imu.mz*100;
+            m_data.yaw = m_imu.yaw*100;
+            m_data.pitch = m_imu.pitch*100;
+            m_data.roll = m_imu.roll*100;
       
             //Serial.print("Yaw, Pitch, Roll: ");
 //            Serial.print(m_imu.yaw, 2);

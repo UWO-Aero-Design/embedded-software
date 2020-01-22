@@ -1,24 +1,33 @@
 #include "System.hpp"
 
-/*!
-  @brief Implementation of the test system
-*/
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*************************** SYSTEM FOR FULL TEST **************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
 class TestSystem : public System {
-  public:
-    TestSystem();
-    ~TestSystem();
-    /**  
-     *  @brief Initialize the test system
-     */
-    void init() override;
-    /**  
-     *  @brief Update the test system
-     */
-    void update() override;
+public:
+  // Description string
+  static constexpr const char* DESCRIPTION = "Full System Test";
 
-  private:
-    String type = String("This is a test system");
-  
+  /**
+   * @brief System initialization
+   * 
+   */
+  bool init() override {
+    return true;
+  }
+
+  /**
+   * @brief Update system
+   * 
+   */
+  bool update() override {
+    return true;
+  }
+
+private:
+
 };
 
 /***************************************************************************/
@@ -37,7 +46,7 @@ public:
     }
 
     // Init method starts serial and builds test data
-    void init() override {
+    bool init() override {
 
         // Generating test data
         imu     = MockData::test_imu();
@@ -51,9 +60,10 @@ public:
         airdata   = MockData::test_airdata();
         commands  = MockData::test_commands();
         dropalgo  = MockData::test_dropalgo();
+        return true;
     }
 
-    void update() override {
+    bool update() override {
         // Add to message buffer if configured to do so
         if(SEND_IMU) 
             msg_handler.add_imu(imu);
@@ -96,6 +106,7 @@ public:
 
         // Message every second
         delay(1000);
+        return true;
     }
     
 protected:
@@ -141,7 +152,7 @@ public:
 
   }
 
-  void init() override {
+  bool init() override {
 
     // Setup radio pins
     pinMode(DEBUG_LED, OUTPUT);
@@ -158,14 +169,15 @@ public:
 
     if(!radio.init()) {
       Serial.println("LoRa radio init failed");
-      while(1);
+      return false;
     }
     else {
       Serial.println("LoRa radio init OK!");
+      return true;
     }
   }
 
-  void update() override {
+  bool update() override {
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN] = {0};
     uint8_t len = sizeof(buf);
 
@@ -190,13 +202,16 @@ public:
         Serial.print("\n");
 
         digitalWrite(DEBUG_LED, LOW);
+        return true;
       }
       else {
-        // Serial.println("recv failed");
+        Serial.println("recv failed");
+        return false;
       }
     }
     else {
-      // Serial.println("No reply, is the plane running?");
+      Serial.println("No reply, is the plane running?");
+      return false;
     }
   }
 
@@ -226,7 +241,7 @@ public:
    * @brief System initialization that verifies sensor is connected properly
    * 
    */
-  void init() override {
+  bool init() override {
 
     // Check if pitot initialized properly
     bool init_result = pitot.init();
@@ -234,24 +249,30 @@ public:
     if(!init_result) {
       Serial.println("Pitot tube seems to be not connected. Check wiring.");
       while(true);
+      return false;
     } 
+    else {
+      return true;
+    }
   }
 
   /**
    * @brief Update system and update sensor value. Print out data
    * 
    */
-  void update() override {
+  bool update() override {
     // Check if pitot updated properly
     bool update_result = pitot.update();
 
     if(!update_result) {
       Serial.println("Pitot tube update failed");
+      return false;
     } else {
       Serial.print("Differential pressure: ");
       Serial.print(pitot.pressure());
       Serial.print(" kPa and for message protocol: ");
       Serial.println(pitot.data().differential_pressure);
+      return true;
     }
 
     delay(500);
@@ -280,7 +301,8 @@ public:
    * @brief System initialization that verifies sensor is connected properly
    * 
    */
-  void init() override {
+  bool init() override {
+    Wire.begin();
 
     // Check if environment sensor initialized properly
     bool init_result = enviro.init();
@@ -288,9 +310,11 @@ public:
     if(!init_result) {
       Serial.println("Environment sensor seems to not be connected. Check wiring.");
       while(true);
+      return false;
     } 
     else {
       Serial.println("Environment sensor init complete.");
+      return true;
     }
   }
 
@@ -298,18 +322,20 @@ public:
    * @brief Update system and update sensor value. Print out data
    * 
    */
-  void update() override {
+  bool update() override {
     // Check if environment sensor updated properly
     bool update_result = enviro.update();
 
     if(!update_result) {
       Serial.println("Environment sensor update failed");
+      return false;
     } else {
       Serial.print("Altitude: ");
       Serial.print(enviro.data().altitude / enviro.ALTITUDE_OFFSET);
       Serial.print(" [M] Temperature: ");
       Serial.print(enviro.data().temperature / enviro.TEMPERATURE_OFFSET);
       Serial.println(" [C]");
+      return true;
     }
 
     delay(500);
@@ -335,7 +361,8 @@ public:
    * @brief System initialization that verifies sensor is connected properly
    * 
    */
-  void init() override {
+  bool init() override {
+    Wire.begin();
 
     // Check if environment sensor initialized properly
     bool init_result = m_imu.init();
@@ -343,9 +370,11 @@ public:
     if(!init_result) {
       Serial.println("IMU sensor seems to not be connected. Check wiring.");
       while(true);
+      return false;
     } 
     else {
       Serial.println("IMU sensor init complete.");
+      return true;
     }
   }
 
@@ -353,18 +382,20 @@ public:
    * @brief Update system and update sensor value. Print out data
    * 
    */
-  void update() override {
+  bool update() override {
     // Check if environment sensor updated properly
     bool update_result = m_imu.update();
 
     if(!update_result) {
       Serial.println("IMU sensor update failed");
+      return false;
     } else {
       Serial.print(m_imu.data().yaw);
       Serial.print(" ");
       Serial.print(m_imu.data().pitch);
       Serial.print(" ");
       Serial.println(m_imu.data().roll);
+      return true;
     }
 
     delay(500);

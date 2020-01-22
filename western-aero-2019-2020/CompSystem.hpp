@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System.hpp"
+#include <stdio.h>
 
 
 /*!
@@ -20,65 +21,77 @@ public:
     CompSystem() {}
 
     // Init method starts serial and builds test data
-    void init() override {
+    bool init() override {
+        Wire.begin();
+        bool is_success = true;
+        
         // Serial object initialization
         if(imu.init()) {
           Serial.println("IMU online.");
         }
         else {
           Serial.println("Error connecting to IMU.");
+          is_success = false;
         }
         if(enviro.init()) {
           Serial.println("Environment sensor online.");
         }
         else {
           Serial.println("Error connecting to environment sensor.");
+          is_success = false;
         }
         if(pitot.init()) {
           Serial.println("Pitot tube online.");
         }
         else {
           Serial.println("Error connecting to pitot tube.");
+          is_success = false;
         }
         if(radio.init()) {
           Serial.println("Radio online.");
         }
         else {
           Serial.println("Error connecting to radio.");
+          is_success = false;
         }
         if(servos.init()) {
           Serial.println("Servo controller online.");
         }
         else {
           Serial.println("Error connecting to servo controller.");
+          is_success = false;
         }
+        return is_success;
     }
 
-    void update() override {
-      imu.update();
-      pitot.update();
-      enviro.update();
+    bool update() override {
+      bool imu_success = imu.update();
+      bool pitot_success = pitot.update();
+      bool enviro_success = enviro.update();
 
-      Serial.print("IMU [YPR] - ");
-      Serial.print(imu.data().yaw, 2);
-      Serial.print(" ");
-      Serial.print(imu.data().pitch, 2);
-      Serial.print(" ");
-      Serial.print(imu.data().roll, 2);
-      Serial.print(" Pitot [DP] - ");
-      Serial.print(pitot.data().differential_pressure, 2);
-      Serial.print(" Enviro [A/T] - ");
-      Serial.print(enviro.data().altitude);
-      Serial.print(" ");
-      Serial.print(enviro.data().temperature);
+      // collect data from sensors
+      imu_data = imu.data();
+      pitot_data = pitot.data();
+      enviro_data = enviro.data();
 
-      Serial.println();
+      // fill print buffer with formatted text
+      sprintf(print_buffer, "IMU [YPR]: %-7.2f %-7.2f %-7.2f\tPitot: %4i\tEnviro [A/T]: %-7.2f %-7.2f",
+            imu_data.yaw/100.0, imu_data.pitch/100.0, imu_data.roll/100.0,
+            pitot_data.differential_pressure,
+            enviro_data.altitude/100.0, enviro_data.temperature/100.0);
+            
+      Serial.println(print_buffer);
+      
+
       delay(100);
+      return imu_success && pitot_success && enviro_success;
     }
     
 protected:
   
 private:
+    // holds the nicely formatted string for printing
+    char print_buffer[256];
 
     // Structs for data
     aero::def::IMU_t imu_data;
