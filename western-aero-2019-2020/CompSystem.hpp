@@ -1,17 +1,21 @@
+/** \file CompSystem.hpp
+ * @brief Fully-fledged system that will be used during competiton
+ */
+
 #pragma once
 
 #include "System.hpp"
 #include <stdio.h>
 
 
-/*!
-  @brief Implementation of a competition system
-*/
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /******************** FULL SYSTEM USED FOR COMPETITION  ********************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /***************************************************************************/
+/*!
+  @brief Implementation of a competition system
+*/
 class CompSystem : public System {
   
 public:

@@ -1,3 +1,8 @@
+/** \file Imu.hpp
+ * @brief All code relating to the IMU sensor
+ */
+
+
 #ifndef _IMU_H_
 #define _IMU_H_
 
@@ -9,6 +14,7 @@
 
 /**
  * @brief Class for a IMU sensor made by SparkFun
+ * @details It is an I2C sensor with an accelerometer, magnetometer and gyroscope
  */
 class ImuMpu9250 : public aero::sensor::IMU {
 public:

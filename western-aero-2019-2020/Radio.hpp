@@ -1,5 +1,5 @@
-/*
- * 
+/** \file Radio.hpp
+ * @brief All code relating to the radio
  */
 
  #pragma once
@@ -16,6 +16,10 @@ using namespace aero::def;
 
 #define led 33 // temp
 
+/*!
+ * @brief Class for the RFM95W Breakout Radio by Adafruit
+ * @details Communication to the radio is done via SPI
+ */
 class Rfm95w {
   public:
     Rfm95w() {

@@ -1,4 +1,8 @@
-/*
+/** \file System.hpp
+ * @brief Contains all system base class related code
+ */
+
+/**
  * abstract class for defining how a system should be structured
  */
 
@@ -9,7 +13,7 @@
 #include "src/aero-cpp-lib/include/Data.hpp"
 #include "src/aero-cpp-lib/include/Message.hpp"
 #include "Imu.hpp"
-#include "Rfm95w.hpp"
+#include "Radio.hpp"
 #include "MockData.hpp"
 #include "PitotTube.hpp"
 #include "Enviro.hpp"
@@ -39,6 +43,9 @@ class System {
 /********************* SYSTEM SELECT MECHANISM/FACTORY *********************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /***************************************************************************/
+/*!
+  @brief Class for performing a factory-styled pattern of system object creation
+*/
 class SystemSelect {
   public:
     /**  

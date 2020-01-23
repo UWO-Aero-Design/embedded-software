@@ -1,3 +1,7 @@
+/** \file GPS.hpp
+ * @brief All code relating to the GPS sensor
+ */
+
 #ifndef _GPS_H_
 #define _GPS_H_
 

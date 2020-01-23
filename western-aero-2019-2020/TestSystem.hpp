@@ -1,3 +1,7 @@
+/** \file TestSystem.hpp
+ * @brief All testing class systems
+ */
+
 #include "System.hpp"
 
 /***************************************************************************/
@@ -5,6 +9,9 @@
 /*************************** SYSTEM FOR FULL TEST **************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /***************************************************************************/
+/*!
+  @brief Strategy class for testing the entire system - verbose serial prints
+*/
 class TestSystem : public System {
 public:
   // Description string
@@ -35,6 +42,9 @@ private:
 /* SYSTEM FOR TESTING SERIAL TRANSMITTING TO GROUND STATION WITH TEST DATA */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /***************************************************************************/
+/*!
+  @brief Strategy class for testing serial dumps of comms (ground station)
+*/
 class txSerial : public System {
   
 public:
@@ -143,6 +153,15 @@ private:
     aero::Message msg_handler;
 };
 
+
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/************ SYSTEM FOR DEMOING COMMS AT ZTR DESIGN REVIEW #1 *************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
+/*!
+  @brief Strategy class for use at ZTR Design Review #1
+*/
 class ZTRDemo1GndStation : public System {
 public:
   // Description of the system for printing
@@ -232,6 +251,9 @@ private:
 /************* SYSTEM FOR TESTING ANALOG PITOT TUBE CONNECTION *************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /***************************************************************************/
+/*!
+  @brief Strategy class for testing the pitot tube
+*/
 class PitotTubeDemo : public System {
 public:
   // Description string
@@ -292,6 +314,9 @@ private:
 /************* SYSTEM FOR TESTING ENVIRONMENT SENSOR CONNECTION ************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /***************************************************************************/
+/*!
+  @brief Strategy class for testing the environemnt sensor
+*/
 class EnviroSensorDemo : public System {
 public:
   // Description string
@@ -352,6 +377,9 @@ private:
 /***************** SYSTEM FOR TESTING IMU SENSOR CONNECTION ****************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /***************************************************************************/
+/*!
+  @brief Strategy class for testing the IMU sensor
+*/
 class IMUSensorDemo : public System {
 public:
   // Description string

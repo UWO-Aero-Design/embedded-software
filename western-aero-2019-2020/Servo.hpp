@@ -1,3 +1,7 @@
+/** \file Servo.hpp
+ * @brief All code relating to the servo controller
+ */
+
 #pragma once
 
 #include "Arduino.h"
@@ -10,7 +14,8 @@ using namespace aero::def;
 using namespace aero::servos;
 
 /**
- * @brief Controls the servos for the onboard system
+ * @brief 16-channel servo controller
+ * @details Communication to the controller is handled via I2C
  */
 class ServoController{
   public:

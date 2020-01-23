@@ -1,3 +1,7 @@
+/** \file PitotTube.hpp
+ * @brief All code relating to the pitot tube sensor
+ */
+
 #ifndef _PITOT_TUBE_H_
 #define _PITOT_TUBE_H_
 

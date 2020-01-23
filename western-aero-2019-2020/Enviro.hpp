@@ -1,3 +1,8 @@
+/** \file Enviro.hpp
+ * @brief All code relating to the environment sensor
+ */
+
+
 #pragma once
 
 // Include for sensor interfaces
@@ -8,7 +13,6 @@
 
 /**
  * @brief Class for a enviornment sensor using the MPL3115A2 chip
- * 
  * @details It is an I2C sensor capable of measuring pressure, humidity and temperature
  */
 class Mpl3115a2EnviroSensor : public aero::sensor::EnviroSensor {
