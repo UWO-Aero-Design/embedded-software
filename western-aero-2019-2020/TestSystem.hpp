@@ -205,7 +205,7 @@ public:
         // Radio receive here
         digitalWrite(DEBUG_LED, HIGH);
 
-        aero::def::RawMessage_t *tmp_msg = (RawMessage_t *) &buf;
+        aero::def::RawMessage_t *tmp_msg = (aero::def::RawMessage_t *) &buf;
         
         // Send message. Make sure to skip the part of the buffer that is empty
         for(int i = 0; i < 209; ++i) {

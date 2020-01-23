@@ -2,9 +2,7 @@
  * @brief All code relating to the IMU sensor
  */
 
-
-#ifndef _IMU_H_
-#define _IMU_H_
+#pragma once
 
 // Include for sensor interfaces; imu needed
 #include "src/aero-cpp-lib/include/Sensors.hpp"
@@ -230,5 +228,3 @@ private:
 
     
 };
-
-#endif

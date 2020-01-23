@@ -2,7 +2,6 @@
  * @brief Calibration of the servos
  */
 
-
 #pragma once
     
 enum PayloadId { DOOR, PAYLOAD0, PAYLOAD2, PAYLOAD3, GLIDER0, GLIDER1, NONE };

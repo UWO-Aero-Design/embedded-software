@@ -2,7 +2,6 @@
  * @brief Allows for generation of mock data for stubbing sensors
  */
 
-
 #pragma once
 
 #include "src/aero-cpp-lib/include/Message.hpp"

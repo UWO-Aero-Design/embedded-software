@@ -10,9 +10,6 @@
 #include "ServoDef.hpp"
 #include "Wire.h"
 
-using namespace aero::def;
-using namespace aero::servos;
-
 /**
  * @brief 16-channel servo controller
  * @details Communication to the controller is handled via I2C

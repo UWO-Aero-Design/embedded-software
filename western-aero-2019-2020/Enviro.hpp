@@ -2,7 +2,6 @@
  * @brief All code relating to the environment sensor
  */
 
-
 #pragma once
 
 // Include for sensor interfaces

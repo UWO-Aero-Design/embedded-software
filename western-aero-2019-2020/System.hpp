@@ -2,10 +2,6 @@
  * @brief Contains all system base class related code
  */
 
-/**
- * abstract class for defining how a system should be structured
- */
-
 #pragma once
 
 #include "Arduino.h"
