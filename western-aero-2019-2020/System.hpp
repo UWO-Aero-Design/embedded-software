@@ -677,8 +677,8 @@ class SystemSelect {
       EnviroDemo_t      = 0b00001000, // System for testing the environment sensor
       IMUDemo_t         = 0b00001100, // System for testing the imu sensor
       AdafruitGPSDemo_t = 0b00001001, // System for testing the adafruit gps module
-      RadioClientDemo   = 0b00001010, // System for testing the radio in client mode
-      RadioServerDemo   = 0b00001011, // System for testing the radio in server mode
+      RadioClientDemo_t = 0b00001010, // System for testing the radio in client mode
+      RadioServerDemo_t = 0b00001011, // System for testing the radio in server mode
       CompSystem_t      = 0b00001111  // System for competition
     };
       
@@ -722,11 +722,11 @@ class SystemSelect {
           return new AdafruitGPSDemo();
         } break;
 
-        case RadioClientDemo: {
+        case RadioClientDemo_t: {
           return new RadioClientDemo();
         } break;
 
-        case RadioServerDemo: {
+        case RadioServerDemo_t: {
           return new RadioServerDemo();
         } break;
 
@@ -772,11 +772,11 @@ class SystemSelect {
           return AdafruitGPSDemo::DESCRIPTION;
         } break;
 
-        case RadioClientDemo: {
+        case RadioClientDemo_t: {
           return RadioClientDemo::DESCRIPTION;
         } break;
 
-        case RadioServerDemo: {
+        case RadioServerDemo_t: {
           return RadioServerDemo::DESCRIPTION;
         } break;
         
