@@ -9,12 +9,16 @@
 #include "src/aero-cpp-lib/include/Data.hpp"
 #include "src/aero-cpp-lib/include/Message.hpp"
 #include "Imu.hpp"
-#include "Rfm95w.hpp"
+//#include "Rfm95w.hpp"
+#include "RFM95W.hpp"
 #include "MockData.hpp"
 #include "PitotTube.hpp"
 #include "Enviro.hpp"
 #include "GPS.hpp"
 #include "src/Rfm95w/RH_RF95.h"
+
+using namespace aero;
+using namespace aero::def;
 
 /**
  * @brief Astract class for defining how a system should be structured
@@ -39,12 +43,12 @@ class CompSystem : public System {
 
   private:
     const String type = String("This is a competition system");
-    int CompSystem::remove_msg_padding(RawMessage_t msg, char *new_buf);
+    int CompSystem::remove_msg_padding(aero::def::RawMessage_t msg, char *new_buf);
     void build_message();
     void temp_fill_data();
     ImuMpu9250 *imu; /*!< An imu sensor */
-    Rfm95w *radio; /*!< A radio */
-    Message msg_handler; /*!< A message handler for creating messages */
+    //Rfm95w *radio; /*!< A radio */
+    aero::Message msg_handler; /*!< A message handler for creating messages */
 
     // data containers - to be removed upon sensor implementation
     Pitot_t pitot_data;
@@ -239,7 +243,7 @@ public:
         // Radio receive here
         digitalWrite(DEBUG_LED, HIGH);
 
-        aero::def::RawMessage_t *tmp_msg = (RawMessage_t *) &buf;
+        aero::def::RawMessage_t *tmp_msg = (aero::def::RawMessage_t *) &buf;
         
         // Send message. Make sure to skip the part of the buffer that is empty
         for(int i = 0; i < 209; ++i) {
@@ -459,9 +463,7 @@ class AdafruitGPSDemo : public System {
 public:
   // Description string
   static constexpr const char* DESCRIPTION = "Adafruit GPS Demo";
-  
   AdafruitGPSDemo(){}
-
   /**
    * @brief System init 
    * 
@@ -549,6 +551,116 @@ private:
 
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/****************** SYSTEM FOR TESTING RADIO TRANSMISSION ******************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
+class RadioClientDemo : public System {
+public:
+
+  // Description string
+  static constexpr const char* DESCRIPTION = "Radio Client (Transmission) Demo";
+
+  /**
+   * @brief Initialize client test object
+   */
+  void init() override {
+    Serial.begin(115200);
+    delay(2000);
+
+    bool success = radio.init();
+
+    if(!success) {
+      Serial.println("Init failed");
+    }
+
+  }
+
+  /**
+   * @brief Update client system
+   * @details Send message every second and print when a message is received
+   */
+  void update() override {
+    RawMessage_t client_message = message_handler.build(aero::def::ID::Gnd, aero::def::ID::Plane, true);
+    
+    ParsedMessage_t* server_response = radio.send(client_message);
+    
+    if(server_response != NULL) {
+
+      Serial.println("Response received");
+
+      /* Parse message here... */
+    }
+
+    delay(1000);
+  }
+  
+private:
+  // Defined for breadboard
+  int cs_pin = 9;
+  int rst_pin = 2;
+  int int_pin = 10;
+
+  RFM95WClient radio{ cs_pin, rst_pin, int_pin }; 
+  aero::Message message_handler;
+};
+
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/******************* SYSTEM FOR TESTING RADIO RECEPTION ********************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
+class RadioServerDemo : public System {
+public:
+
+  // Description string
+  static constexpr const char* DESCRIPTION = "Radio Server (Reception) Demo";
+  
+  /**
+   * @brief Initialize server test object
+   */
+  void init() override {
+    Serial.begin(115200);
+    delay(2000);
+
+    bool success = radio.init();
+
+    if(!success) {
+      Serial.println("Init failed");
+    }
+  }
+
+  /**
+   * @brief Update server system
+   * @details Wait for new message from client and respond when one is received
+   * 
+   */
+  void update() override {
+    RawMessage_t server_response = message_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
+    
+    aero::def::ParsedMessage_t* client_message = radio.receive(server_response);
+
+    if(client_message != NULL) {
+      Serial.println("Message received and responded too");
+
+      /* Parse message here... */
+    }
+
+    delay(100);
+  }
+  
+private:
+  // Defined for Capstone V2.0
+  int cs_pin = 9;
+  int rst_pin = 2;
+  int int_pin = 10;
+
+  RFM95WServer radio{ cs_pin, rst_pin, int_pin }; 
+  aero::Message message_handler;
+};
+
+
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /********************* SYSTEM SELECT MECHANISM/FACTORY *********************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /***************************************************************************/
@@ -563,8 +675,10 @@ class SystemSelect {
       ZTRDemo1Gnd_t     = 0b00000010, // System for first ZTR target demo
       PitotDemo_t       = 0b00000100, // System for testing the analog phidget pitot tube
       EnviroDemo_t      = 0b00001000, // System for testing the environment sensor
-      IMUDemo_t      = 0b00001100, // System for testing the imu sensor
+      IMUDemo_t         = 0b00001100, // System for testing the imu sensor
       AdafruitGPSDemo_t = 0b00001001, // System for testing the adafruit gps module
+      RadioClientDemo   = 0b00001010, // System for testing the radio in client mode
+      RadioServerDemo   = 0b00001011, // System for testing the radio in server mode
       CompSystem_t      = 0b00001111  // System for competition
     };
       
@@ -604,9 +718,17 @@ class SystemSelect {
           return new IMUSensorDemo();
         } break;
         
-       case AdafruitGPSDemo_t: {
-         return new AdafruitGPSDemo();
-       } break;
+        case AdafruitGPSDemo_t: {
+          return new AdafruitGPSDemo();
+        } break;
+
+        case RadioClientDemo: {
+          return new RadioClientDemo();
+        } break;
+
+        case RadioServerDemo: {
+          return new RadioServerDemo();
+        } break;
 
         default: {
           return new CompSystem();
@@ -646,9 +768,17 @@ class SystemSelect {
           return IMUSensorDemo::DESCRIPTION;
         } break;
         
-       case AdafruitGPSDemo_t: {
-         return AdafruitGPSDemo::DESCRIPTION;
-       } break;
+        case AdafruitGPSDemo_t: {
+          return AdafruitGPSDemo::DESCRIPTION;
+        } break;
+
+        case RadioClientDemo: {
+          return RadioClientDemo::DESCRIPTION;
+        } break;
+
+        case RadioServerDemo: {
+          return RadioServerDemo::DESCRIPTION;
+        } break;
         
         case CompSystem_t:
         default:

@@ -3,12 +3,12 @@
 
 CompSystem::CompSystem() {
   imu = new ImuMpu9250();
-  radio = new Rfm95w();
+  //radio = new Rfm95w();
 }
 
 CompSystem::~CompSystem() {
   delete imu;
-  delete radio;
+  //delete radio;
 }
 
  /**
@@ -17,7 +17,7 @@ CompSystem::~CompSystem() {
 void CompSystem::init() {
   Wire.begin();
   imu->init();
-  radio->init();
+  //radio->init();
 }
 
  /**
@@ -28,7 +28,7 @@ void CompSystem::update() {
   build_message();
   RawMessage_t raw_msg = msg_handler.build(ID::Plane, ID::Gnd);
   Serial.print("[");Serial.print(millis());Serial.print("] ");Serial.println("Sending\n");
-  radio->send(raw_msg);
+  //radio->send(raw_msg);
 }
 
  /**
