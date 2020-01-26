@@ -658,6 +658,96 @@ private:
   aero::Message message_handler;
 };
 
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/******************* SYSTEM FOR TESTING RADIO WITH GLIDER ******************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
+class RadioWithGliderDemo : public System {
+public:
+
+  // Description string
+  static constexpr const char* DESCRIPTION = "Radio With Glider Sending Commands Demo";
+
+  /**
+   * @brief Initialize client test object
+   */
+  void init() override {
+    Serial.begin(115200);
+    delay(2000);
+
+    bool success = radio.init();
+
+    if(!success) {
+      Serial.println("Init failed");
+    }
+
+
+    // Set pin modes; one for pitch one for mode swap
+    pinMode(PITCH_BUTTON, INPUT);
+    pinMode(MODE_BUTTON, INPUT);
+
+  }
+
+  /**
+   * @brief Update client system
+   * @details Send message every second and print when a message is received
+   */
+  void update() override {
+    int pitchState = digitalRead(PITCH_BUTTON);
+    int modeState = digitalRead(MODE_BUTTON);
+
+    if(pitchState == LOW || modeState == LOW) {
+      aero::def::Commands_t cmds;
+
+      cmds.pitch = 0;
+      
+      if(pitchState == LOW) {
+        Serial.println("Sending pitch up...");
+        cmds.pitch = aero::bit::set(cmds.pitch, 0);
+      }
+
+      if(modeState == LOW) {
+        Serial.println("Sending mode swap...");
+        cmds.pitch = aero::bit::set(cmds.pitch, 7);
+      }
+
+
+      message_handler.add_cmds(cmds);
+
+      // Read button states
+      RawMessage_t client_message = message_handler.build(aero::def::ID::Gnd, aero::def::ID::G1, true);
+      
+      ParsedMessage_t* server_response = radio.send(client_message);
+      
+      if(server_response != NULL) {
+
+        Serial.println("Response received");
+
+        /* Parse message here... */
+      }
+
+      delay(2000);
+    }
+  }
+  
+private:
+  // Defined for breadboard
+  int cs_pin = 9;
+  int rst_pin = 2;
+  int int_pin = 10;
+
+  RFM95WClient radio{ cs_pin, rst_pin, int_pin }; 
+  aero::Message message_handler;
+
+  // Buttons; pins are pulled up
+  // TODO: Add leds
+  aero::Pin PITCH_BUTTON = 33;
+  aero::Pin MODE_BUTTON = 34;
+
+};
+
+
 
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -679,6 +769,7 @@ class SystemSelect {
       AdafruitGPSDemo_t = 0b00001001, // System for testing the adafruit gps module
       RadioClientDemo_t = 0b00001010, // System for testing the radio in client mode
       RadioServerDemo_t = 0b00001011, // System for testing the radio in server mode
+      RadioWithGliderDemo_t = 0b00001101, // System for testing radio for capstone board
       CompSystem_t      = 0b00001111  // System for competition
     };
       
@@ -730,6 +821,10 @@ class SystemSelect {
           return new RadioServerDemo();
         } break;
 
+        case RadioWithGliderDemo_t: {
+          return new RadioWithGliderDemo();
+        } break;
+
         default: {
           return new CompSystem();
         } break;
@@ -778,6 +873,10 @@ class SystemSelect {
 
         case RadioServerDemo_t: {
           return RadioServerDemo::DESCRIPTION;
+        } break;
+
+        case RadioWithGliderDemo_t: {
+          return RadioWithGliderDemo::DESCRIPTION;
         } break;
         
         case CompSystem_t:
