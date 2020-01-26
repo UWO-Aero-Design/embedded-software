@@ -650,9 +650,9 @@ public:
   
 private:
   // Defined for Capstone V2.0
-  int cs_pin = 9;
-  int rst_pin = 2;
-  int int_pin = 10;
+  int cs_pin = 14;
+  int rst_pin = 15;
+  int int_pin = 16;
 
   RFM95WServer radio{ cs_pin, rst_pin, int_pin }; 
   aero::Message message_handler;
