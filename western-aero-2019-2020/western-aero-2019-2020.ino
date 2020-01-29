@@ -26,16 +26,15 @@ void setup() {
   
   Serial.print("Booting in ");
   Serial.print(SystemSelect::get_description(system_selection));
-  Serial.println(" mode");
+  Serial.println(" mode\n");
   
   // create the system specified by user input
   sys = SystemSelect::select(system_selection);
-  sys->init();
-  if(true) {
-    Serial.println("System successfully started.\n\n");
+  if(sys->init()) {
+    Serial.println("\nSystem successfully started.\n\n");
   }
   else {
-    Serial.println("System started with errors.\n\n");
+    Serial.println("\nSystem started with errors.\n\n");
   }
 }
 
