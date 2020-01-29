@@ -64,7 +64,7 @@ protected:
   unsigned int m_rst_pin;
 
   // Last message received; parsed
-  aero::def::ParsedMessage_t last_recv;
+  aero::def::ParsedMessage_t *last_recv;
 
   // Last message received as a buffer
   uint8_t inc_data[RH_RF95_MAX_MESSAGE_LEN] = {0};
@@ -120,8 +120,28 @@ public:
     if (radio.waitAvailableTimeout(m_timeout)) { 
       if (radio.recv(inc_data, &inc_data_len)) {
         // Parse response and return it
-        last_recv = message_handler.parse(inc_data);
-        return &last_recv;
+        return message_handler.parse(inc_data);
+      } else {
+        return NULL;
+      }
+    } else {
+      return NULL;
+    }
+  }
+
+  aero::def::ParsedMessage_t* send(char* buf, int len) {
+    // Send packet
+    bool valid = radio.send(buf, len);
+    radio.waitPacketSent();
+
+    if(!valid) {
+      return NULL;
+    }
+
+    if (radio.waitAvailableTimeout(m_timeout)) { 
+      if (radio.recv(inc_data, &inc_data_len)) {
+        // Parse response and return it
+        return message_handler.parse(inc_data);
       } else {
         return NULL;
       }
@@ -162,7 +182,7 @@ public:
   aero::def::ParsedMessage_t* receive(aero::def::RawMessage_t response) {
     if (radio.available()) {
       if (radio.recv(inc_data, &inc_data_len)) {
-
+        
         // Send a reply
         bool valid = radio.send((char *)&response, sizeof(response));
         radio.waitPacketSent();
@@ -171,8 +191,7 @@ public:
           return NULL;
         } else {
           // Parse response and return it
-          last_recv = message_handler.parse(inc_data);
-          return &last_recv;
+          return message_handler.parse(inc_data);
         }
       } else {
         return NULL;

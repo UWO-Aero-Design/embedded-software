@@ -8,6 +8,7 @@
 #include "src/aero-cpp-lib/include/Pins.hpp"
 #include "src/aero-cpp-lib/include/Data.hpp"
 #include "src/aero-cpp-lib/include/Message.hpp"
+#include "src/aero-cpp-lib/include/Serial.hpp"
 #include "Imu.hpp"
 //#include "Rfm95w.hpp"
 #include "RFM95W.hpp"
@@ -642,7 +643,106 @@ public:
     if(client_message != NULL) {
       Serial.println("Message received and responded too");
 
-      /* Parse message here... */
+      if(client_message->pitot() != NULL) {
+        Serial.println("Pitot Tube:"); 
+        Serial.print("\tDifferential pressure: "); Serial.println(client_message->pitot()->differential_pressure);
+      }
+
+      if(client_message->imu() != NULL) {
+        Serial.println("IMU:"); 
+        Serial.print("\tAX: ");    Serial.println(client_message->imu()->ax);
+        Serial.print("\tAY: ");    Serial.println(client_message->imu()->ay);
+        Serial.print("\tAZ: ");    Serial.println(client_message->imu()->az);
+        Serial.print("\tGX: ");    Serial.println(client_message->imu()->gx);
+        Serial.print("\tGY: ");    Serial.println(client_message->imu()->gy);
+        Serial.print("\tGZ: ");    Serial.println(client_message->imu()->gz);
+        Serial.print("\tMX: ");    Serial.println(client_message->imu()->mx);
+        Serial.print("\tMY: ");    Serial.println(client_message->imu()->my);
+        Serial.print("\tMZ: ");    Serial.println(client_message->imu()->mz);
+        Serial.print("\tYaw: ");   Serial.println(client_message->imu()->yaw);
+        Serial.print("\tPitch: "); Serial.println(client_message->imu()->pitch);
+        Serial.print("\tRoll: ");  Serial.println(client_message->imu()->roll);
+      }
+
+      if(client_message->gps() != NULL) {
+        Serial.println("GPS:"); 
+        Serial.print("\tLat: ");    Serial.println(client_message->gps()->lat);
+        Serial.print("\tLon: ");    Serial.println(client_message->gps()->lon);
+        Serial.print("\tSpeed: ");    Serial.println(client_message->gps()->speed);
+        Serial.print("\tSats: ");    Serial.println(client_message->gps()->satellites);
+        Serial.print("\tAlt: ");    Serial.println(client_message->gps()->altitude);
+        Serial.print("\tTime: ");    Serial.println(client_message->gps()->time);
+        Serial.print("\tDate: ");    Serial.println(client_message->gps()->date);
+      }
+
+      if(client_message->enviro() != NULL) {
+        Serial.println("Enviro:"); 
+        Serial.print("\tAlt: ");    Serial.println(client_message->enviro()->altitude);
+        Serial.print("\tTemp: ");    Serial.println(client_message->enviro()->temperature);
+        Serial.print("\tPressure: ");    Serial.println(client_message->enviro()->pressure);
+      }
+
+      if(client_message->battery() != NULL) {
+        Serial.println("Battery:"); 
+        Serial.print("\tVoltage: ");    Serial.println(client_message->battery()->voltage);
+        Serial.print("\tCurrent: ");    Serial.println(client_message->battery()->current);
+      }
+
+      if(client_message->config() != NULL) {
+        /* Currently an empty struct; nothing to read */
+      }
+
+      if(client_message->status() != NULL) {
+        Serial.println("Status:"); 
+        Serial.print("\tRSSI: ");    Serial.println(client_message->status()->rssi);
+        Serial.print("\tState: ");    Serial.println(client_message->status()->state);
+      }
+
+      if(client_message->servos() != NULL) {
+        Serial.println("Servos:"); 
+        Serial.print("\t0: ");    Serial.println(client_message->servos()->servo0);
+        Serial.print("\t1: ");    Serial.println(client_message->servos()->servo1);
+        Serial.print("\t2: ");    Serial.println(client_message->servos()->servo2);
+        Serial.print("\t3: ");    Serial.println(client_message->servos()->servo3);
+        Serial.print("\t4: ");    Serial.println(client_message->servos()->servo4);
+        Serial.print("\t5: ");    Serial.println(client_message->servos()->servo5);
+        Serial.print("\t6: ");    Serial.println(client_message->servos()->servo6);
+        Serial.print("\t7: ");    Serial.println(client_message->servos()->servo7);
+        Serial.print("\t8: ");    Serial.println(client_message->servos()->servo8);
+        Serial.print("\t9: ");    Serial.println(client_message->servos()->servo9);
+        Serial.print("\t10: ");    Serial.println(client_message->servos()->servo10);
+        Serial.print("\t11: ");    Serial.println(client_message->servos()->servo11);
+        Serial.print("\t12: ");    Serial.println(client_message->servos()->servo12);
+        Serial.print("\t13: ");    Serial.println(client_message->servos()->servo13);
+        Serial.print("\t14: ");    Serial.println(client_message->servos()->servo14);
+        Serial.print("\t15: ");    Serial.println(client_message->servos()->servo15);
+      }
+
+      if(client_message->air_data() != NULL) {
+        Serial.println("Air Data:"); 
+        Serial.print("\tIAS: ");    Serial.println(client_message->air_data()->ias);
+        Serial.print("\tEAS: ");    Serial.println(client_message->air_data()->eas);
+        Serial.print("\tTAS: ");    Serial.println(client_message->air_data()->tas);
+        Serial.print("\tAGL: ");    Serial.println(client_message->air_data()->agl);
+        Serial.print("\tPressure Alt: ");    Serial.println(client_message->air_data()->pressure_alt);
+        Serial.print("\tMSL: ");    Serial.println(client_message->air_data()->msl);
+        Serial.print("\tDensity Alt: ");    Serial.println(client_message->air_data()->density_alt);
+        Serial.print("\tApprox Temp: ");    Serial.println(client_message->air_data()->approx_temp);
+        Serial.print("\tDensity: ");    Serial.println(client_message->air_data()->density);
+      }
+
+      if(client_message->cmds() != NULL) {
+        Serial.println("Commands:"); 
+        Serial.print("\tDrop: ");    Serial.println(client_message->cmds()->drop);
+        Serial.print("\tServos: ");    Serial.println(client_message->cmds()->servos);
+        Serial.print("\tPitch: ");    Serial.println(client_message->cmds()->pitch);
+      }
+
+      if(client_message->drop_algo() != NULL) {
+        Serial.println("Drop Algorithm:"); 
+        Serial.print("\tHeading: ");    Serial.println(client_message->drop_algo()->heading);
+        Serial.print("\tDistance: ");    Serial.println(client_message->drop_algo()->distance);
+      }
     }
 
     delay(100);
@@ -712,7 +812,6 @@ public:
         cmds.pitch = aero::bit::set(cmds.pitch, 7);
       }
 
-
       message_handler.add_cmds(cmds);
 
       // Read button states
@@ -747,6 +846,66 @@ private:
 
 };
 
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/******************* SYSTEM FOR TESTING SERIAL TO RADIO ********************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
+class SerialToRadioDemo : public System {
+public:
+
+  // Description string
+  static constexpr const char* DESCRIPTION = "Serial To Radio Demo";
+
+  void init() override {
+    // Start serial port for reading from groundstation
+    Serial.begin(115200);
+    delay(1000);
+
+    bool success = radio.init();
+
+    if(!success) {
+      Serial.println("Init failed");
+    }
+  }
+
+  void update() override {
+    // Check if a new message has arrived over the serial port
+    bool valid = serial::check_for_msg(Serial);
+
+    // If a new message has arrived; relay it via radio
+    if(valid == true) {
+      // Grab valid message contents and length
+      int len = serial::msg_contents(buffer);
+
+      ParsedMessage_t* server_response = radio.send(buffer, len);
+      
+      if(server_response != NULL) {
+
+        Serial.println("Response received");
+
+        /* Parse message here... */
+      }
+    } else {
+      Serial.println("Failed");
+    }
+
+    // Check every 100ms for new serial port activity
+    delay(100);
+
+  }
+private:
+  aero::Message messageHandler;
+
+  // Defined for breadboard
+  int cs_pin = 9;
+  int rst_pin = 2;
+  int int_pin = 10;
+
+  RFM95WClient radio{ cs_pin, rst_pin, int_pin }; 
+
+  char buffer[256];
+};
 
 
 /***************************************************************************/
@@ -760,17 +919,18 @@ class SystemSelect {
      *  @brief The different valid systems the onboard code can boot into
      */
     enum Type {
-      TestSystem_t      = 0b00000000, // System for testing system select
-      TesttxSerial_t    = 0b00000001, // System for sending messages based on protocol over serial
-      ZTRDemo1Gnd_t     = 0b00000010, // System for first ZTR target demo
-      PitotDemo_t       = 0b00000100, // System for testing the analog phidget pitot tube
-      EnviroDemo_t      = 0b00001000, // System for testing the environment sensor
-      IMUDemo_t         = 0b00001100, // System for testing the imu sensor
-      AdafruitGPSDemo_t = 0b00001001, // System for testing the adafruit gps module
-      RadioClientDemo_t = 0b00001010, // System for testing the radio in client mode
-      RadioServerDemo_t = 0b00001011, // System for testing the radio in server mode
+      TestSystem_t          = 0b00000000, // System for testing system select
+      TesttxSerial_t        = 0b00000001, // System for sending messages based on protocol over serial
+      ZTRDemo1Gnd_t         = 0b00000010, // System for first ZTR target demo
+      SerialToRadioDemo_t   = 0b00000011, // System for testing serial to radio routing
+      PitotDemo_t           = 0b00000100, // System for testing the analog phidget pitot tube
+      EnviroDemo_t          = 0b00001000, // System for testing the environment sensor
+      AdafruitGPSDemo_t     = 0b00001001, // System for testing the adafruit gps module
+      RadioClientDemo_t     = 0b00001010, // System for testing the radio in client mode
+      RadioServerDemo_t     = 0b00001011, // System for testing the radio in server mode
+      IMUDemo_t             = 0b00001100, // System for testing the imu sensor
       RadioWithGliderDemo_t = 0b00001101, // System for testing radio for capstone board
-      CompSystem_t      = 0b00001111  // System for competition
+      CompSystem_t          = 0b00001111  // System for competition
     };
       
      /**
@@ -825,6 +985,10 @@ class SystemSelect {
           return new RadioWithGliderDemo();
         } break;
 
+        case SerialToRadioDemo_t: {
+          return new SerialToRadioDemo();
+        } break;
+
         default: {
           return new CompSystem();
         } break;
@@ -877,6 +1041,10 @@ class SystemSelect {
 
         case RadioWithGliderDemo_t: {
           return RadioWithGliderDemo::DESCRIPTION;
+        } break;
+
+        case SerialToRadioDemo_t: {
+          return SerialToRadioDemo::DESCRIPTION;
         } break;
         
         case CompSystem_t:
