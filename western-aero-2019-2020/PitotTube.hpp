@@ -1,5 +1,8 @@
-#ifndef _PITOT_TUBE_H_
-#define _PITOT_TUBE_H_
+/** \file PitotTube.hpp
+ * @brief All code relating to the pitot tube sensor
+ */
+
+#pragma once
 
 // Include for sensor interfaces; pitot tube needed
 #include "src/aero-cpp-lib/include/Sensors.hpp"
@@ -126,5 +129,3 @@ private:
     // Min value that is assumed not to be floating
     constexpr static int NON_FLOATING_READING = 100;
 };
-
-#endif

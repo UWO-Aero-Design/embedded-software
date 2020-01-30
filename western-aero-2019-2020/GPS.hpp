@@ -1,5 +1,8 @@
-#ifndef _GPS_H_
-#define _GPS_H_
+/** \file GPS.hpp
+ * @brief All code relating to the GPS sensor
+ */
+
+#pragma once
 
 // Sensor interface
 #include "src/aero-cpp-lib/include/Sensors.hpp"
@@ -198,5 +201,3 @@ private:
     double m_speed, m_altitude, m_angle;
     
 };
-
-#endif

@@ -1,7 +1,14 @@
+/** \file MockData.hpp
+ * @brief Allows for generation of mock data for stubbing sensors
+ */
+
 #pragma once
 
 #include "src/aero-cpp-lib/include/Message.hpp"
 
+/*!
+  @brief Struct consisting of mock data to stub sensor results
+*/
 struct MockData {
   
 public:

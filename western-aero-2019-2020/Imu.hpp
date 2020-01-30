@@ -1,5 +1,8 @@
-#ifndef _IMU_H_
-#define _IMU_H_
+/** \file Imu.hpp
+ * @brief All code relating to the IMU sensor
+ */
+
+#pragma once
 
 // Include for sensor interfaces; imu needed
 #include "src/aero-cpp-lib/include/Sensors.hpp"
@@ -9,6 +12,7 @@
 
 /**
  * @brief Class for a IMU sensor made by SparkFun
+ * @details It is an I2C sensor with an accelerometer, magnetometer and gyroscope
  */
 class ImuMpu9250 : public aero::sensor::IMU {
 public:
@@ -27,13 +31,7 @@ public:
      * @return true If init succeeded
      * @return false If init failed
      */
-    bool init() override {
-
-        Wire.begin();
-        Serial.begin(9600);
-      
-        while(!Serial){};
-      
+    bool init() override {    
         pinMode(m_int_pin, INPUT);
         digitalWrite(m_int_pin, LOW);
       
@@ -42,7 +40,7 @@ public:
        
         if (c == 0x71) // WHO_AM_I should always be 0x71
         {
-          Serial.println(F("MPU9250 is online..."));
+          // Serial.println(F("MPU9250 is online..."));
       
       
           // Calibrate gyro and accelerometers, load biases in bias registers
@@ -80,7 +78,7 @@ public:
         
             // The next call delays for 4 seconds, and then records about 15 seconds of
             // data to calculate bias and scale.
-            m_imu.magCalMPU9250(m_imu.magBias, m_imu.magScale);
+            // m_imu.magCalMPU9250(m_imu.magBias, m_imu.magScale);
           } 
         } // if (c == 0x71)
         else
@@ -183,26 +181,25 @@ public:
       
             
       
-            m_data.ax = m_imu.ax;
-            m_data.ay = m_imu.ay;
-            m_data.az = m_imu.az;
-            m_data.gx = m_imu.ax;
-            m_data.gx = m_imu.ax;
-            m_data.gx = m_imu.ax;
-            m_data.mx = m_imu.ax;
-            m_data.mx = m_imu.ax;
-            m_data.mx = m_imu.ax;
-            m_data.yaw = m_imu.ax;
-            m_data.pitch = m_imu.ax;
-            m_data.roll = m_imu.ax;
-      
+            m_data.ax = m_imu.ax*100;
+            m_data.ay = m_imu.ay*100;
+            m_data.az = m_imu.az*100;
+            m_data.gx = m_imu.gx*100;
+            m_data.gx = m_imu.gy*100;
+            m_data.gx = m_imu.gz*100;
+            m_data.mx = m_imu.mx*100;
+            m_data.mx = m_imu.my*100;
+            m_data.mx = m_imu.mz*100;
+            m_data.yaw = m_imu.yaw*100;
+            m_data.pitch = m_imu.pitch*100;
+            m_data.roll = m_imu.roll*100;
       
             //Serial.print("Yaw, Pitch, Roll: ");
-            Serial.print(m_imu.yaw, 2);
-            Serial.print(" ");
-            Serial.print(m_imu.pitch, 2);
-            Serial.print(" ");
-            Serial.println(m_imu.roll, 2);
+//            Serial.print(m_imu.yaw, 2);
+//            Serial.print(" ");
+//            Serial.print(m_imu.pitch, 2);
+//            Serial.print(" ");
+//            Serial.println(m_imu.roll, 2);
 
       
       
@@ -219,6 +216,8 @@ private:
     
     // Track whether sensor has been initialized
     bool m_initialized = false;
+    bool m_mpu_initialized = false;
+    bool m_mag_initialized = false;
 
     const int m_int_pin = 28;
 
@@ -229,5 +228,3 @@ private:
 
     
 };
-
-#endif
