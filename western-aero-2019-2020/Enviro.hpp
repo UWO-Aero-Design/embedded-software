@@ -1,3 +1,7 @@
+/** \file Enviro.hpp
+ * @brief All code relating to the environment sensor
+ */
+
 #pragma once
 
 // Include for sensor interfaces
@@ -8,7 +12,6 @@
 
 /**
  * @brief Class for a enviornment sensor using the MPL3115A2 chip
- * 
  * @details It is an I2C sensor capable of measuring pressure, humidity and temperature
  */
 class Mpl3115a2EnviroSensor : public aero::sensor::EnviroSensor {
@@ -30,8 +33,6 @@ public:
         m_data.altitude = 0;
         m_data.temperature = 0;
         
-        // Init the sensor and return it's status
-        Wire.begin();
         enviro.begin();
         enviro.setModeAltimeter();
         enviro.setOversampleRate(7);
@@ -54,8 +55,11 @@ public:
         
         float altitude = enviro.readAltitude();
         float temperature = enviro.readTemp();
+        
         // check if error
-        if(altitude == -999 || temperature == -999) return false;
+        if(altitude == -999 || temperature == -999) {
+          return false;
+        }
         
         // retreive data from sensor
         m_data.altitude = (uint16_t)(altitude * ALTITUDE_OFFSET);
