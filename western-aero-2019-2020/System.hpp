@@ -48,14 +48,19 @@ class SystemSelect {
      *  @brief The different valid systems the onboard code can boot into
      */
     enum Type {
-      TestSystem_t      = 0b00000000, // System for testing system select
-      TesttxSerial_t    = 0b00000001, // System for sending messages based on protocol over serial
-      ZTRDemo1Gnd_t     = 0b00000010, // System for first ZTR target demo
-      PitotDemo_t       = 0b00000011, // System for testing the analog phidget pitot tube
-      EnviroDemo_t      = 0b00000100, // System for testing the environment sensor
-      IMUDemo_t         = 0b00000101, // System for testing the imu sensor
-      AdafruitGPSDemo_t = 0b00000110, // System for testing the adafruit gps module
-      CompSystem_t      = 0b00001111  // System for competition
+      TestSystem_t          = 0b00000000, // System for testing system select
+      TesttxSerial_t        = 0b00000001, // System for sending messages based on protocol over serial
+      ServoDriverDemo_t     = 0b00000010, // System for testing servo driver
+      SerialToRadioDemo_t   = 0b00000011, // System for testing serial to radio routing
+      PitotDemo_t           = 0b00000100, // System for testing the analog phidget pitot tube
+      EnviroDemo_t          = 0b00001000, // System for testing the environment sensor
+      AdafruitGPSDemo_t     = 0b00001001, // System for testing the adafruit gps module
+      RadioClientDemo_t     = 0b00001010, // System for testing the radio in client mode
+      RadioServerDemo_t     = 0b00001011, // System for testing the radio in server mode
+      IMUDemo_t             = 0b00001100, // System for testing the imu sensor
+      RadioWithGliderDemo_t = 0b00001101, // System for testing radio for capstone board
+      CompSystem_t          = 0b00001111, // System for competition
+      ZTRDemo1Gnd_t         = 0b11111111  // System for first ZTR demo (unused)
     };
 
      /**
@@ -98,6 +103,10 @@ class SystemSelect {
          return new AdafruitGPSDemo();
        } break;
 
+        case ServoDriverDemo_t: {
+          return new ServoDriverDemo();
+        } break;
+
         default: {
           return new CompSystem();
         } break;
@@ -139,6 +148,10 @@ class SystemSelect {
        case AdafruitGPSDemo_t: {
          return AdafruitGPSDemo::DESCRIPTION;
        } break;
+
+        case ServoDriverDemo_t: {
+          return ServoDriverDemo::DESCRIPTION;
+        } break;
 
         case CompSystem_t:
         default:

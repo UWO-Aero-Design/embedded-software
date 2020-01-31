@@ -19,7 +19,7 @@ public:
 
   /**
    * @brief System initialization
-   * 
+   *
    */
   bool init() override {
     return true;
@@ -27,7 +27,7 @@ public:
 
   /**
    * @brief Update system
-   * 
+   *
    */
   bool update() override {
     return true;
@@ -46,11 +46,11 @@ private:
   @brief Strategy class for testing serial dumps of comms (ground station)
 */
 class txSerial : public System {
-  
+
 public:
     // Description of the system for printing
     static constexpr const char* DESCRIPTION = "Serial Transmit Test System";
-    
+
     txSerial() {
         // Empty constructor
     }
@@ -75,7 +75,7 @@ public:
 
     bool update() override {
         // Add to message buffer if configured to do so
-        if(SEND_IMU) 
+        if(SEND_IMU)
             msg_handler.add_imu(imu);
         if(SEND_PITOT)
             msg_handler.add_pitot(pitot);
@@ -111,17 +111,17 @@ public:
             Serial.print((char)buf[i], HEX);
             Serial.print(' ');
         }
-        
+
         Serial.print("\n");
 
         // Message every second
         delay(1000);
         return true;
     }
-    
+
 protected:
     // None
-  
+
 private:
     // Flags to tell message builder whether or not to add certain data. If TRUE, will add data. Else, will not
     const static bool SEND_IMU = true;
@@ -166,7 +166,7 @@ class ZTRDemo1GndStation : public System {
 public:
   // Description of the system for printing
   static constexpr const char* DESCRIPTION = "ZTR Demo #1 Ground Station Transmitter System";
-    
+
   ZTRDemo1GndStation() {
 
   }
@@ -206,14 +206,14 @@ public:
         digitalWrite(DEBUG_LED, HIGH);
 
         aero::def::RawMessage_t *tmp_msg = (aero::def::RawMessage_t *) &buf;
-        
+
         // Send message. Make sure to skip the part of the buffer that is empty
         for(int i = 0; i < 209; ++i) {
             // Skip empty parts
             if(i == tmp_msg->length+6) {
                 i = 200+6;
             }
-            
+
             Serial.print((char)buf[i], HEX);
             Serial.print(' ');
         }
@@ -241,7 +241,7 @@ private:
   static const int RFM95W_RST = 2;
   static const int RFM95W_INT = 9;
   static const int RFM95W_CS = 10;
-  
+
   // Radio object to receive data
   RH_RF95 radio{RFM95W_CS, RFM95W_INT};
 };
@@ -261,7 +261,7 @@ public:
 
   /**
    * @brief System initialization that verifies sensor is connected properly
-   * 
+   *
    */
   bool init() override {
 
@@ -272,7 +272,7 @@ public:
       Serial.println("Pitot tube seems to be not connected. Check wiring.");
       while(true);
       return false;
-    } 
+    }
     else {
       return true;
     }
@@ -280,7 +280,7 @@ public:
 
   /**
    * @brief Update system and update sensor value. Print out data
-   * 
+   *
    */
   bool update() override {
     // Check if pitot updated properly
@@ -324,7 +324,7 @@ public:
 
   /**
    * @brief System initialization that verifies sensor is connected properly
-   * 
+   *
    */
   bool init() override {
     Wire.begin();
@@ -336,7 +336,7 @@ public:
       Serial.println("Environment sensor seems to not be connected. Check wiring.");
       while(true);
       return false;
-    } 
+    }
     else {
       Serial.println("Environment sensor init complete.");
       return true;
@@ -345,7 +345,7 @@ public:
 
   /**
    * @brief Update system and update sensor value. Print out data
-   * 
+   *
    */
   bool update() override {
     // Check if environment sensor updated properly
@@ -387,7 +387,7 @@ public:
 
   /**
    * @brief System initialization that verifies sensor is connected properly
-   * 
+   *
    */
   bool init() override {
     Wire.begin();
@@ -399,7 +399,7 @@ public:
       Serial.println("IMU sensor seems to not be connected. Check wiring.");
       while(true);
       return false;
-    } 
+    }
     else {
       Serial.println("IMU sensor init complete.");
       return true;
@@ -408,7 +408,7 @@ public:
 
   /**
    * @brief Update system and update sensor value. Print out data
-   * 
+   *
    */
   bool update() override {
     // Check if environment sensor updated properly
@@ -431,7 +431,7 @@ public:
 
 private:
 
-  // Enviro object
+  // IMU object
   ImuMpu9250 m_imu;
 };
 
@@ -441,8 +441,8 @@ public:
   static constexpr const char* DESCRIPTION = "Adafruit GPS Demo";
   AdafruitGPSDemo(){}
   /**
-   * @brief System init 
-   * 
+   * @brief System init
+   *
    */
   bool init() override {
 
@@ -452,12 +452,12 @@ public:
     if(!init_result) {
       Serial.println("GPS failed hardware initialization. Check wiring.");
       while(true);
-    } 
+    }
   }
 
   /**
    * @brief System update
-   * 
+   *
    */
   bool update() override {
     // Use gps delay to let buffer fill up
@@ -467,7 +467,7 @@ public:
     if(!update_result) {
       Serial.println("GPS update failed");
     } else {
-      
+
         AdafruitGPS::TimeStamp timestamp = gps.timestamp();
         AdafruitGPS::Coord coord = gps.coord();
         int sats = gps.satellites();
@@ -520,4 +520,88 @@ public:
 protected:
 private:
   AdafruitGPS gps{&Serial4};
+};
+
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/********************* SYSTEM FOR TESTING SERVO DRIVER *********************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
+/*!
+  @brief Strategy class for testing the onboard servo driver
+*/
+class ServoDriverDemo : public System {
+public:
+  // Description string
+  static constexpr const char* DESCRIPTION = "Servo Driver Demo";
+
+  /**
+   * @brief System initialization that verifies sensor is connected properly
+   *
+   */
+  bool init() override {
+    Wire.begin();
+    pinMode(20, OUTPUT);
+
+    // Check if servo driver initialized properly
+    bool init_result = servos.init();
+
+    if(!init_result) {
+      Serial.println("Servo driver seems to not be connected. Check wiring.");
+      while(true);
+      return false;
+    }
+    else {
+      Serial.println("Servo driver init complete.");
+      servos.close_all();
+      return true;
+    }
+  }
+
+  /**
+   * @brief Update system and actuate servos
+   *
+   */
+  bool update() override {
+
+      Serial.println("Opening payload door.");
+      digitalWrite(20, HIGH);
+      servos.actuate(DOOR);
+      delay(2000);
+
+      Serial.println("Dropping payload0.");
+      servos.actuate(PAYLOAD0);
+      delay(300);
+
+      Serial.println("Dropping payload1.");
+      servos.actuate(PAYLOAD1);
+      delay(300);
+
+      Serial.println("Dropping payload2.");
+      servos.actuate(PAYLOAD2);
+      delay(300);
+
+      Serial.println("Dropping gliders.");
+      servos.actuate(GLIDER0);
+      servos.actuate(GLIDER1);
+      delay(500);
+
+      Serial.println("Resetting drop mechanisms.");
+      servos.reset(PAYLOAD0);
+      servos.reset(PAYLOAD1);
+      servos.reset(PAYLOAD2);
+      servos.reset(GLIDER0);
+      servos.reset(GLIDER1);
+      delay(500);
+
+      Serial.println("Closing payload door.\n");
+      digitalWrite(20, LOW);
+      servos.reset(DOOR);
+      delay(2000);
+  }
+
+private:
+
+  // Servo controller object
+  ServoController servos;
 };

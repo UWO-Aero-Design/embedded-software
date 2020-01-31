@@ -16,7 +16,6 @@ System *sys = NULL;
 
 void setup() {
   Serial.begin(DEFAULT_BAUD);
-  while(!Serial) { }
 
   // read dip switches
   for(int i = 3; i >= 0; i--) {
