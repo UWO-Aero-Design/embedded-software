@@ -65,6 +65,7 @@ public:
           Serial.println("Error connecting to servo controller.");
           is_success = false;
         }
+        pinMode(20, OUTPUT);
         return is_success;
     }
 
@@ -84,10 +85,29 @@ public:
             pitot_data.differential_pressure,
             enviro_data.altitude/100.0, enviro_data.temperature/100.0);
             
-      Serial.println(print_buffer);
-      
+      //Serial.println(print_buffer);
 
-      delay(100);
+
+      msg_handler.add_imu(imu_data);
+      RawMessage_t response_to_gnd = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
+      aero::def::ParsedMessage_t* msg_from_gnd = radio.receive(response_to_gnd);
+
+      if(msg_from_gnd != NULL) {
+        state = !state;
+        Serial.print("Response received from ");
+        if(msg_from_gnd->m_from == aero::def::ID::Gnd) Serial.println("Ground Station");
+        else if(msg_from_gnd->m_from == aero::def::ID::Plane) Serial.println("Plane");
+        else Serial.println("Unknown");
+      }
+      else {
+        //Serial.println("No Message Received");
+      }
+      if(Serial.available() > 0) {
+        state = false;
+        Serial.read();
+      }
+      digitalWrite(20, state);
+      delay(500);
       return imu_success && pitot_success && enviro_success;
     }
     
@@ -124,4 +144,7 @@ private:
     int rst_pin = aero::teensy35::P34;
     int int_pin = aero::teensy35::P31;
     RFM95WServer radio{ cs_pin, rst_pin, int_pin };
+
+    // temp
+    bool state = false;
 };

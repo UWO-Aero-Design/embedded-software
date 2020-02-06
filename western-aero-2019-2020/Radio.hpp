@@ -191,6 +191,13 @@ public:
           return NULL;
         } else {
           // Parse response and return it
+          for(int i = 0; i < sizeof(inc_data)/sizeof(uint8_t); i++) {
+            if(i%32 == 0) Serial.println();
+            if(inc_data[i] == 0) Serial.print("0 ");
+            else Serial.print(inc_data[i], HEX);
+            Serial.print(" ");
+          }
+          Serial.println();
           return message_handler.parse(inc_data);
         }
       } else {

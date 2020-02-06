@@ -16,20 +16,20 @@ System *sys = NULL;
 
 void setup() {
   Serial.begin(DEFAULT_BAUD);
-  while(!Serial) { }
 
   // read dip switches
   for(int i = 3; i >= 0; i--) {
     pinMode(DIP_SWITCHES[i], INPUT);
     system_selection = system_selection | (digitalRead(DIP_SWITCHES[i]) << i);
   }
-
+  
   Serial.print("Booting in ");
   Serial.print(SystemSelect::get_description(system_selection));
   Serial.println(" mode\n");
 
   // create the system specified by user input
   sys = SystemSelect::select(system_selection);
+  //sys = SystemSelect::select(SystemSelect::SerialToRadioDemo_t);
   if(sys->init()) {
     Serial.println("\nSystem successfully started.\n\n");
   }

@@ -844,6 +844,82 @@ public:
     Serial.begin(115200);
     delay(1000);
 
+    pinMode(A14, OUTPUT);
+
+    bool success = radio.init();
+
+    if(!success) {
+      //Serial.println("Init failed");
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+
+  bool update() override {
+    digitalWrite(A14, state);
+    // Check if a new message has arrived over the serial port
+    bool valid = serial::check_for_msg(Serial);
+
+    // If a new message has arrived; relay it via radio
+    if(valid == true) {
+      state = !state;
+      // Grab valid message contents and length
+      int len = serial::msg_contents(buffer);
+
+      ParsedMessage_t* server_response = radio.send(buffer, len);
+      
+      if(server_response != NULL) {
+        delay(100);
+        state = !state;
+
+        //Serial.println("Response received");
+
+        /* Parse message here... */
+      }
+    } else {
+      //Serial.println("Failed");
+      delay(100);
+      return false;
+    }
+
+    // Check every 100ms for new serial port activity
+    delay(100);
+    return true;
+
+  }
+private:
+  aero::Message messageHandler;
+
+  int cs_pin =  aero::teensy35::P10_PWM;
+  int rst_pin = aero::teensy35::P34;
+  int int_pin = aero::teensy35::P31;
+
+  RFM95WClient radio{ cs_pin, rst_pin, int_pin }; 
+
+  char buffer[256];
+
+  //temp
+  bool state = false;
+};
+
+
+/***************************************************************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/************************ SYSTEM FOR GROUND STATION ************************/
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/***************************************************************************/
+class GroundStationDemo : public System {
+public:
+
+  // Description string
+  static constexpr const char* DESCRIPTION = "Ground Station Demo";
+
+  bool init() override {
+    // Start serial port for reading from groundstation
+    Serial.begin(9600);
+
     bool success = radio.init();
 
     if(!success) {
@@ -856,36 +932,26 @@ public:
   }
 
   bool update() override {
-    // Check if a new message has arrived over the serial port
-    bool valid = serial::check_for_msg(Serial);
+    
+    RawMessage_t msg_to_send = msg_handler.build(aero::def::ID::Gnd, aero::def::ID::Plane, true);
 
-    // If a new message has arrived; relay it via radio
-    if(valid == true) {
-      // Grab valid message contents and length
-      int len = serial::msg_contents(buffer);
-
-      ParsedMessage_t* server_response = radio.send(buffer, len);
+    ParsedMessage_t* server_response = radio.send(msg_to_send);
+    
+    if(server_response != NULL) {
       
-      if(server_response != NULL) {
-
-        Serial.println("Response received");
-
-        /* Parse message here... */
-      }
-    } else {
-      Serial.println("Failed");
-      delay(100);
-      return false;
+    }
+    else {
+      // No response received
     }
 
 
-    // Check every 100ms for new serial port activity
-    delay(100);
+    // Send message every 10ms
+    delay(10);
     return true;
 
   }
 private:
-  aero::Message messageHandler;
+  aero::Message msg_handler;
 
   int cs_pin =  aero::teensy35::P10_PWM;
   int rst_pin = aero::teensy35::P34;

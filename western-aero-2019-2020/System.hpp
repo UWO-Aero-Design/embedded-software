@@ -54,7 +54,8 @@ class SystemSelect {
       TesttxSerial_t        = 0b00000001, // System for sending messages based on protocol over serial
       ZTRDemo1Gnd_t         = 0b00000010, // System for first ZTR target demo
       SerialToRadioDemo_t   = 0b00000011, // System for testing serial to radio routing
-      PitotDemo_t           = 0b00000100, // System for testing the analog phidget pitot tube
+      GroundStationDemo_t   = 0b10000000, // System for ground station testing
+      PitotDemo_t           = 0b00000100, // System for testing radio for capstone board
       EnviroDemo_t          = 0b00001000, // System for testing the environment sensor
       AdafruitGPSDemo_t     = 0b00001001, // System for testing the adafruit gps module
       RadioClientDemo_t     = 0b00001010, // System for testing the radio in client mode
@@ -120,6 +121,10 @@ class SystemSelect {
           return new SerialToRadioDemo();
         } break;
 
+        case GroundStationDemo_t: {
+          return new GroundStationDemo();
+        } break;
+
         default: {
           return new CompSystem();
         } break;
@@ -176,6 +181,10 @@ class SystemSelect {
 
         case SerialToRadioDemo_t: {
           return SerialToRadioDemo::DESCRIPTION;
+        } break;
+
+        case GroundStationDemo_t: {
+          return GroundStationDemo::DESCRIPTION;
         } break;
 
         case CompSystem_t:
