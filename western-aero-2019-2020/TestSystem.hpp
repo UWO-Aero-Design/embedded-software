@@ -867,7 +867,7 @@ public:
       state = !state;
       // Grab valid message contents and length
       int len = serial::msg_contents(buffer);
-
+      
       ParsedMessage_t* server_response = radio.send(buffer, len);
       
       if(server_response != NULL) {
@@ -879,7 +879,7 @@ public:
         /* Parse message here... */
       }
     } else {
-      //Serial.println("Failed");
+      // Serial.println("Failed");
       delay(100);
       return false;
     }

@@ -10,18 +10,18 @@ const uint8_t BUILTIN_LED = 13;
 const int DEFAULT_BAUD = 9600;
 const uint8_t DIP_SWITCHES[] = { 24, 25, 26, 27 };
 
-uint8_t system_selection = 0;
+uint8_t system_selection = SystemSelect::SerialToRadioDemo_t;
 
 System *sys = NULL;
 
 void setup() {
   Serial.begin(DEFAULT_BAUD);
 
-  // read dip switches
-  for(int i = 3; i >= 0; i--) {
-    pinMode(DIP_SWITCHES[i], INPUT);
-    system_selection = system_selection | (digitalRead(DIP_SWITCHES[i]) << i);
-  }
+//  // read dip switches
+//  for(int i = 3; i >= 0; i--) {
+//    pinMode(DIP_SWITCHES[i], INPUT);
+//    system_selection = system_selection | (digitalRead(DIP_SWITCHES[i]) << i);
+//  }
   
   Serial.print("Booting in ");
   Serial.print(SystemSelect::get_description(system_selection));
