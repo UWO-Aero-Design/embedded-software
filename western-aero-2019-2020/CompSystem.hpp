@@ -100,47 +100,13 @@ public:
 
         // parse commands
         aero::def::Commands_t* commands = incoming_msg->cmds();
+        // check to see if any commands have been received before bitmasking to determine which are set
         if(commands != NULL) {
-          if(commands->drop & OPEN_DOORS_MASK) {
-            // open door
-          }
-          if(commands->drop & PAYLOAD0_DROP_MASK) {
-            // drop payload0
-          }
-          if(commands->drop & PAYLOAD1_DROP_MASK) {
-            // drop payload1
-          }
-          if(commands->drop & PAYLOAD2_DROP_MASK) {
-            // drop payload2
-          }
-          if(commands->drop & GLIDER0_DROP_MASK) {
-            // drop glider0
-          }
-          if(commands->drop & GLIDER1_DROP_MASK) {
-            // drop glider1
-          }
-          if(commands->drop & PAYLOAD0_RESET_MASK) {
-            // reset payload0
-          }
-          if(commands->drop & PAYLOAD1_RESET_MASK) {
-            // reset payload1
-          }
-          if(commands->drop & PAYLOAD2_RESET_MASK) {
-            // reset payload2
-          }
-          if(commands->drop & GLIDER0_RESET_MASK) {
-            // reset glider2
-          }
-          if(commands->drop & GLIDER1_RESET_MASK) {
-            // reset glider1
-          }
-          if(commands->drop & CLOSE_DOORS_MASK) {
-            // close door
-          }
+          run_commands(commands);
         }
       }
       else {
-        //Serial.println("No Message Received");
+        Serial.println("No Message Received");
       }
       
       delay(500);
@@ -150,7 +116,7 @@ public:
 protected:
   
 private:
-    // holds the nicely formatted string for printing
+    // holds the nicely formatted sensor data string for printing
     char print_buffer[256];
 
     // Structs for data
@@ -176,11 +142,9 @@ private:
     ImuMpu9250 imu;
     PhidgetPitotTube pitot { aero::teensy35::A9_PWM };
     Mpl3115a2EnviroSensor enviro;
-    int cs_pin =  aero::teensy35::P10_PWM;
-    int rst_pin = aero::teensy35::P34;
-    int int_pin = aero::teensy35::P31;
-    RFM95WServer radio{ cs_pin, rst_pin, int_pin };
+    RFM95WServer radio{ aero::teensy35::P10_PWM, aero::teensy35::P34, aero::teensy35::P31 };
 
+    // bitmasks for Commands_t struct of ParsedMessage_t
     const uint8_t OPEN_DOORS_MASK      = 0x01;
     const uint8_t PAYLOAD0_DROP_MASK   = 0x02;
     const uint8_t PAYLOAD1_DROP_MASK   = 0x03;
@@ -193,4 +157,55 @@ private:
     const uint8_t GLIDER0_RESET_MASK   = 0x10;
     const uint8_t GLIDER1_RESET_MASK   = 0x11;
     const uint8_t CLOSE_DOORS_MASK     = 0x12;
+
+    void run_commands(aero::def::Commands_t* commands) {
+      if(commands->drop & OPEN_DOORS_MASK) {
+        Serial.println("[CMD] Opening Doors");
+        servos.actuate(DOOR);
+      }
+      if(commands->drop & PAYLOAD0_DROP_MASK) {
+        Serial.println("[CMD] Dropping Payload0");
+        servos.actuate(PAYLOAD0);
+      }
+      if(commands->drop & PAYLOAD1_DROP_MASK) {
+        Serial.println("[CMD] Dropping Payload1");
+        servos.actuate(PAYLOAD1);
+      }
+      if(commands->drop & PAYLOAD2_DROP_MASK) {
+        Serial.println("[CMD] Dropping Payload2");
+        servos.actuate(PAYLOAD2);
+      }
+      if(commands->drop & GLIDER0_DROP_MASK) {
+        Serial.println("[CMD] Dropping Glider0");
+        servos.actuate(GLIDER0);
+      }
+      if(commands->drop & GLIDER1_DROP_MASK) {
+        Serial.println("[CMD] Dropping Glider1");
+        servos.actuate(GLIDER1);
+      }
+      if(commands->drop & PAYLOAD0_RESET_MASK) {
+        Serial.println("[CMD] Resetting Payload0");
+        servos.reset(PAYLOAD0);
+      }
+      if(commands->drop & PAYLOAD1_RESET_MASK) {
+        Serial.println("[CMD] Resetting Payload1");
+        servos.reset(PAYLOAD1);
+      }
+      if(commands->drop & PAYLOAD2_RESET_MASK) {
+        Serial.println("[CMD] Resetting Payload2");
+        servos.reset(PAYLOAD2);
+      }
+      if(commands->drop & GLIDER0_RESET_MASK) {
+        Serial.println("[CMD] Resetting Glider0");
+        servos.reset(GLIDER0);
+      }
+      if(commands->drop & GLIDER1_RESET_MASK) {
+        Serial.println("[CMD] Resetting Glider1");
+        servos.reset(GLIDER1);
+      }
+      if(commands->drop & CLOSE_DOORS_MASK) {
+        Serial.println("[CMD] Closing Doors");
+        servos.reset(DOOR);
+      }
+    }
 };
