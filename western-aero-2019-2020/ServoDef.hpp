@@ -4,7 +4,7 @@
 
 #pragma once
     
-enum PayloadId { DOOR, PAYLOAD0, PAYLOAD2, PAYLOAD3, GLIDER0, GLIDER1, NONE };
+enum PayloadId { DOOR, PAYLOAD0, PAYLOAD1, PAYLOAD2, GLIDER0, GLIDER1, NONE };
 
 /*!
   @brief Representation of a servo

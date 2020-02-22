@@ -10,7 +10,7 @@ const uint8_t BUILTIN_LED = 13;
 const int DEFAULT_BAUD = 9600;
 const uint8_t DIP_SWITCHES[] = { 24, 25, 26, 27 };
 
-uint8_t system_selection = SystemSelect::SerialToRadioDemo_t;
+uint8_t system_selection = SystemSelect::CompSystem_t;
 
 System *sys = NULL;
 
