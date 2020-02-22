@@ -10,7 +10,7 @@ const uint8_t BUILTIN_LED = 13;
 const int DEFAULT_BAUD = 9600;
 const uint8_t DIP_SWITCHES[] = { 24, 25, 26, 27 };
 
-uint8_t system_selection = 0;
+uint8_t system_selection = NULL;
 
 System *sys = NULL;
 
@@ -26,7 +26,7 @@ void setup() {
   Serial.print("Booting in ");
   Serial.print(SystemSelect::get_description(system_selection));
   Serial.println(" mode\n");
-  
+
   // create the system specified by user input
   sys = SystemSelect::select(system_selection);
   if(sys->init()) {

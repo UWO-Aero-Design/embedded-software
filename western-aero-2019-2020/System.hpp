@@ -8,6 +8,7 @@
 #include "src/aero-cpp-lib/include/Pins.hpp"
 #include "src/aero-cpp-lib/include/Data.hpp"
 #include "src/aero-cpp-lib/include/Message.hpp"
+#include "src/aero-cpp-lib/include/Serial.hpp"
 #include "Imu.hpp"
 #include "Radio.hpp"
 #include "MockData.hpp"
@@ -17,6 +18,9 @@
 #include "src/Rfm95w/RH_RF95.h"
 #include "Servo.hpp"
 
+
+using namespace aero;
+using namespace aero::def;
 
 /**
  * @brief Astract class for defining how a system should be structured
@@ -31,8 +35,6 @@ class System {
 
 #include "CompSystem.hpp"
 #include "TestSystem.hpp"
-
-
 
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -52,15 +54,16 @@ class SystemSelect {
       TesttxSerial_t        = 0b00000001, // System for sending messages based on protocol over serial
       ServoDriverDemo_t     = 0b00000010, // System for testing servo driver
       SerialToRadioDemo_t   = 0b00000011, // System for testing serial to radio routing
-      PitotDemo_t           = 0b00000100, // System for testing the analog phidget pitot tube
+      GroundStationDemo_t   = 0b10000000, // System for ground station testing
+      PitotDemo_t           = 0b00000100, // System for testing radio for capstone board
       EnviroDemo_t          = 0b00001000, // System for testing the environment sensor
       AdafruitGPSDemo_t     = 0b00001001, // System for testing the adafruit gps module
       RadioClientDemo_t     = 0b00001010, // System for testing the radio in client mode
       RadioServerDemo_t     = 0b00001011, // System for testing the radio in server mode
       IMUDemo_t             = 0b00001100, // System for testing the imu sensor
       RadioWithGliderDemo_t = 0b00001101, // System for testing radio for capstone board
-      CompSystem_t          = 0b00001111, // System for competition
-      ZTRDemo1Gnd_t         = 0b11111111  // System for first ZTR demo (unused)
+      ZTRDemo1Gnd_t         = 0b11111111, // System for first ZTR target demo
+      CompSystem_t          = 0b00001111  // System for competition
     };
 
      /**
@@ -99,9 +102,29 @@ class SystemSelect {
           return new IMUSensorDemo();
         } break;
 
-       case AdafruitGPSDemo_t: {
-         return new AdafruitGPSDemo();
-       } break;
+        case AdafruitGPSDemo_t: {
+          return new AdafruitGPSDemo();
+        } break;
+
+        case RadioClientDemo_t: {
+          return new RadioClientDemo();
+        } break;
+
+        case RadioServerDemo_t: {
+          return new RadioServerDemo();
+        } break;
+
+        case RadioWithGliderDemo_t: {
+          return new RadioWithGliderDemo();
+        } break;
+
+        case SerialToRadioDemo_t: {
+          return new SerialToRadioDemo();
+        } break;
+
+        case GroundStationDemo_t: {
+          return new GroundStationDemo();
+        } break;
 
         case ServoDriverDemo_t: {
           return new ServoDriverDemo();
@@ -145,9 +168,29 @@ class SystemSelect {
           return IMUSensorDemo::DESCRIPTION;
         } break;
 
-       case AdafruitGPSDemo_t: {
-         return AdafruitGPSDemo::DESCRIPTION;
-       } break;
+        case AdafruitGPSDemo_t: {
+          return AdafruitGPSDemo::DESCRIPTION;
+        } break;
+
+        case RadioClientDemo_t: {
+          return RadioClientDemo::DESCRIPTION;
+        } break;
+
+        case RadioServerDemo_t: {
+          return RadioServerDemo::DESCRIPTION;
+        } break;
+
+        case RadioWithGliderDemo_t: {
+          return RadioWithGliderDemo::DESCRIPTION;
+        } break;
+
+        case SerialToRadioDemo_t: {
+          return SerialToRadioDemo::DESCRIPTION;
+        } break;
+
+        case GroundStationDemo_t: {
+          return GroundStationDemo::DESCRIPTION;
+        } break;
 
         case ServoDriverDemo_t: {
           return ServoDriverDemo::DESCRIPTION;
