@@ -20,6 +20,9 @@ class ServoController{
     ServoController() { };
     ~ServoController() { };
 
+    // array of all 16 servos (0-15)
+    Servo_t m_servos[16] = { servo0, servo1, servo2, servo3, servo4, servo5, servo6, servo7, servo8, servo9, servo10, servo11, servo12, servo13, servo14, servo15 };
+
     /**
      * @brief Initialize the servo controller
      */
@@ -52,6 +55,14 @@ class ServoController{
      */
     void actuate_servo(Servo_t servo, int position) {
       m_pwm.setPWM(servo.pin, 0, position);
+    };
+
+    void open_servo(Servo_t servo) {
+      m_pwm.setPWM(servo.pin, 0, servo.open_pos);
+    };
+
+    void close_servo(Servo_t servo) {
+      m_pwm.setPWM(servo.pin, 0, servo.open_pos);
     };
 
     /**
@@ -108,8 +119,5 @@ class ServoController{
     constexpr static int ADDRESS = 0x47; // defined based off of v2.0 of onboard systems PCB
     bool m_initilized = false; // keep track of init state
     Adafruit_PWMServoDriver m_pwm = Adafruit_PWMServoDriver(ADDRESS); // servo driver object
-
-    // array of all 16 servos (0-15)
-    Servo_t m_servos[16] = { servo0, servo1, servo2, servo3, servo4, servo5, servo6, servo7, servo8, servo9, servo10, servo11, servo12, servo13, servo14, servo15 };
     
 };

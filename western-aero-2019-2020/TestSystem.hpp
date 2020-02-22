@@ -700,7 +700,7 @@ public:
   bool update() override {
     RawMessage_t server_response = message_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
     
-    aero::def::ParsedMessage_t* client_message = radio.receive(server_response);
+    aero::def::ParsedMessage_t* client_message = NULL;
 
     if(client_message != NULL) {
       Serial.println("Message received and responded too");

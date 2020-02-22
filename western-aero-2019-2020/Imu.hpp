@@ -84,8 +84,6 @@ public:
         else
         {
           m_initialized = false;
-          Serial.print("Could not connect to MPU9250: 0x");
-          Serial.println(c, HEX);
       
           // Communication failed, stop here
        

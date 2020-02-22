@@ -14,6 +14,9 @@ uint8_t system_selection = NULL;
 
 System *sys = NULL;
 
+long last_update = 0;
+bool state = false;
+
 void setup() {
   Serial.begin(DEFAULT_BAUD);
 
@@ -35,8 +38,19 @@ void setup() {
   else {
     Serial.println("\nSystem started with errors.\n\n");
   }
+  for(int i = 20; i < 24; i++) pinMode(i, OUTPUT);
 }
 
 void loop() {
+  if(state == HIGH && millis() - last_update >= 1) {
+    digitalWrite(23, LOW);
+    state = LOW;
+    last_update = millis();
+  }
+  if(state == LOW && millis() - last_update >= 500) {
+    digitalWrite(23, HIGH);
+    state = HIGH;
+    last_update = millis();
+  }
   sys->update();
 }

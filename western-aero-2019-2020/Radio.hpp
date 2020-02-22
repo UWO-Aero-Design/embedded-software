@@ -179,32 +179,58 @@ public:
    * @param response Response to send after receiving new message
    * @return aero::def::ParsedMessage_t* The message received from client
    */
-  aero::def::ParsedMessage_t* receive(aero::def::RawMessage_t response) {
-    if (radio.available()) {
-      if (radio.recv(inc_data, &inc_data_len)) {
-        
-        // Send a reply
-        bool valid = radio.send((char *)&response, sizeof(response));
-        radio.waitPacketSent();
+//  aero::def::ParsedMessage_t* receive(aero::def::RawMessage_t response) {
+//    if (radio.available()) {
+//      if (radio.recv(inc_data, &inc_data_len)) {
+//        
+//        // Send a reply
+//        bool valid = radio.send((char *)&response, sizeof(response));
+//        radio.waitPacketSent();
+//
+//        if(!valid) {
+//          return NULL;
+//        } else {
+//          // Parse response and return it
+//          for(int i = 0; i < sizeof(inc_data)/sizeof(uint8_t); i++) {
+//            if(i%32 == 0) Serial.println();
+//            if(inc_data[i] == 0) Serial.print("0 ");
+//            else Serial.print(inc_data[i], HEX);
+//            Serial.print(" ");
+//          }
+//          Serial.println();
+//          return message_handler.parse(inc_data);
+//        }
+//      } else {
+//        return NULL;
+//      }
+//    } else {
+//      return NULL;
+//    }
+//  }
 
-        if(!valid) {
-          return NULL;
-        } else {
-          // Parse response and return it
-          for(int i = 0; i < sizeof(inc_data)/sizeof(uint8_t); i++) {
-            if(i%32 == 0) Serial.println();
-            if(inc_data[i] == 0) Serial.print("0 ");
-            else Serial.print(inc_data[i], HEX);
-            Serial.print(" ");
-          }
-          Serial.println();
-          return message_handler.parse(inc_data);
-        }
+bool receive(aero::def::ParsedMessage_t** msg) {
+  if (radio.available()) {
+      if (radio.recv(inc_data, &inc_data_len)) {
+              // Parse response and return it
+              *msg = message_handler.parse(inc_data);
+              Serial.print("Message from: "); Serial.print(static_cast<int>((*msg)->m_from));
+              Serial.print(" to: "); Serial.println(static_cast<int>((*msg)->m_to));
+//              msg = last_recv;
+              return true;
       } else {
-        return NULL;
+          return false;
       }
-    } else {
-      return NULL;
-    }
+  } else {
+      return false;
   }
+}
+
+  bool respond(aero::def::RawMessage_t response) {
+  // Send a reply
+  bool valid = radio.send((char *)&response, sizeof(response));
+  radio.waitPacketSent();
+  return valid;
+}
+
+  private:
 };
