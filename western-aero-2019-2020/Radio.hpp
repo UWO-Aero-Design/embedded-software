@@ -150,6 +150,10 @@ public:
     }
   }
 
+  int16_t rssi() {
+    return radio.lastRssi();
+  }
+
 private:
   // Timeout that defines how long the client will wait for a valid response from the servers
   static constexpr unsigned int DEFAULT_TIMEOUT = 3000;
