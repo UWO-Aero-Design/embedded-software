@@ -10,8 +10,8 @@ const uint8_t BUILTIN_LED = 13;
 const int DEFAULT_BAUD = 9600;
 const uint8_t DIP_SWITCHES[] = { 24, 25, 26, 27 };
 
-uint8_t system_selection = NULL;
-
+uint8_t system_selection = 0;
+// uint8_t system_selection = SystemSelect::GroundStation_t;
 System *sys = NULL;
 
 long last_update = 0;
@@ -20,7 +20,7 @@ bool state = false;
 void setup() {
   Serial.begin(DEFAULT_BAUD);
 
-  // read dip switches
+//  // read dip switches
   for(int i = 3; i >= 0; i--) {
     pinMode(DIP_SWITCHES[i], INPUT);
     system_selection = system_selection | (digitalRead(DIP_SWITCHES[i]) << i);
@@ -38,6 +38,7 @@ void setup() {
   else {
     Serial.println("\nSystem started with errors.\n\n");
   }
+  
   for(int i = 20; i < 24; i++) pinMode(i, OUTPUT);
 }
 

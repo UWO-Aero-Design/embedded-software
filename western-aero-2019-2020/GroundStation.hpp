@@ -62,6 +62,14 @@ public:
             m_last_plane_msg_ms = curr;
 
             // Send empty message to plane, to request data
+            aero::def::Commands_t cmds;
+            
+            cmds.drop = 0;
+            cmds.servos = 0;
+            cmds.pitch = 0;
+            
+            msg_handler.add_cmds(cmds);
+            
             RawMessage_t msg_to_send = msg_handler.build(aero::def::ID::Gnd, aero::def::ID::Plane, true);
             ParsedMessage_t* server_response = radio.send(msg_to_send);
 
@@ -138,9 +146,15 @@ private:
     Serial.print("\n");
   }
 
-  int cs_pin =  aero::teensy35::P10_PWM;
-  int rst_pin = aero::teensy35::P34;
-  int int_pin = aero::teensy35::P31;
+  #if defined(GROUND_STATION)
+    int cs_pin =  6;
+    int rst_pin = 7;
+    int int_pin = 8;
+  #else
+    int cs_pin =  aero::teensy35::P10_PWM;
+    int rst_pin = aero::teensy35::P34;
+    int int_pin = aero::teensy35::P31;
+  #endif
 
   RFM95WClient radio{ cs_pin, rst_pin, int_pin }; 
 

@@ -18,6 +18,7 @@
 #include "src/Rfm95w/RH_RF95.h"
 #include "Servo.hpp"
 
+// #define GROUND_STATION
 
 using namespace aero;
 using namespace aero::def;

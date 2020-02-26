@@ -519,7 +519,11 @@ public:
 
 protected:
 private:
-  AdafruitGPS gps{&Serial4};
+  #if defined(GROUND_STATION)
+    AdafruitGPS gps{&Serial1};  // Temp, does not mean anything
+  #else
+    AdafruitGPS gps{&Serial4};
+  #endif
 };
 
 /***************************************************************************/
