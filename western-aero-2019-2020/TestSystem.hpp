@@ -356,9 +356,9 @@ public:
       return false;
     } else {
       Serial.print("Altitude: ");
-      Serial.print(enviro.data().altitude / enviro.ALTITUDE_OFFSET);
+      Serial.print(enviro.data().altitude / enviro.STRUCT_ALTITUDE_OFFSET);
       Serial.print(" [M] Temperature: ");
-      Serial.print(enviro.data().temperature / enviro.TEMPERATURE_OFFSET);
+      Serial.print(enviro.data().temperature / enviro.STRUCT_TEMPERATURE_OFFSET);
       Serial.println(" [C]");
       return true;
     }
@@ -418,11 +418,11 @@ public:
       Serial.println("IMU sensor update failed");
       return false;
     } else {
-      Serial.print(m_imu.data().yaw);
+      Serial.print(m_imu.data().yaw / 100.0);
       Serial.print(" ");
-      Serial.print(m_imu.data().pitch);
+      Serial.print(m_imu.data().pitch / 100.0);
       Serial.print(" ");
-      Serial.println(m_imu.data().roll);
+      Serial.println(m_imu.data().roll / 100.0);
       return true;
     }
 
@@ -519,7 +519,7 @@ public:
 
 protected:
 private:
-  AdafruitGPS gps{&Serial4};
+  AdafruitGPS gps{&Serial3};
 };
 
 /***************************************************************************/
