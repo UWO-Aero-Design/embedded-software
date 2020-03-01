@@ -105,15 +105,15 @@ class CompSystem : public System {
           radio.respond(response_to_gnd);
           digitalWrite(22, HIGH);
           Serial.println("Message received from ground station");
-//          if (incoming_msg->cmds() != NULL) {
-//            Serial.print("Drop: ");
-//            Serial.println(incoming_msg->cmds()->drop, BIN);
-//            Serial.print("Servos: ");
-//            Serial.println(incoming_msg->cmds()->servos, BIN);
-//            Serial.print("Pitch: ");
-//            Serial.println(incoming_msg->cmds()->pitch, BIN);
-//            //run_servos(incoming_msg->cmds());
-//          }
+          if (incoming_msg->cmds() != NULL) {
+            Serial.print("Drop: ");
+            Serial.println(incoming_msg->cmds()->drop, BIN);
+            Serial.print("Servos: ");
+            Serial.println(incoming_msg->cmds()->servos, BIN);
+            Serial.print("Pitch: ");
+            Serial.println(incoming_msg->cmds()->pitch, BIN);
+            //run_servos(incoming_msg->cmds());
+          }
         }
       }
 
