@@ -16,7 +16,6 @@
  */
 class Mpl3115a2EnviroSensor : public aero::sensor::EnviroSensor {
 public:
-
     /**
      * @brief Construct a new MPL3115A2 Enviro Sensor object
      */
@@ -37,8 +36,19 @@ public:
         enviro.setModeAltimeter();
         enviro.setOversampleRate(7);
         enviro.enableEventFlags();
+        // Amount of barometer samples for calibration
+        static const int SAMPLES = 10;
+    
+        float accumulated_pressure = 0.0f;
+        for(int i = 0; i < SAMPLES; i++) {
+          accumulated_pressure += enviro.readAltitude();
+          delay(7); // Delay for update rate
+        }
+    
+        zero_altitude = accumulated_pressure / SAMPLES;
+    
         m_initialized = true;
-        return true;
+        return m_initialized;
     }
 
     /**
@@ -53,23 +63,23 @@ public:
             return false;
         }
         
-        float altitude = enviro.readAltitude();
         float temperature = enviro.readTemp();
+        float altitude = enviro.readAltitude() - zero_altitude;
+        if(altitude < 0.0) altitude = 0;
         
         // check if error
         if(altitude == -999 || temperature == -999) {
           return false;
         }
         
-        // retreive data from sensor
-        m_data.altitude = (uint16_t)(altitude * ALTITUDE_OFFSET);
-        m_data.temperature = (uint16_t)(temperature * TEMPERATURE_OFFSET);
+        m_data.altitude = (uint16_t)(altitude * STRUCT_ALTITUDE_OFFSET);
+        m_data.temperature = (uint16_t)(temperature * STRUCT_TEMPERATURE_OFFSET);
           
         return true;
     }
 
-    static constexpr const float ALTITUDE_OFFSET = 100.0;
-    static constexpr const float TEMPERATURE_OFFSET = 100.0;
+    static constexpr const float STRUCT_ALTITUDE_OFFSET = 100.0;
+    static constexpr const float STRUCT_TEMPERATURE_OFFSET = 100.0;
 
 private:
     
@@ -78,5 +88,9 @@ private:
 
     // An environment sensor
     MPL3115A2 enviro;
+
+    float raw_altitude;
+    float zero_altitude;
+    static constexpr const float ELEVATION_OFFSET = 0.0f;
 
 };
