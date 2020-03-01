@@ -97,23 +97,36 @@ class CompSystem : public System {
       msg_handler.add_imu(imu_data);
       msg_handler.add_pitot(pitot_data);
       msg_handler.add_enviro(enviro_data);
+
       RawMessage_t response_to_gnd = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
       digitalWrite(22, LOW);
-      //aero::def::ParsedMessage_t* test_msg = new ParsedMessage_t();
-      if (radio.receive(&incoming_msg) == true) {
-        if (incoming_msg->m_to == aero::def::ID::Plane) {
-          radio.respond(response_to_gnd);
+
+
+      aero::def::ParsedMessage_t* radio_recv = radio.receive();
+
+      // Receive the incoming message
+      if ( radio_recv != NULL ) {
+
+        if (radio_recv->m_to == aero::def::ID::Plane) {
           digitalWrite(22, HIGH);
+
           Serial.println("Message received from ground station");
-          if (incoming_msg->cmds() != NULL) {
-            Serial.print("Drop: ");
-            Serial.println(incoming_msg->cmds()->drop, BIN);
-            Serial.print("Servos: ");
-            Serial.println(incoming_msg->cmds()->servos, BIN);
-            Serial.print("Pitch: ");
-            Serial.println(incoming_msg->cmds()->pitch, BIN);
-            //run_servos(incoming_msg->cmds());
-          }
+
+          if (radio_recv->cmds() != NULL) {
+
+           Serial.print("Drop: ");
+           Serial.println(radio_recv->cmds()->drop, BIN);
+           Serial.print("Servos: ");
+           Serial.println(radio_recv->cmds()->servos, BIN);
+           Serial.print("Pitch: ");
+           Serial.println(radio_recv->cmds()->pitch, BIN);
+
+           //run_servos(incoming_msg->cmds());
+
+         }
+
+         radio.respond(response_to_gnd);
+
         }
       }
 

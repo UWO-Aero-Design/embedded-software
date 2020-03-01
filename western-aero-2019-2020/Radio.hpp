@@ -150,6 +150,10 @@ public:
     }
   }
 
+  int16_t rssi() {
+    return radio.lastRssi();
+  }
+
 private:
   // Timeout that defines how long the client will wait for a valid response from the servers
   static constexpr unsigned int DEFAULT_TIMEOUT = 3000;
@@ -208,29 +212,24 @@ public:
 //    }
 //  }
 
-bool receive(aero::def::ParsedMessage_t** msg) {
-  if (radio.available()) {
-      if (radio.recv(inc_data, &inc_data_len)) {
-              // Parse response and return it
-              *msg = message_handler.parse(inc_data);
-              Serial.print("Message from: "); Serial.print(static_cast<int>((*msg)->m_from));
-              Serial.print(" to: "); Serial.println(static_cast<int>((*msg)->m_to));
-//              msg = last_recv;
-              return true;
-      } else {
-          return false;
-      }
-  } else {
-      return false;
+  aero::def::ParsedMessage_t* receive() {
+    if (radio.available()) {
+        if (radio.recv(inc_data, &inc_data_len)) {
+            return message_handler.parse(inc_data);
+        } else {
+            return NULL;
+        }
+    } else {
+        return NULL;
+    }
   }
-}
 
   bool respond(aero::def::RawMessage_t response) {
-  // Send a reply
-  bool valid = radio.send((char *)&response, sizeof(response));
-  radio.waitPacketSent();
-  return valid;
-}
+    // Send a reply
+    bool valid = radio.send((char *)&response, sizeof(response));
+    radio.waitPacketSent();
+    return valid;
+  }
 
   private:
 };

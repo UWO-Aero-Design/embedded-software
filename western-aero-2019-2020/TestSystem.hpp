@@ -519,7 +519,11 @@ public:
 
 protected:
 private:
-  AdafruitGPS gps{&Serial3};
+  #if defined(GROUND_STATION)
+    AdafruitGPS gps{&Serial1};  // Temp, does not mean anything
+  #else
+    AdafruitGPS gps{&Serial3};
+  #endif
 };
 
 /***************************************************************************/
@@ -640,9 +644,9 @@ public:
    */
   bool update() override {
     RawMessage_t client_message = message_handler.build(aero::def::ID::Gnd, aero::def::ID::Plane, true);
-    
+
     ParsedMessage_t* server_response = radio.send(client_message);
-    
+
     if(server_response != NULL) {
 
       Serial.println("Response received");
@@ -653,13 +657,13 @@ public:
     delay(1000);
     return true;
   }
-  
+
 private:
   int cs_pin =  aero::teensy35::P10_PWM;
   int rst_pin = aero::teensy35::P34;
   int int_pin = aero::teensy35::P31;
 
-  RFM95WClient radio{ cs_pin, rst_pin, int_pin }; 
+  RFM95WClient radio{ cs_pin, rst_pin, int_pin };
   aero::Message message_handler;
 };
 
@@ -673,7 +677,7 @@ public:
 
   // Description string
   static constexpr const char* DESCRIPTION = "Radio Server (Reception) Demo";
-  
+
   /**
    * @brief Initialize server test object
    */
@@ -695,23 +699,23 @@ public:
   /**
    * @brief Update server system
    * @details Wait for new message from client and respond when one is received
-   * 
+   *
    */
   bool update() override {
     RawMessage_t server_response = message_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
-    
+
     aero::def::ParsedMessage_t* client_message = NULL;
 
     if(client_message != NULL) {
       Serial.println("Message received and responded too");
 
       if(client_message->pitot() != NULL) {
-        Serial.println("Pitot Tube:"); 
+        Serial.println("Pitot Tube:");
         Serial.print("\tDifferential pressure: "); Serial.println(client_message->pitot()->differential_pressure);
       }
 
       if(client_message->imu() != NULL) {
-        Serial.println("IMU:"); 
+        Serial.println("IMU:");
         Serial.print("\tAX: ");    Serial.println(client_message->imu()->ax);
         Serial.print("\tAY: ");    Serial.println(client_message->imu()->ay);
         Serial.print("\tAZ: ");    Serial.println(client_message->imu()->az);
@@ -727,7 +731,7 @@ public:
       }
 
       if(client_message->gps() != NULL) {
-        Serial.println("GPS:"); 
+        Serial.println("GPS:");
         Serial.print("\tLat: ");    Serial.println(client_message->gps()->lat);
         Serial.print("\tLon: ");    Serial.println(client_message->gps()->lon);
         Serial.print("\tSpeed: ");    Serial.println(client_message->gps()->speed);
@@ -738,14 +742,14 @@ public:
       }
 
       if(client_message->enviro() != NULL) {
-        Serial.println("Enviro:"); 
+        Serial.println("Enviro:");
         Serial.print("\tAlt: ");    Serial.println(client_message->enviro()->altitude);
         Serial.print("\tTemp: ");    Serial.println(client_message->enviro()->temperature);
         Serial.print("\tPressure: ");    Serial.println(client_message->enviro()->pressure);
       }
 
       if(client_message->battery() != NULL) {
-        Serial.println("Battery:"); 
+        Serial.println("Battery:");
         Serial.print("\tVoltage: ");    Serial.println(client_message->battery()->voltage);
         Serial.print("\tCurrent: ");    Serial.println(client_message->battery()->current);
       }
@@ -755,13 +759,13 @@ public:
       }
 
       if(client_message->status() != NULL) {
-        Serial.println("Status:"); 
+        Serial.println("Status:");
         Serial.print("\tRSSI: ");    Serial.println(client_message->status()->rssi);
         Serial.print("\tState: ");    Serial.println(client_message->status()->state);
       }
 
       if(client_message->servos() != NULL) {
-        Serial.println("Servos:"); 
+        Serial.println("Servos:");
         Serial.print("\t0: ");    Serial.println(client_message->servos()->servo0);
         Serial.print("\t1: ");    Serial.println(client_message->servos()->servo1);
         Serial.print("\t2: ");    Serial.println(client_message->servos()->servo2);
@@ -781,7 +785,7 @@ public:
       }
 
       if(client_message->air_data() != NULL) {
-        Serial.println("Air Data:"); 
+        Serial.println("Air Data:");
         Serial.print("\tIAS: ");    Serial.println(client_message->air_data()->ias);
         Serial.print("\tEAS: ");    Serial.println(client_message->air_data()->eas);
         Serial.print("\tTAS: ");    Serial.println(client_message->air_data()->tas);
@@ -794,14 +798,14 @@ public:
       }
 
       if(client_message->cmds() != NULL) {
-        Serial.println("Commands:"); 
+        Serial.println("Commands:");
         Serial.print("\tDrop: ");    Serial.println(client_message->cmds()->drop);
         Serial.print("\tServos: ");    Serial.println(client_message->cmds()->servos);
         Serial.print("\tPitch: ");    Serial.println(client_message->cmds()->pitch);
       }
 
       if(client_message->drop_algo() != NULL) {
-        Serial.println("Drop Algorithm:"); 
+        Serial.println("Drop Algorithm:");
         Serial.print("\tHeading: ");    Serial.println(client_message->drop_algo()->heading);
         Serial.print("\tDistance: ");    Serial.println(client_message->drop_algo()->distance);
       }
@@ -810,13 +814,13 @@ public:
     delay(100);
     return true;
   }
-  
+
 private:
   int cs_pin =  aero::teensy35::P10_PWM;
   int rst_pin = aero::teensy35::P34;
   int int_pin = aero::teensy35::P31;
 
-  RFM95WServer radio{ cs_pin, rst_pin, int_pin }; 
+  RFM95WServer radio{ cs_pin, rst_pin, int_pin };
   aero::Message message_handler;
 };
 
@@ -867,7 +871,7 @@ public:
       aero::def::Commands_t cmds;
 
       cmds.pitch = 0;
-      
+
       if(pitchState == LOW) {
         Serial.println("Sending pitch up...");
         cmds.pitch = aero::bit::set(cmds.pitch, 0);
@@ -882,9 +886,9 @@ public:
 
       // Read button states
       RawMessage_t client_message = message_handler.build(aero::def::ID::Gnd, aero::def::ID::G1, true);
-      
+
       ParsedMessage_t* server_response = radio.send(client_message);
-      
+
       if(server_response != NULL) {
 
         Serial.println("Response received");
@@ -896,13 +900,13 @@ public:
       return true;
     }
   }
-  
+
 private:
   int cs_pin =  aero::teensy35::P10_PWM;
   int rst_pin = aero::teensy35::P34;
   int int_pin = aero::teensy35::P31;
 
-  RFM95WClient radio{ cs_pin, rst_pin, int_pin }; 
+  RFM95WClient radio{ cs_pin, rst_pin, int_pin };
   aero::Message message_handler;
 
   // Buttons; pins are pulled up
@@ -951,9 +955,9 @@ public:
       state = !state;
       // Grab valid message contents and length
       int len = serial::msg_contents(buffer);
-      
+
       ParsedMessage_t* server_response = radio.send(buffer, len);
-      
+
       if(server_response != NULL) {
         delay(100);
         state = !state;
@@ -980,68 +984,10 @@ private:
   int rst_pin = aero::teensy35::P34;
   int int_pin = aero::teensy35::P31;
 
-  RFM95WClient radio{ cs_pin, rst_pin, int_pin }; 
+  RFM95WClient radio{ cs_pin, rst_pin, int_pin };
 
   char buffer[256];
 
   //temp
   bool state = false;
-};
-
-
-/***************************************************************************/
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/************************ SYSTEM FOR GROUND STATION ************************/
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/***************************************************************************/
-class GroundStationDemo : public System {
-public:
-
-  // Description string
-  static constexpr const char* DESCRIPTION = "Ground Station Demo";
-
-  bool init() override {
-    // Start serial port for reading from groundstation
-    Serial.begin(9600);
-
-    bool success = radio.init();
-
-    if(!success) {
-      Serial.println("Init failed");
-      return false;
-    }
-    else {
-      return true;
-    }
-  }
-
-  bool update() override {
-    
-    RawMessage_t msg_to_send = msg_handler.build(aero::def::ID::Gnd, aero::def::ID::Plane, true);
-
-    ParsedMessage_t* server_response = radio.send(msg_to_send);
-    
-    if(server_response != NULL) {
-      
-    }
-    else {
-      // No response received
-    }
-
-
-    // Send message every 10ms
-    delay(10);
-    return true;
-
-  }
-private:
-  aero::Message msg_handler;
-
-  int cs_pin =  aero::teensy35::P10_PWM;
-  int rst_pin = aero::teensy35::P34;
-  int int_pin = aero::teensy35::P31;
-
-  RFM95WClient radio{ cs_pin, rst_pin, int_pin }; 
-
-  char buffer[256];
 };
