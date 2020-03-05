@@ -5,6 +5,7 @@
 #pragma once
 
 #include "System.hpp"
+#include "src/aero-cpp-lib/include/Pins.hpp"
 #include <stdio.h>
 
 
@@ -23,11 +24,9 @@ class CompSystem : public System {
     static constexpr const char* DESCRIPTION = "Competition System";
 
     CompSystem() {
-      incoming_msg = new ParsedMessage_t();
     }
 
     ~CompSystem() {
-      delete incoming_msg;
     }
 
     // Init method starts serial and builds test data
@@ -71,7 +70,26 @@ class CompSystem : public System {
         Serial.println("Error connecting to servo controller.");
         is_success = false;
       }
-      pinMode(20, OUTPUT);
+      if (gps.init()) {
+        Serial.println("GPS online.");
+      }
+      else {
+        Serial.println("Error connecting to GPS.");
+        is_success = false;
+      }
+
+      Serial.println("\n");
+
+      Serial.print("Calibrating Enviro...");
+      //enviro.calibrate();
+      Serial.println("Done.");
+
+      Serial.print("Calibrating IMU...");
+      imu.calibrate();
+      Serial.println("Done.");
+
+      
+      
       return is_success;
     }
 
@@ -79,63 +97,60 @@ class CompSystem : public System {
       bool imu_success = imu.update();
       bool pitot_success = pitot.update();
       bool enviro_success = enviro.update();
+      bool gps_success = gps.update();
 
       // collect data from sensors
       imu_data = imu.data();
       pitot_data = pitot.data();
       enviro_data = enviro.data();
+      gps_data = gps.data();
+
 
       // fill print buffer with formatted text
-      sprintf(print_buffer, "IMU [YPR]: %-7.2f %-7.2f %-7.2f\tPitot: %4i\tEnviro [A/T]: %-7.2f %-7.2f",
+      sprintf(print_buffer, "IMU [YPR]: %-7.2f %-7.2f %-7.2f\tPitot: %4i\tEnviro [A/T]: %-7.2f %-7.2f\tGPS [SAT]: %-2i",
               imu_data.yaw / 100.0, imu_data.pitch / 100.0, imu_data.roll / 100.0,
               pitot_data.differential_pressure,
-              enviro_data.altitude / 100.0, enviro_data.temperature / 100.0);
-
-      // Serial.println(print_buffer);
+              enviro_data.altitude / 100.0, enviro_data.temperature / 100.0, gps_data.satellites);
+      if(millis() - last_print >= 500) {
+        Serial.println(print_buffer);
+        last_print = millis();
+      }
 
 
       msg_handler.add_imu(imu_data);
       msg_handler.add_pitot(pitot_data);
       msg_handler.add_enviro(enviro_data);
+      msg_handler.add_gps(gps_data);
 
       RawMessage_t response_to_gnd = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
-      digitalWrite(22, LOW);
 
 
       aero::def::ParsedMessage_t* radio_recv = radio.receive();
+      digitalWrite(22, LOW);
 
       // Receive the incoming message
       if ( radio_recv != NULL ) {
 
         if (radio_recv->m_to == aero::def::ID::Plane) {
           digitalWrite(22, HIGH);
-
           Serial.println("Message received from ground station");
-
           if (radio_recv->cmds() != NULL) {
-
-           Serial.print("Drop: ");
-           Serial.println(radio_recv->cmds()->drop, BIN);
-           Serial.print("Servos: ");
-           Serial.println(radio_recv->cmds()->servos, BIN);
-           Serial.print("Pitch: ");
-           Serial.println(radio_recv->cmds()->pitch, BIN);
-
-           //run_servos(incoming_msg->cmds());
-
+           run_servos(radio_recv->cmds());
+           run_commands(radio_recv->cmds());
          }
 
          radio.respond(response_to_gnd);
-
         }
       }
 
-      return imu_success && pitot_success && enviro_success;
+      return imu_success && pitot_success && enviro_success && gps_success;
     }
 
   protected:
 
   private:
+    long last_print = 0;
+  
     // holds the nicely formatted sensor data string for printing
     char print_buffer[256];
 
@@ -154,7 +169,6 @@ class CompSystem : public System {
 
     // Message handler
     aero::Message msg_handler;
-    volatile aero::def::ParsedMessage_t* incoming_msg;
 
     // Servo controller
     ServoController servos;
@@ -164,25 +178,25 @@ class CompSystem : public System {
     PhidgetPitotTube pitot { aero::teensy35::A9_PWM };
     Mpl3115a2EnviroSensor enviro;
     RFM95WServer radio{ aero::teensy35::P10_PWM, aero::teensy35::P34, aero::teensy35::P31 };
+#ifdef GROUND_STATION
+    AdafruitGPS gps {&Serial1};
+#else
+    AdafruitGPS gps {&Serial3};
+#endif
+    bool gps_fix = false;
+    uint8_t GPS_FIX_PIN = aero::teensy35::P16;
 
     // bitmasks for Commands_t struct of ParsedMessage_t
-    const uint8_t OPEN_DOORS_MASK      = 0x01;
-    const uint8_t PAYLOAD0_DROP_MASK   = 0x02;
-    const uint8_t PAYLOAD1_DROP_MASK   = 0x03;
-    const uint8_t PAYLOAD2_DROP_MASK   = 0x04;
-    const uint8_t GLIDER0_DROP_MASK    = 0x05;
-    const uint8_t GLIDER1_DROP_MASK    = 0x06;
-    const uint8_t PAYLOAD0_RESET_MASK  = 0x07;
-    const uint8_t PAYLOAD1_RESET_MASK  = 0x08;
-    const uint8_t PAYLOAD2_RESET_MASK  = 0x09;
-    const uint8_t GLIDER0_RESET_MASK   = 0x10;
-    const uint8_t GLIDER1_RESET_MASK   = 0x11;
-    const uint8_t CLOSE_DOORS_MASK     = 0x12;
+    const uint8_t OPEN_DOORS_MASK      = 0;
+    const uint8_t CLOSE_DOORS_MASK     = 1;
+    const uint8_t GLIDER_DROP_MASK     = 2;
+    const uint8_t WATER_DROP_MASK      = 3;
+    const uint8_t HABITATS_DROP_MASK   = 4;
 
     void run_servos(aero::def::Commands_t* commands) {
       for (int i = 0; i < 8; i++) {
         if (aero::bit::read(commands->servos, i)) {
-          Serial.print("[CMD] Opening Servo"); Serial.println(i);
+          Serial.print("[CMD] Opening Servo"); Serial.println(i + 1);
           servos.open_servo(servos.m_servos[i]);
           if (i == 0) {
             digitalWrite(20, HIGH);
@@ -195,7 +209,7 @@ class CompSystem : public System {
 
       for (int i = 8; i < 16; i++) {
         if (aero::bit::read(commands->servos, i)) {
-          Serial.print("[CMD] Closing Servo"); Serial.println(i - 8);
+          Serial.print("[CMD] Closing Servo"); Serial.println(i - 8 + 1);
           servos.close_servo(servos.m_servos[i - 8]);
           if ((i - 8) == 0) {
             digitalWrite(20, LOW);
@@ -210,51 +224,27 @@ class CompSystem : public System {
     void run_commands(aero::def::Commands_t* commands) {
       if (commands->drop & OPEN_DOORS_MASK) {
         Serial.println("[CMD] Opening Doors");
-        servos.actuate(DOOR);
+        servos.actuate(DOOR0);
+        servos.actuate(DOOR1);
       }
-      if (commands->drop & PAYLOAD0_DROP_MASK) {
-        Serial.println("[CMD] Dropping Payload0");
-        servos.actuate(PAYLOAD0);
-      }
-      if (commands->drop & PAYLOAD1_DROP_MASK) {
-        Serial.println("[CMD] Dropping Payload1");
-        servos.actuate(PAYLOAD1);
-      }
-      if (commands->drop & PAYLOAD2_DROP_MASK) {
-        Serial.println("[CMD] Dropping Payload2");
-        servos.actuate(PAYLOAD2);
-      }
-      if (commands->drop & GLIDER0_DROP_MASK) {
-        Serial.println("[CMD] Dropping Glider0");
+      if (commands->drop & GLIDER_DROP_MASK) {
+        Serial.println("[CMD] Dropping Gliders");
         servos.actuate(GLIDER0);
-      }
-      if (commands->drop & GLIDER1_DROP_MASK) {
-        Serial.println("[CMD] Dropping Glider1");
         servos.actuate(GLIDER1);
       }
-      if (commands->drop & PAYLOAD0_RESET_MASK) {
-        Serial.println("[CMD] Resetting Payload0");
-        servos.reset(PAYLOAD0);
+      if (commands->drop & WATER_DROP_MASK) {
+        Serial.println("[CMD] Dropping Water");
+        servos.actuate(PAYLOAD1);
       }
-      if (commands->drop & PAYLOAD1_RESET_MASK) {
-        Serial.println("[CMD] Resetting Payload1");
-        servos.reset(PAYLOAD1);
-      }
-      if (commands->drop & PAYLOAD2_RESET_MASK) {
-        Serial.println("[CMD] Resetting Payload2");
-        servos.reset(PAYLOAD2);
-      }
-      if (commands->drop & GLIDER0_RESET_MASK) {
-        Serial.println("[CMD] Resetting Glider0");
-        servos.reset(GLIDER0);
-      }
-      if (commands->drop & GLIDER1_RESET_MASK) {
-        Serial.println("[CMD] Resetting Glider1");
-        servos.reset(GLIDER1);
+      if (commands->drop & HABITATS_DROP_MASK) {
+        Serial.println("[CMD] Dropping Habitats");
+        servos.actuate(PAYLOAD0);
+        servos.actuate(PAYLOAD2);
       }
       if (commands->drop & CLOSE_DOORS_MASK) {
         Serial.println("[CMD] Closing Doors");
-        servos.reset(DOOR);
+        servos.reset(DOOR0);
+        servos.reset(DOOR1);
       }
     }
 };

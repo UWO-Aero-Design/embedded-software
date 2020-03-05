@@ -9,7 +9,7 @@
 #include "src/aero-cpp-lib/include/Utility.hpp"
 
 #include "Arduino.h"
-#include "src/TinyGPS/TinyGPS.h"
+#include "src/Adafruit_GPS/Adafruit_GPS.h"
 
 /**
  * @brief AdafruitGPS adapter class 
@@ -19,8 +19,8 @@ class AdafruitGPS : public aero::sensor::GPS {
 public: 
 
     // Scalars for message protocol
-    static constexpr unsigned int LAT_SCALAR = 10000000;
-    static constexpr unsigned int LON_SCALAR = 10000000;
+    static constexpr unsigned int LAT_SCALAR = 100000;
+    static constexpr unsigned int LON_SCALAR = 100000;
     static constexpr unsigned int ALT_SCALAR = 10;
     static constexpr unsigned int SPEED_SCALAR = 100;
 
@@ -83,6 +83,7 @@ public:
      */
     AdafruitGPS(HardwareSerial *port) {
       this->port = port;
+      //gps = Adafruit_GPS(port);
     }
 
     /**
@@ -92,12 +93,23 @@ public:
      * @return false If update failed
      */
     bool init() override {
-        // Begin GPS connection; check if hardware init succeeded
-        port->begin(GPS_BAUD_RATE);
-        while(!port){ /* wait for port to begin */ }
+        // 9600 NMEA is the default baud rate this module but note that some use 4800
+        gps.begin(9600);
+        
+        gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // The data we are requesting
+        gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
+      
+        // Request updates on antenna status, comment out to keep quiet
+        gps.sendCommand(PGCMD_ANTENNA);
 
+        delay(1000);
+      
+        // Ask for firmware version
+        Serial2.println(PMTK_Q_RELEASE);
         return true;
     }
+
+    long last_update = 0;
 
     /**
      * @brief Grabs data from the GPS module and updates internal variables
@@ -106,65 +118,46 @@ public:
      * @return false If update failed
      */
     bool update() override {
-        float flat, flon;
-        unsigned long age, chars = 0;
-        unsigned short sentences = 0, failed = 0;
+      char c = gps.read();
+      if (gps.newNMEAreceived()) {
+        // a tricky thing here is if we print the NMEA sentence, or data
+        // we end up not listening and catching other sentences!
+        // so be very wary if using OUTPUT_ALLDATA and trying to print out data
+        if (!gps.parse(gps.lastNMEA())) // this also sets the newNMEAreceived() flag to false
+          return; // we can fail to parse a sentence in which case we should just wait for another
+      }
+      if(millis() - last_update >= 1000) {
+        if (gps.fix) {
+          m_data.satellites = gps.satellites;
+          m_data.lat = (int32_t)(gps.latitude * LAT_SCALAR);
+          m_data.lon = (int32_t)(gps.longitude * LON_SCALAR);
+          m_data.altitude = (uint16_t)(gps.altitude* ALT_SCALAR);
+          m_data.speed = (uint16_t)(gps.speed/3.6 * SPEED_SCALAR); // need to convert to m/s
+          m_angle = gps.angle;
+          last_update = millis();
+        }
+        else {
+          Serial.println("No fix");
+        }
+      }
+      
 
-        // Get position data and statistics
-        gps.f_get_position(&flat, &flon, &age);
-        gps.stats(&chars, &sentences, &failed);
 
-        // Satellites
-        m_satellites = gps.satellites();
-        m_data.satellites = m_satellites;
-        
-        // Latitude
-        m_coord.lat = flat;
-        m_data.lat = (int32_t)(m_coord.lat * LAT_SCALAR);
 
-        // Longitude
-        m_coord.lon = flon;
-        m_data.lon = (int32_t)(m_coord.lon * LON_SCALAR);
+//        gps.crack_datetime(&m_timestamp.year, &m_timestamp.month, &m_timestamp.day, 
+//                            &m_timestamp.hr, &m_timestamp.min, &m_timestamp.sec, 
+//                            &m_timestamp.msec, &age);
+//        
+//        // Format date and time. 4 bytes => 4 bytes => xx HR MIN SEC
+//        m_data.time = ((uint32_t)m_timestamp.hr << 16) | 
+//                       ((uint32_t)m_timestamp.min << 8) | 
+//                       (uint32_t)m_timestamp.sec;
+//        // xx YEAR MONTH DAY
+//        m_data.date = ((uint32_t)m_timestamp.year << 16) | 
+//                       ((uint32_t)m_timestamp.month << 8) | 
+//                       (uint32_t)m_timestamp.day;
 
-        // Altitude
-        m_altitude = gps.f_altitude();
-        m_data.altitude = (uint16_t)(m_altitude * ALT_SCALAR); // max is 1 decimal precision, ~6500 m
-
-        // Speed; in m/s
-        m_speed = gps.f_speed_kmph()/3.6;
-        m_data.speed = (uint16_t)(m_speed * SPEED_SCALAR); // max 2 decimal precision, is around ~ 650 m/s
-        
-        // Course; not a part of data
-        m_angle = gps.f_course();
-
-        gps.crack_datetime(&m_timestamp.year, &m_timestamp.month, &m_timestamp.day, 
-                            &m_timestamp.hr, &m_timestamp.min, &m_timestamp.sec, 
-                            &m_timestamp.msec, &age);
-        
-        // Format date and time. 4 bytes => 4 bytes => xx HR MIN SEC
-        m_data.time = ((uint32_t)m_timestamp.hr << 16) | 
-                       ((uint32_t)m_timestamp.min << 8) | 
-                       (uint32_t)m_timestamp.sec;
-        // xx YEAR MONTH DAY
-        m_data.date = ((uint32_t)m_timestamp.year << 16) | 
-                       ((uint32_t)m_timestamp.month << 8) | 
-                       (uint32_t)m_timestamp.day;
-
-        return true;
-    }
-
-    /**
-     * @brief This delay is used to pause execution while also allowing the GPS buffer to fill up
-     * @param ms Time for the delay
-     * @note It is CRUCIAL that when using this gps class, you use this delay and not the regular arduino delay
-     */
-    void delay(unsigned long ms)
-    {
-        unsigned long start = millis();
-        do {
-            while (port->available())
-            gps.encode(port->read());
-        } while (millis() - start < ms);
+      return true;
     }
 
     // Getters
@@ -181,8 +174,8 @@ public:
 private:
     constexpr static unsigned int GPS_BAUD_RATE = 9600;
 
-    // Tiny GPS used for parsing the GPS sentences
-    TinyGPS gps;
+    // Adafruit GPS used for parsing the GPS sentences
+    Adafruit_GPS gps = Adafruit_GPS(&Serial3);
     // HardwareSerial port for interfacing with the GPS
     // NOTE: need to add software serial support as well
     HardwareSerial* port;
@@ -199,5 +192,20 @@ private:
     
     // Speed in m/s, altitude in m, and angle in degrees
     double m_speed, m_altitude, m_angle;
+
+    bool check() {
+     // Read data from GPS directly
+      char c = gps.read();
+        
+      // If sentence is received, check the checksum and parse it if valid
+      if (gps.newNMEAreceived()) {
+        if (!gps.parse(gps.lastNMEA())) // Resets the newNMEAreceived() flag to false
+          return false; // If we fail to parse, return false indicating that a new message was received but not parsed
+      } else {
+        return false; // No new message received;
+      }
+      
+      return true;
+    }
     
 };
