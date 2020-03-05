@@ -460,8 +460,6 @@ public:
    *
    */
   bool update() override {
-    // Use gps delay to let buffer fill up
-    gps.delay(1000);
     bool update_result = gps.update();
 
     if(!update_result) {
@@ -570,7 +568,8 @@ public:
 
       Serial.println("Opening payload door.");
       digitalWrite(20, HIGH);
-      servos.actuate(DOOR);
+      servos.actuate(DOOR0);
+      servos.actuate(DOOR1);
       delay(2000);
 
       Serial.println("Dropping payload0.");
@@ -600,7 +599,8 @@ public:
 
       Serial.println("Closing payload door.\n");
       digitalWrite(20, LOW);
-      servos.reset(DOOR);
+      servos.reset(DOOR0);
+      servos.reset(DOOR1);
       delay(2000);
   }
 

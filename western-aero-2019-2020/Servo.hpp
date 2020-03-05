@@ -62,7 +62,7 @@ class ServoController{
     };
 
     void close_servo(Servo_t servo) {
-      m_pwm.setPWM(servo.pin, 0, servo.open_pos);
+      m_pwm.setPWM(servo.pin, 0, servo.close_pos);
     };
 
     /**
