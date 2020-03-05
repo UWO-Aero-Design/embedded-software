@@ -56,6 +56,7 @@ class ImuMpu9250 : public aero::sensor::IMU {
           // Communication failed, stop here
           m_initialized = false;
           Serial.println(F("unable to communicate with AK8963"));
+          return m_initialized;
 
         }
 
@@ -80,30 +81,11 @@ class ImuMpu9250 : public aero::sensor::IMU {
       } // if (c == 0x71)
       else {
         m_initialized = false;
+        return m_initialized;
 
         // Communication failed, stop here
 
       }
-
-      static constexpr const int SAMPLES = 100;
-      static constexpr const int PRE_SAMPLES = 1000;
-      int sample_counter = 0;
-      int yaw_sum = 0, pitch_sum = 0, roll_sum = 0;
-      while(sample_counter < SAMPLES + PRE_SAMPLES) {
-        if (m_imu.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01) {
-          get_data();
-          if(PRE_SAMPLES - sample_counter <= 0) {
-            yaw_sum += m_imu.yaw;
-            pitch_sum += m_imu.pitch;
-            roll_sum += m_imu.roll;
-          }
-          sample_counter++;
-        }
-        compute_ypr();
-      }
-      yaw_zero = yaw_sum / SAMPLES;
-      pitch_zero = pitch_sum / SAMPLES;
-      roll_zero = roll_sum / SAMPLES;
 
       return m_initialized;
     }
@@ -147,6 +129,28 @@ class ImuMpu9250 : public aero::sensor::IMU {
       m_imu.sum = 0;
 
       return true;
+    }
+
+    void calibrate() {
+      static constexpr const int SAMPLES = 100;
+      static constexpr const int PRE_SAMPLES = 1000;
+      int sample_counter = 0;
+      int yaw_sum = 0, pitch_sum = 0, roll_sum = 0;
+      while(sample_counter < SAMPLES + PRE_SAMPLES) {
+        if (m_imu.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01) {
+          get_data();
+          if(PRE_SAMPLES - sample_counter <= 0) {
+            yaw_sum += m_imu.yaw;
+            pitch_sum += m_imu.pitch;
+            roll_sum += m_imu.roll;
+          }
+          sample_counter++;
+        }
+        compute_ypr();
+      }
+      yaw_zero = yaw_sum / SAMPLES;
+      pitch_zero = pitch_sum / SAMPLES;
+      roll_zero = roll_sum / SAMPLES;
     }
 
 
