@@ -56,7 +56,7 @@ class SystemSelect {
       TesttxSerial_t        = 0b00000001, // System for sending messages based on protocol over serial
       ServoDriverDemo_t     = 0b00000010, // System for testing servo driver
       SerialToRadioDemo_t   = 0b00000011, // System for testing serial to radio routing
-      GroundStation_t   = 0b10000000, // System for ground station testing
+      GroundStation_t       = 0b10000000, // System for ground station testing
       PitotDemo_t           = 0b00000100, // System for testing radio for capstone board
       EnviroDemo_t          = 0b00001000, // System for testing the environment sensor
       AdafruitGPSDemo_t     = 0b00001001, // System for testing the adafruit gps module
