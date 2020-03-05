@@ -2,6 +2,8 @@
 
 #include "System.hpp"
 
+#define ERROR_LED 2
+
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /************************ SYSTEM FOR GROUND STATION ************************/
@@ -16,10 +18,12 @@ public:
   bool init() override {
     // Start serial port for reading from groundstation
     Serial.begin(115200);
+    pinMode(ERROR_LED, OUTPUT);
 
     bool success = radio.init();
 
     if(!success) {
+      digitalWrite(ERROR_LED, HIGH);
       return false;
     }
     else {
@@ -45,10 +49,9 @@ public:
         if(result->m_to == ID::Plane) {
             m_last_plane_msg_ms = millis();
         }
-
         // Send the buffer over radio to devices
         ParsedMessage_t* server_response = radio.send(buffer, len);
-
+        digitalWrite(ERROR_LED, LOW);
         // Relay response
         if(server_response != NULL) {
             send_to_pc(server_response);
@@ -57,8 +60,10 @@ public:
     } else {
         // Make sure to send a message to the plane every second if one does not come in from PC
         unsigned long curr = millis();
+        digitalWrite(ERROR_LED, LOW);
 
         if(curr - m_last_plane_msg_ms >= 1000) {
+          digitalWrite(ERROR_LED, HIGH);
             m_last_plane_msg_ms = curr;
 
             // Send empty message to plane, to request data
