@@ -2,8 +2,9 @@
 #include "Adafruit_PWMServoDriver.h"
 
 // change these values and reupload
-#define SERVOMIN 250
-#define SERVOMAX 400
+#define SERVOMIN 190 // 470, 150
+#define SERVOMAX 191
+#define SERVO_NUM 3
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x47);
 
@@ -17,12 +18,14 @@ void setup() {
 
 void loop() {
   for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
-    pwm.setPWM(0, 0, pulselen);
+    pwm.setPWM(SERVO_NUM, 0, pulselen);
+    //delay(1);
   }
-  delay(500);
+  delay(1000);
   
   for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
-    pwm.setPWM(0, 0, pulselen);
+    pwm.setPWM(SERVO_NUM, 0, pulselen);
+    //delay(1);
   }
-  delay(500);
+  delay(1000);
 }
