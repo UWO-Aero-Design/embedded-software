@@ -35,7 +35,7 @@ public:
         enviro.begin();
         enviro.setModeAltimeter();
         enviro.setOversampleRate(7);
-        enviro.enableEventFlags();
+        enviro.enableEventFlags(); 
     
         m_initialized = true;
         return m_initialized;
@@ -53,38 +53,49 @@ public:
             return false;
         }
 
-        if(millis() - last_update >= UPDATE_DELTA) {
+//         if(millis() - last_update >= UPDATE_DELTA) {
           float temperature = enviro.readTemp();
-          float altitude = enviro.readAltitude() - zero_altitude;
-          if(altitude < 0.0) altitude = 0;
+          float pressure = enviro.readPressure();
+          float _altitude = enviro.readAltitude();
+          float agl = _altitude - zero_altitude;
+          if(agl < -10) agl = -10;
+          float biased_value = agl;
           
           // check if error
-          if(altitude == -999 || temperature == -999) {
+          if(_altitude == -999 || temperature == -999 || pressure == -999) {
             return false;
           }
           
-          m_data.altitude = (uint16_t)(altitude * STRUCT_ALTITUDE_OFFSET);
+          m_data.altitude = (uint16_t)((agl * STRUCT_ALTITUDE_OFFSET));
+          m_data.pressure = (uint16_t)(pressure * STRUCT_PRESSURE_OFFSET);
           m_data.temperature = (uint16_t)(temperature * STRUCT_TEMPERATURE_OFFSET);
           last_update = millis();
-        }
+//         }
           
         return true;
     }
 
     void calibrate() {
       // Amount of barometer samples for calibration
-      static const int SAMPLES = 10;
+      static const int SAMPLES = 25;
   
       float accumulated_pressure = 0.0f;
       for(int i = 0; i < SAMPLES; i++) {
-        accumulated_pressure += enviro.readAltitude();
-        delay(7); // Delay for update rate
+        float alt = enviro.readAltitude();
+        accumulated_pressure += alt;
+        delay(512); // Delay for update rate
       }
   
       zero_altitude = accumulated_pressure / SAMPLES;
+      // Serial.println(zero_altitude);
+      
     }
 
+    float offset() { return zero_altitude; }
+
     static constexpr const float STRUCT_ALTITUDE_OFFSET = 100.0;
+    static constexpr const float STRUCT_ALTITUDE_BIAS = 10.0;
+    static constexpr const float STRUCT_PRESSURE_OFFSET = 100.0;
     static constexpr const float STRUCT_TEMPERATURE_OFFSET = 100.0;
 
 private:

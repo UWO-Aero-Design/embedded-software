@@ -37,6 +37,9 @@ void setup() {
   Serial.print(SystemSelect::get_description(system_selection));
   Serial.println(" mode\n");
 
+  for(int i = 20; i < 24; i++) pinMode(i, OUTPUT);
+  digitalWrite(20, HIGH);
+
   // create the system specified by user input
   if(sys->init()) {
     Serial.println("\nSystem successfully started.\n\n");
@@ -45,9 +48,18 @@ void setup() {
     Serial.println("\nSystem started with errors.\n\n");
   }
   
-  for(int i = 20; i < 24; i++) pinMode(i, OUTPUT);
 }
 
 void loop() {
+  if(state && millis() - last_update >= 100) {
+    state = !state;
+    digitalWrite(23, state);
+    last_update = millis();
+  }
+  if(!state && millis() - last_update >= 500) {
+    state = !state;
+    digitalWrite(23, state);
+    last_update = millis();
+  }
   sys->update();
 }

@@ -18,7 +18,7 @@
  */
 class PhidgetPitotTube : public aero::sensor::Pitot {
 public:
-
+  
     // Value that scales the differential pressure reading to the message protocol
     constexpr static int DIF_PRES_SCALAR = 1000;
 

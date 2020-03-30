@@ -128,16 +128,33 @@ public:
       }
       if(millis() - last_update >= 1000) {
         if (gps.fix) {
+          if(gps.satellites != 255 && first_fix_pulse == false) {
+            first_fix_pulse = true;
+            Serial.println("GPS has fix. Calibrating...");
+          }
+          if(sample_counter < SAMPLES) {
+            accumulated_altitude += gps.altitude;
+            sample_counter++;
+            led_state = !led_state;
+            digitalWrite(20, led_state);
+          }
+          if(sample_counter == SAMPLES) {
+            zero_altitude = accumulated_altitude / SAMPLES;
+            Serial.println("Done GPS calibration.");
+            sample_counter++;
+            led_state = LOW;
+            digitalWrite(20, LOW);
+          }
+          Serial.print(gps.latitude, 8); Serial.print("\t"); Serial.println(gps.longitude, 8);
           m_data.satellites = gps.satellites;
           m_data.lat = (int32_t)(gps.latitude * LAT_SCALAR);
           m_data.lon = (int32_t)(gps.longitude * LON_SCALAR);
-          m_data.altitude = (uint16_t)(gps.altitude* ALT_SCALAR);
+          m_data.altitude = (uint16_t)((gps.altitude-zero_altitude)* ALT_SCALAR);
           m_data.speed = (uint16_t)(gps.speed/3.6 * SPEED_SCALAR); // need to convert to m/s
           m_angle = gps.angle;
           last_update = millis();
         }
         else {
-          Serial.println("No fix");
         }
       }
       
@@ -172,6 +189,7 @@ public:
     double angle() const { return m_angle; }
 
 private:
+    bool first_fix_pulse = false;
     constexpr static unsigned int GPS_BAUD_RATE = 9600;
 
     // Adafruit GPS used for parsing the GPS sentences
@@ -192,6 +210,12 @@ private:
     
     // Speed in m/s, altitude in m, and angle in degrees
     double m_speed, m_altitude, m_angle;
+
+    float zero_altitude = 0;
+    float accumulated_altitude = 0;
+    int sample_counter = 0;
+    const int SAMPLES = 10;
+    bool led_state = HIGH;
 
     bool check() {
      // Read data from GPS directly

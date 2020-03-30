@@ -21,13 +21,13 @@ struct Servo_t {
 
 // defines for servo open, close and command association
 //                      OPEN CLOSE  COMMAND
-Servo_t servo0  = { 0,  100,  700,  GLIDER0  }; // LEFT  - BLUE
+Servo_t servo0  = { 0,  95 ,  480,  GLIDER0  }; // LEFT  - BLUE
 Servo_t servo1  = { 1,  170,  490,  GLIDER1  }; // RIGHT - RED
-Servo_t servo2  = { 2,  180,  400,  DOOR0    };
-Servo_t servo3  = { 3,  180,  400,  DOOR1    };
+Servo_t servo2  = { 2,  120,  400,  DOOR0    };
+Servo_t servo3  = { 3,  470,  190,  DOOR1    };
 Servo_t servo4  = { 4,  230,  420,  PAYLOAD0 };
-Servo_t servo5  = { 5,  250,  460,  PAYLOAD1 };
-Servo_t servo6  = { 6,  220,  430,  PAYLOAD2 };
+Servo_t servo5  = { 5,  460,  250,  PAYLOAD1 };
+Servo_t servo6  = { 6,  430,  220,  PAYLOAD2 };
 Servo_t servo7  = { 7,  180,  400,  NONE     };
 Servo_t servo8  = { 8,  180,  400,  NONE     };
 Servo_t servo9  = { 9,  180,  400,  NONE     };

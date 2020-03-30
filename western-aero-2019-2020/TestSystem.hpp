@@ -339,6 +339,9 @@ public:
     }
     else {
       Serial.println("Environment sensor init complete.");
+      Serial.print("Calibrating sensor...");
+      enviro.calibrate();
+      Serial.println("Done.");
       return true;
     }
   }
@@ -355,11 +358,15 @@ public:
       Serial.println("Environment sensor update failed");
       return false;
     } else {
-      Serial.print("Altitude: ");
-      Serial.print(enviro.data().altitude / enviro.STRUCT_ALTITUDE_OFFSET);
-      Serial.print(" [M] Temperature: ");
+      Serial.print("[M] Temperature: ");
       Serial.print(enviro.data().temperature / enviro.STRUCT_TEMPERATURE_OFFSET);
-      Serial.println(" [C]");
+      Serial.print(" [C] ");
+      Serial.print(enviro.data().pressure / enviro.STRUCT_PRESSURE_OFFSET);
+      Serial.print(" [Pa] ");
+      Serial.print(" Altitude: ");
+      Serial.print(enviro.data().altitude / enviro.STRUCT_ALTITUDE_OFFSET);
+      Serial.print(" => ");
+      Serial.println(enviro.data().altitude / enviro.STRUCT_ALTITUDE_OFFSET) - enviro.offset();;
       return true;
     }
 
@@ -513,6 +520,7 @@ public:
         Serial.print("    Altitude: "); Serial.println(data.altitude);
         Serial.println("***********************************");
       }
+      delay(500);
   }
 
 protected:

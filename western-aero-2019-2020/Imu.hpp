@@ -155,7 +155,6 @@ class ImuMpu9250 : public aero::sensor::IMU {
 
 
   private:
-
     // Track whether sensor has been initialized
     bool m_initialized = false;
     bool m_mpu_initialized = false;
@@ -237,7 +236,7 @@ class ImuMpu9250 : public aero::sensor::IMU {
       //   8° 30' E  ± 0° 21' (or 8.5°) on 2016-07-19
       // - http://www.ngdc.noaa.gov/geomag-web/#declination
 
-      m_imu.yaw  -= 9.2;
+      m_imu.yaw  -= 6.31;
       m_imu.roll *= RAD_TO_DEG;
     }
 };

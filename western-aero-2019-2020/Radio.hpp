@@ -71,7 +71,7 @@ protected:
   uint8_t inc_data_len = sizeof(inc_data);
 
 private:
-  static constexpr float RADIO_FREQ = 915.0f;
+  static constexpr float RADIO_FREQ = 905.0f;
   // Max power
   static constexpr int RADIO_POWER = 23;
     
@@ -156,7 +156,7 @@ public:
 
 private:
   // Timeout that defines how long the client will wait for a valid response from the servers
-  static constexpr unsigned int DEFAULT_TIMEOUT = 3000;
+  static constexpr unsigned int DEFAULT_TIMEOUT = 1000;
   unsigned int m_timeout = DEFAULT_TIMEOUT;
 
 };
@@ -215,6 +215,11 @@ public:
   aero::def::ParsedMessage_t* receive() {
     if (radio.available()) {
         if (radio.recv(inc_data, &inc_data_len)) {
+          uint8_t link_to = inc_data[1];
+            if(link_to != 1) {
+              Serial.println("Message not for us.");
+              return NULL;
+            }
             return message_handler.parse(inc_data);
         } else {
             return NULL;

@@ -23,6 +23,7 @@ public:
     bool success = radio.init();
 
     if(!success) {
+      Serial.println("RADIO ERROR");
       digitalWrite(ERROR_LED, HIGH);
       return false;
     }
@@ -84,7 +85,7 @@ public:
             }
         }
 
-        delay(100);
+        //delay(100);
     }
 
     return true;
