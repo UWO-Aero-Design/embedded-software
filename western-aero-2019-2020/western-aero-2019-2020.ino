@@ -34,6 +34,7 @@ void setup() {
   // read flight stabilization mode from dip switch (27)
   pinMode(DIP_SWITCHES[3], INPUT);
   flight_stable = digitalRead(DIP_SWITCHES[3]);
+  
   #endif
   sys = SystemSelect::select(system_selection);
   
