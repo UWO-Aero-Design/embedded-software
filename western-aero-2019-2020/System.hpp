@@ -53,20 +53,14 @@ class SystemSelect {
      *  @brief The different valid systems the onboard code can boot into
      */
     enum Type {
-      TestSystem_t          = 0b00000000, // System for testing system select
-      TesttxSerial_t        = 0b00000001, // System for sending messages based on protocol over serial
-      ServoDriverDemo_t     = 0b00000010, // System for testing servo driver
-      SerialToRadioDemo_t   = 0b00000011, // System for testing serial to radio routing
-      GroundStation_t       = 0b10000000, // System for ground station testing
-      PitotDemo_t           = 0b00000100, // System for testing radio for capstone board
-      EnviroDemo_t          = 0b00001000, // System for testing the environment sensor
-      AdafruitGPSDemo_t     = 0b00001001, // System for testing the adafruit gps module
-      RadioClientDemo_t     = 0b00001010, // System for testing the radio in client mode
-      RadioServerDemo_t     = 0b00001011, // System for testing the radio in server mode
-      IMUDemo_t             = 0b00001100, // System for testing the imu sensor
-      RadioWithGliderDemo_t = 0b00001101, // System for testing radio for capstone board
-      ZTRDemo1Gnd_t         = 0b11111111, // System for first ZTR target demo
-      CompSystem_t          = 0b00001111  // System for competition
+      //Binary bits assigned according to 3 DIP Switches (2^3 possible combinations)
+      PitotDemo_t           = 0b00000000, // System for testing the pitot tube
+      EnviroDemo_t          = 0b00000001, // System for testing the environment sensor
+      AdafruitGPSDemo_t     = 0b00000010, // System for testing the adafruit gps module
+      RadioClientDemo_t     = 0b00000011, // System for testing the radio in client mode
+      RadioServerDemo_t     = 0b00000101, // System for testing the radio in server mode
+      IMUDemo_t             = 0b00000110, // System for testing the imu sensor
+      CompSystem_t          = 0b00000111  // System for competition      
     };
 
      /**
@@ -77,32 +71,12 @@ class SystemSelect {
     */
     static System *select(Type type) {
       switch(type) {
-        case TestSystem_t: {
-          return new TestSystem();
-        } break;
-
-        case TesttxSerial_t: {
-          return new txSerial();
-        } break;
-
-        case CompSystem_t: {
-          return new CompSystem();
-        } break;
-
-        case ZTRDemo1Gnd_t: {
-          return new ZTRDemo1GndStation();
-        } break;
-
         case PitotDemo_t: {
           return new PitotTubeDemo();
         } break;
 
         case EnviroDemo_t: {
           return new EnviroSensorDemo();
-        } break;
-
-        case IMUDemo_t: {
-          return new IMUSensorDemo();
         } break;
 
         case AdafruitGPSDemo_t: {
@@ -117,22 +91,14 @@ class SystemSelect {
           return new RadioServerDemo();
         } break;
 
-        case RadioWithGliderDemo_t: {
-          return new RadioWithGliderDemo();
+        case IMUDemo_t: {
+          return new IMUSensorDemo();
         } break;
 
-        case SerialToRadioDemo_t: {
-          return new SerialToRadioDemo();
+        case CompSystem_t: {
+          return new CompSystem();
         } break;
-
-        case GroundStation_t: {
-          return new GroundStation();
-        } break;
-
-        case ServoDriverDemo_t: {
-          return new ServoDriverDemo();
-        } break;
-
+        
         default: {
           return new CompSystem();
         } break;
@@ -147,28 +113,12 @@ class SystemSelect {
      */
     static String get_description(Type type) {
       switch(type) {
-        case TestSystem_t: {
-          return "Test System";
-        } break;
-
-        case TesttxSerial_t: {
-          return txSerial::DESCRIPTION;
-        } break;
-
-        case ZTRDemo1Gnd_t: {
-          return ZTRDemo1GndStation::DESCRIPTION;
-        } break;
-
         case PitotDemo_t: {
           return PitotTubeDemo::DESCRIPTION;
         } break;
 
         case EnviroDemo_t: {
           return EnviroSensorDemo::DESCRIPTION;
-        } break;
-
-        case IMUDemo_t: {
-          return IMUSensorDemo::DESCRIPTION;
         } break;
 
         case AdafruitGPSDemo_t: {
@@ -183,22 +133,10 @@ class SystemSelect {
           return RadioServerDemo::DESCRIPTION;
         } break;
 
-        case RadioWithGliderDemo_t: {
-          return RadioWithGliderDemo::DESCRIPTION;
+        case IMUDemo_t: {
+          return IMUSensorDemo::DESCRIPTION;
         } break;
-
-        case SerialToRadioDemo_t: {
-          return SerialToRadioDemo::DESCRIPTION;
-        } break;
-
-        case GroundStation_t: {
-          return GroundStation::DESCRIPTION;
-        } break;
-
-        case ServoDriverDemo_t: {
-          return ServoDriverDemo::DESCRIPTION;
-        } break;
-
+        
         case CompSystem_t:
         default:
           return "Competition System";
