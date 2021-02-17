@@ -5,6 +5,8 @@
 #include "Arduino.h"
 #include "System.hpp"
 #include "Wire.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 const uint8_t BUILTIN_LED = 13;
 const int DEFAULT_BAUD = 9600;
