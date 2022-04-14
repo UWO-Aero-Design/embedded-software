@@ -13,6 +13,7 @@
 
 #include "Wire.h"
 #include "src/Adafruit_BMP280/Adafruit_BMP280.h"
+#include "Addresses.hpp"
 
 /**
  * @brief Class for a enviornment sensor using the BMP280 chip
@@ -36,7 +37,7 @@ public:
         m_data.altitude = 0;
         m_data.temperature = 0;
         
-        m_initialized = bmp280.begin();
+        m_initialized = bmp280.begin(Addresses::BMP280);
     
         return m_initialized;
     }

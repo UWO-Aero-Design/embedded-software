@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "Pins.hpp"
+#include "Addresses.hpp"
 
 const uint8_t BUILTIN_LED = 13;
 const int DEFAULT_BAUD = 9600;
@@ -15,7 +16,7 @@ const int DEFAULT_BAUD = 9600;
 const uint8_t DIP_SWITCHES[] = { Pins::DIPSWITCH_1, Pins::DIPSWITCH_2, Pins::DIPSWITCH_3, Pins::DIPSWITCH_4 };
 const uint8_t AUX_CHANNEL = Pins::AUX;
 
-constexpr int NAV_ADDRESS = 0x58; //Need to define based off onboard systems PCB
+constexpr int NAV_ADDRESS = Addresses::NAV_BOARD; //Need to define based off onboard systems PCB
 bool nav_initialized = false;      //Stores state if nav board is initalized or not
 
 //aux_value stores the PWM input from the aux channel
