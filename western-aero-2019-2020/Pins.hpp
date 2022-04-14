@@ -20,6 +20,11 @@ typedef enum {
   SDA_0 = 18,
   SCL_0 = 19,
 
+  // spi
+  MOSI_0 = 11,
+  MISO_0 = 12,
+  SCHO_0 = 13,
+
   // imu
   IMU_INT = 22,
 
@@ -40,6 +45,7 @@ typedef enum {
   RADIO_INT = 30,
   RADIO_EN = 32,
   RADIO_RST = 9,
+  RADIO_CS = 10,
 
   // gps
   GPS_FIX = 3,
