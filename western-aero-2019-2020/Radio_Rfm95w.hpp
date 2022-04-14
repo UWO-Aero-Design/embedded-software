@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/Rfm95w/RH_RF95.h"
-#include "src/aero-cpp-lib/include/Pins.hpp"
+#include "Pins.hpp"
 #include "src/aero-cpp-lib/include/Data.hpp"
 #include "src/aero-cpp-lib/include/Message.hpp"
 
@@ -9,7 +9,7 @@
  * @brief RFM95W base class
  * @details Used as a base class for RFM95WServer and RFM95WClient. Can also be used to test RFM95W initialization
  */
-class RFM95W {
+class Radio_Rfm95w {
 public:
   
   /**
@@ -19,7 +19,7 @@ public:
    * @param rst_pin Radio Reset Pin
    * @param int_pin Radio Interrupt Pin
    */
-  RFM95W(aero::Pin cs_pin, aero::Pin rst_pin, aero::Pin int_pin) : radio(cs_pin, int_pin) {
+  RFM95W(Pins::RADIO_CS, Pins::RADIO_RST, Pins::RADIO_INT) : radio(cs_pin, int_pin) {
     this->m_rst_pin = rst_pin;
   } 
 

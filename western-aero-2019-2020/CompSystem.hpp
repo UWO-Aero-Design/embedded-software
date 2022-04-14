@@ -56,13 +56,13 @@ class CompSystem : public System {
 //        Serial.println("Error connecting to pitot tube.");
 //        is_success = false;
 //      }
-//      if (radio.init()) {
-//        Serial.println("Radio online.");
-//      }
-//      else {
-//        Serial.println("Error connecting to radio.");
-//        is_success = false;
-//      }
+      if (radio.init()) {
+        Serial.println("Radio online.");
+      }
+      else {
+        Serial.println("Error connecting to radio.");
+        is_success = false;
+      }
 //      if (servos.init()) {
 //        Serial.println("Servo controller online.");
 //      }
@@ -111,27 +111,21 @@ return true;
       enviro_data = enviro.data();
 //      gps_data = gps.data();
       
-
-      // fill print buffer with formatted text
-//      sprintf(print_buffer, "IMU [YPR]: %-7.2f %-7.2f %-7.2f\tPitot: %4i\tEnviro [A/T]: %-7.2f %-7.2f",
-//            imu_data.yaw/100.0, imu_data.pitch/100.0, imu_data.roll/100.0,
-//            pitot_data.differential_pressure,
-//            enviro_data.altitude/100.0, enviro_data.temperature/100.0);
             
 //      Serial.println(print_buffer);
 
       // Add to message buffer if configured to do so
-      if(SEND_IMU)       msg_handler.add_imu(imu_data);
-      if(SEND_PITOT)     msg_handler.add_pitot(pitot_data);
-      if(SEND_GPS)       msg_handler.add_gps(gps_data);
-      if(SEND_ENV)       msg_handler.add_enviro(enviro_data);
-      if(SEND_BATT)      msg_handler.add_battery(batt_data);
-      if(SEND_SYSTEM)    msg_handler.add_config(system_config_data);
-      if(SEND_STATUS)    msg_handler.add_status(status_state_data);
-      if(SEND_SERVOS)    msg_handler.add_actuators(servos_data);
-      if(SEND_AIRDATA)   msg_handler.add_airdata(airdata_data);
-      if(SEND_CMDS)      msg_handler.add_cmds(commands_data);
-      if(SEND_DROPALGO)  msg_handler.add_drop(dropalgo_data);
+//      if(SEND_IMU)       msg_handler.add_imu(imu_data);
+//      if(SEND_PITOT)     msg_handler.add_pitot(pitot_data);
+//      if(SEND_GPS)       msg_handler.add_gps(gps_data);
+//      if(SEND_ENV)       msg_handler.add_enviro(enviro_data);
+//      if(SEND_BATT)      msg_handler.add_battery(batt_data);
+//      if(SEND_SYSTEM)    msg_handler.add_config(system_config_data);
+//      if(SEND_STATUS)    msg_handler.add_status(status_state_data);
+//      if(SEND_SERVOS)    msg_handler.add_actuators(servos_data);
+//      if(SEND_AIRDATA)   msg_handler.add_airdata(airdata_data);
+//      if(SEND_CMDS)      msg_handler.add_cmds(commands_data);
+//      if(SEND_DROPALGO)  msg_handler.add_drop(dropalgo_data);
 
       aero::def::RawMessage_t raw_msg = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd);
       char *buf = (char *) &raw_msg;
@@ -163,14 +157,14 @@ return true;
 
 //      msg_handler.add_imu(imu_data);
 //      msg_handler.add_pitot(pitot_data);
-//      msg_handler.add_enviro(enviro_data);
+      msg_handler.add_enviro(enviro_data);
 //      msg_handler.add_gps(gps_data);
 
-//      RawMessage_t response_to_gnd = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
-//
-//
+      RawMessage_t response_to_gnd = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
+      radio.respond(response_to_gnd);
+
+
 //      aero::def::ParsedMessage_t* radio_recv = radio.receive();
-//      digitalWrite(22, LOW);
 
       // Receive the incoming message
 //      if ( radio_recv != NULL ) {
