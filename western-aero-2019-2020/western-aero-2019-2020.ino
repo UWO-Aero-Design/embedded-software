@@ -7,7 +7,7 @@
 #include "Wire.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "Pins.h"
+#include "Pins.hpp"
 
 const uint8_t BUILTIN_LED = 13;
 const int DEFAULT_BAUD = 9600;
