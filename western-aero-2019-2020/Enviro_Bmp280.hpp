@@ -1,4 +1,4 @@
-/** \file Enviro.hpp
+/** \file Enviro_Bmp280.hpp
  * @brief All code relating to the environment sensor
  */
 
@@ -36,8 +36,9 @@ public:
         // Initialize data member 
         m_data.altitude = 0;
         m_data.temperature = 0;
+        m_data.pressure = 0;
         
-        m_initialized = bmp280.begin(Addresses::BMP280);
+        m_initialized = m_bmp280.begin(Addresses::BMP280);
     
         return m_initialized;
     }
@@ -46,7 +47,7 @@ public:
      * @brief Update sensor value by reading registers over I2C
      * 
      * @return true sensor value updated
-     * @return false sensor value not updated
+     * @return false sensor read error
      */
     bool update() override {
         // If system is not initialized, return error
@@ -54,19 +55,19 @@ public:
             return false;
         }
 
-          temperature = bmp280.readTemperature();
-          pressure = bmp280.readPressure();
-          raw_altitude = bmp280.readAltitude(ZERO_PRESSURE);
-          altitude = raw_altitude - zero_altitude;
+          m_temperature = m_bmp280.readTemperature();
+          m_pressure = m_bmp280.readPressure();
+          m_raw_altitude = m_bmp280.readAltitude(ZERO_PRESSURE);
+          m_altitude = m_raw_altitude - m_zero_altitude;
           
           // check if error
-          if(altitude == NAN || temperature == NAN || pressure == NAN) {
+          if(m_altitude == NAN || m_temperature == NAN || m_pressure == NAN) {
             return false;
           }
           
-          m_data.altitude = (uint16_t)((altitude * STRUCT_ALTITUDE_OFFSET));
-          m_data.pressure = (uint16_t)(pressure * STRUCT_PRESSURE_OFFSET);
-          m_data.temperature = (uint16_t)(temperature * STRUCT_TEMPERATURE_OFFSET);
+          m_data.altitude = (uint16_t)((m_altitude * STRUCT_ALTITUDE_OFFSET));
+          m_data.pressure = (uint16_t)(m_pressure * STRUCT_PRESSURE_OFFSET);
+          m_data.temperature = (uint16_t)(m_temperature * STRUCT_TEMPERATURE_OFFSET);
           
         return true;
     }
@@ -82,18 +83,20 @@ public:
   
       float accumulated_pressure = 0.0f;
       for(int i = 0; i < SAMPLES; i++) {
-        float alt = bmp280.readAltitude(ZERO_PRESSURE);
+        float alt = m_bmp280.readAltitude(ZERO_PRESSURE);
         accumulated_pressure += alt;
         delay(512); // Delay for update rate
       }
   
-      zero_altitude = accumulated_pressure / SAMPLES;
+      m_zero_altitude = accumulated_pressure / SAMPLES;
 
       return true;
       
     }
 
-    float offset() { return zero_altitude; }
+    float get_offset() { 
+      return m_zero_altitude;
+    }
 
     static constexpr const float STRUCT_ALTITUDE_OFFSET = 100.0;
     static constexpr const float STRUCT_ALTITUDE_BIAS = 10.0;
@@ -101,16 +104,16 @@ public:
     static constexpr const float STRUCT_TEMPERATURE_OFFSET = 100.0;
 
 private:
+
+    Adafruit_BMP280 m_bmp280;
     
     // Track whether sensor has been initialized
     bool m_initialized = false;
 
-    Adafruit_BMP280 bmp280;
-
-    float pressure = 0;
-    float temperature = 0;
-    float altitude = 0;
-    float raw_altitude = 0;
-    float zero_altitude = 0;
+    float m_pressure = 0;
+    float m_temperature = 0;
+    float m_altitude = 0;
+    float m_raw_altitude = 0;
+    float m_zero_altitude = 0;
     static constexpr const float ZERO_PRESSURE = 1013.25;
 };
