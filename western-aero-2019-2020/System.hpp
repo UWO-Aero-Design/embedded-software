@@ -10,7 +10,7 @@
 #include "src/aero-cpp-lib/include/Message.hpp"
 #include "src/aero-cpp-lib/include/Serial.hpp"
 #include "Imu.hpp"
-#include "Radio.hpp"
+#include "Radio_Rfm95w.hpp"
 #include "MockData.hpp"
 #include "PitotTube.hpp"
 #include "Enviro_Bmp280.hpp"
