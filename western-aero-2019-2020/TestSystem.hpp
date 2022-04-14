@@ -88,20 +88,20 @@ public:
     Wire.begin();
 
     // Check if environment sensor initialized properly
-    bool init_result = enviro.init();
+//    bool init_result = enviro.init();
 
-    if(!init_result) {
-      Serial.println("Environment sensor seems to not be connected. Check wiring.");
-      while(true);
-      return false;
-    }
-    else {
-      Serial.println("Environment sensor init complete.");
-      Serial.print("Calibrating sensor...");
-      enviro.calibrate();
-      Serial.println("Done.");
-      return true;
-    }
+//    if(!init_result) {
+//      Serial.println("Environment sensor seems to not be connected. Check wiring.");
+//      while(true);
+//      return false;
+//    }
+//    else {
+//      Serial.println("Environment sensor init complete.");
+//      Serial.print("Calibrating sensor...");
+//      enviro.calibrate();
+//      Serial.println("Done.");
+//      return true;
+//    }
   }
 
   /**
@@ -110,23 +110,23 @@ public:
    */
   bool update() override {
     // Check if environment sensor updated properly
-    bool update_result = enviro.update();
+//    bool update_result = enviro.update();
 
-    if(!update_result) {
-      Serial.println("Environment sensor update failed");
-      return false;
-    } else {
-      Serial.print("[M] Temperature: ");
-      Serial.print(enviro.data().temperature / enviro.STRUCT_TEMPERATURE_OFFSET);
-      Serial.print(" [C] ");
-      Serial.print(enviro.data().pressure / enviro.STRUCT_PRESSURE_OFFSET);
-      Serial.print(" [Pa] ");
-      Serial.print(" Altitude: ");
-      Serial.print(enviro.data().altitude / enviro.STRUCT_ALTITUDE_OFFSET);
-      Serial.print(" => ");
-      Serial.println(enviro.data().altitude / enviro.STRUCT_ALTITUDE_OFFSET) - enviro.offset();;
-      return true;
-    }
+//    if(!update_result) {
+//      Serial.println("Environment sensor update failed");
+//      return false;
+//    } else {
+//      Serial.print("[M] Temperature: ");
+//      Serial.print(enviro.data().temperature / enviro.STRUCT_TEMPERATURE_OFFSET);
+//      Serial.print(" [C] ");
+//      Serial.print(enviro.data().pressure / enviro.STRUCT_PRESSURE_OFFSET);
+//      Serial.print(" [Pa] ");
+//      Serial.print(" Altitude: ");
+//      Serial.print(enviro.data().altitude / enviro.STRUCT_ALTITUDE_OFFSET);
+//      Serial.print(" => ");
+//      Serial.println(enviro.data().altitude / enviro.STRUCT_ALTITUDE_OFFSET) - enviro.offset();;
+//      return true;
+//    }
 
     delay(500);
   }
@@ -134,7 +134,7 @@ public:
 private:
 
   // Enviro object
-  Mpl3115a2EnviroSensor enviro;
+//  Mpl3115a2EnviroSensor enviro;
 };
 
 /***************************************************************************/
@@ -511,4 +511,3 @@ private:
   // IMU object
   ImuMpu9250 m_imu;
 };
-

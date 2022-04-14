@@ -57,7 +57,8 @@ public:
 //         if(millis() - last_update >= UPDATE_DELTA) {
           float temperature = enviro.readTemperature();
           float pressure = enviro.readPressure();
-          float _altitude = enviro.readAltitude(zro_alt_pressure);
+//          float _altitude = enviro.readAltitude(zro_alt_pressure);
+          float _altitude = enviro.readAltitude(0);
           float agl = _altitude - zero_altitude;
           if(agl < -10) agl = -10;
           float biased_value = agl;
@@ -82,7 +83,8 @@ public:
   
       float accumulated_pressure = 0.0f;
       for(int i = 0; i < SAMPLES; i++) {
-        float alt = enviro.readAltitude(zero_al_pressure);
+//        float alt = enviro.readAltitude(zero_al_pressure);
+        float alt = enviro.readAltitude(0);
         accumulated_pressure += alt;
         delay(512); // Delay for update rate
       }

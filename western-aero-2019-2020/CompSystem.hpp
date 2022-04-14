@@ -43,13 +43,13 @@ class CompSystem : public System {
         Serial.println("Error connecting to IMU.");
         is_success = false;
       }
-      if (enviro.init()) {
-        Serial.println("Environment sensor online.");
-      }
-      else {
-        Serial.println("Error connecting to environment sensor.");
-        is_success = false;
-      }
+//      if (enviro.init()) {
+//        Serial.println("Environment sensor online.");
+//      }
+//      else {
+//        Serial.println("Error connecting to environment sensor.");
+//        is_success = false;
+//      }
       if (pitot.init()) {
         Serial.println("Pitot tube online.");
       }
@@ -82,7 +82,7 @@ class CompSystem : public System {
       Serial.println("\n");
 
       Serial.print("Calibrating Enviro...");
-      enviro.calibrate();
+//      enviro.calibrate();
       Serial.println("Done.");
 
       Serial.print("Calibrating IMU...");
@@ -97,29 +97,29 @@ class CompSystem : public System {
     bool update() override {
       bool imu_success = imu.update();
       bool pitot_success = pitot.update();
-      bool enviro_success = enviro.update();
+//      bool enviro_success = enviro.update();
       bool gps_success = gps.update();
 
       // collect data from sensors
       imu_data = imu.data();
       pitot_data = pitot.data();
-      enviro_data = enviro.data();
+//      enviro_data = enviro.data();
       gps_data = gps.data();
       
 
       // fill print buffer with formatted text
-      sprintf(print_buffer, "IMU [YPR]: %-7.2f %-7.2f %-7.2f\tPitot: %4i\tEnviro [A/T]: %-7.2f %-7.2f",
-            imu_data.yaw/100.0, imu_data.pitch/100.0, imu_data.roll/100.0,
-            pitot_data.differential_pressure,
-            enviro_data.altitude/100.0, enviro_data.temperature/100.0);
-            
-      Serial.println(print_buffer);
+//      sprintf(print_buffer, "IMU [YPR]: %-7.2f %-7.2f %-7.2f\tPitot: %4i\tEnviro [A/T]: %-7.2f %-7.2f",
+//            imu_data.yaw/100.0, imu_data.pitch/100.0, imu_data.roll/100.0,
+//            pitot_data.differential_pressure,
+//            enviro_data.altitude/100.0, enviro_data.temperature/100.0);
+//            
+//      Serial.println(print_buffer);
 
       // Add to message buffer if configured to do so
       if(SEND_IMU)       msg_handler.add_imu(imu_data);
       if(SEND_PITOT)     msg_handler.add_pitot(pitot_data);
       if(SEND_GPS)       msg_handler.add_gps(gps_data);
-      if(SEND_ENV)       msg_handler.add_enviro(enviro_data);
+//      if(SEND_ENV)       msg_handler.add_enviro(enviro_data);
       if(SEND_BATT)      msg_handler.add_battery(batt_data);
       if(SEND_SYSTEM)    msg_handler.add_config(system_config_data);
       if(SEND_STATUS)    msg_handler.add_status(status_state_data);
@@ -184,7 +184,8 @@ class CompSystem : public System {
         digitalWrite(21, LOW);
       }
 
-      return imu_success && pitot_success && enviro_success && gps_success;
+//      return imu_success && pitot_success && enviro_success && gps_success;
+      return imu_success && pitot_success && gps_success;
     }
 
   protected:
@@ -231,7 +232,7 @@ class CompSystem : public System {
     // Sensors
     ImuMpu9250 imu;
     PhidgetPitotTube pitot {aero::teensy35::P14_PWM};
-    Mpl3115a2EnviroSensor enviro;
+//    Mpl3115a2EnviroSensor enviro;
     RFM95WServer radio{ aero::teensy35::P10_PWM, aero::teensy35::P34, aero::teensy35::P31 };
 #ifdef GROUND_STATION
     AdafruitGPS gps {&Serial1};
