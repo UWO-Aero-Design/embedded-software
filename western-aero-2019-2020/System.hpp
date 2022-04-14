@@ -14,6 +14,7 @@
 #include "MockData.hpp"
 #include "PitotTube.hpp"
 #include "Enviro_Bmp280.hpp"
+#include "Enviro_Mpl3115a2.hpp"
 #include "GPS.hpp"
 #include "src/Rfm95w/RH_RF95.h"
 #include "Servo.hpp"
