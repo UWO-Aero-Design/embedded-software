@@ -53,7 +53,7 @@ class SystemSelect {
     /**
      *  @brief The different valid systems the onboard code can boot into
      */
-    enum Type {
+    typedef enum {
       //Binary bits assigned according to 3 DIP Switches (2^3 possible combinations)
       PitotDemo_t           = 0b00000000, // System for testing the pitot tube
       EnviroDemo_t          = 0b00000001, // System for testing the environment sensor
@@ -62,7 +62,7 @@ class SystemSelect {
       RadioServerDemo_t     = 0b00000101, // System for testing the radio in server mode
       IMUDemo_t             = 0b00000110, // System for testing the imu sensor
       CompSystem_t          = 0b00000111  // System for competition      
-    };
+    } SystemType;
 
      /**
      * @brief Used to get a system object from a valid system type
@@ -70,7 +70,7 @@ class SystemSelect {
      * @param type Type of system to return (SystemType)
      * @return System pointer of the correct type
     */
-    static System *select(Type type) {
+    static System *select(SystemType type) {
       switch(type) {
         case PitotDemo_t: {
           return new PitotTubeDemo();
@@ -112,7 +112,7 @@ class SystemSelect {
      * @param type Type of system to return (SystemType)
      * @return String containing the name of the system
      */
-    static String get_description(Type type) {
+    static String get_description(SystemType type) {
       switch(type) {
         case PitotDemo_t: {
           return PitotTubeDemo::DESCRIPTION;
