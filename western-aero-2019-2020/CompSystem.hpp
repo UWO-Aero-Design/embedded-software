@@ -107,6 +107,38 @@ class CompSystem : public System {
       gps_data = gps.data();
       
 
+      // fill print buffer with formatted text
+      sprintf(print_buffer, "IMU [YPR]: %-7.2f %-7.2f %-7.2f\tPitot: %4i\tEnviro [A/T]: %-7.2f %-7.2f",
+            imu_data.yaw/100.0, imu_data.pitch/100.0, imu_data.roll/100.0,
+            pitot_data.differential_pressure,
+            enviro_data.altitude/100.0, enviro_data.temperature/100.0);
+            
+      Serial.println(print_buffer);
+
+      // Add to message buffer if configured to do so
+      if(SEND_IMU)       msg_handler.add_imu(imu_data);
+      if(SEND_PITOT)     msg_handler.add_pitot(pitot_data);
+      if(SEND_GPS)       msg_handler.add_gps(gps_data);
+      if(SEND_ENV)       msg_handler.add_enviro(enviro_data);
+      if(SEND_BATT)      msg_handler.add_battery(batt_data);
+      if(SEND_SYSTEM)    msg_handler.add_config(system_config_data);
+      if(SEND_STATUS)    msg_handler.add_status(status_state_data);
+      if(SEND_SERVOS)    msg_handler.add_actuators(servos_data);
+      if(SEND_AIRDATA)   msg_handler.add_airdata(airdata_data);
+      if(SEND_CMDS)      msg_handler.add_cmds(commands_data);
+      if(SEND_DROPALGO)  msg_handler.add_drop(dropalgo_data);
+
+      aero::def::RawMessage_t raw_msg = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd);
+      char *buf = (char *) &raw_msg;
+
+      // Send message. Make sure to skip the part of the buffer that is empty
+      for(int i = 0; i < sizeof(raw_msg); ++i) {
+        if(i == raw_msg.length+6) {
+          i = 256+6;
+        }
+      }
+    
+
 
 //      algo.set_height(enviro_data.altitude / Mpl3115a2EnviroSensor::STRUCT_ALTITUDE_OFFSET);
 //      algo.set_coords(gps_data.lat / AdafruitGPS::LAT_SCALAR, gps_data.lon / AdafruitGPS::LON_SCALAR);
@@ -176,6 +208,19 @@ class CompSystem : public System {
     aero::def::AirData_t airdata_data;
     aero::def::Commands_t commands_data;
     aero::def::DropAlgo_t dropalgo_data;
+
+    // Flags to tell message builder whether or not to add certain data
+    const static bool SEND_IMU = true;
+    const static bool SEND_PITOT = true;
+    const static bool SEND_GPS = true;
+    const static bool SEND_ENV = true;
+    const static bool SEND_BATT = true;
+    const static bool SEND_SYSTEM = true;
+    const static bool SEND_STATUS = true;
+    const static bool SEND_SERVOS = true;
+    const static bool SEND_AIRDATA = true;
+    const static bool SEND_CMDS = true;
+    const static bool SEND_DROPALGO = true;
 
     // Message handler
     aero::Message msg_handler;
