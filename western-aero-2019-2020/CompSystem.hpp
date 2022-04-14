@@ -5,7 +5,6 @@
 #pragma once
 
 #include "System.hpp"
-#include "src/aero-cpp-lib/include/Pins.hpp"
 #include "src/aero-cpp-lib/include/Utility.hpp"
 #include <stdio.h>
 
@@ -36,75 +35,81 @@ class CompSystem : public System {
       bool is_success = true;
 
       // Serial object initialization
-      if (imu.init()) {
-        Serial.println("IMU online.");
-      }
-      else {
-        Serial.println("Error connecting to IMU.");
-        is_success = false;
-      }
-//      if (enviro.init()) {
-//        Serial.println("Environment sensor online.");
+//      if (imu.init()) {
+//        Serial.println("IMU online.");
 //      }
 //      else {
-//        Serial.println("Error connecting to environment sensor.");
+//        Serial.println("Error connecting to IMU.");
 //        is_success = false;
 //      }
-      if (pitot.init()) {
-        Serial.println("Pitot tube online.");
+      if (enviro.init()) {
+        Serial.println("Environment sensor online.");
       }
       else {
-        Serial.println("Error connecting to pitot tube.");
+        Serial.println("Error connecting to environment sensor.");
         is_success = false;
       }
-      if (radio.init()) {
-        Serial.println("Radio online.");
-      }
-      else {
-        Serial.println("Error connecting to radio.");
-        is_success = false;
-      }
-      if (servos.init()) {
-        Serial.println("Servo controller online.");
-      }
-      else {
-        Serial.println("Error connecting to servo controller.");
-        is_success = false;
-      }
-      if (gps.init()) {
-        Serial.println("GPS online.");
-      }
-      else {
-        Serial.println("Error connecting to GPS.");
-        is_success = false;
-      }
+//      if (pitot.init()) {
+//        Serial.println("Pitot tube online.");
+//      }
+//      else {
+//        Serial.println("Error connecting to pitot tube.");
+//        is_success = false;
+//      }
+//      if (radio.init()) {
+//        Serial.println("Radio online.");
+//      }
+//      else {
+//        Serial.println("Error connecting to radio.");
+//        is_success = false;
+//      }
+//      if (servos.init()) {
+//        Serial.println("Servo controller online.");
+//      }
+//      else {
+//        Serial.println("Error connecting to servo controller.");
+//        is_success = false;
+//      }
+//      if (gps.init()) {
+//        Serial.println("GPS online.");
+//      }
+//      else {
+//        Serial.println("Error connecting to GPS.");
+//        is_success = false;
+//      }
       
-      Serial.println("\n");
-
+//      Serial.println("\n");
+//
       Serial.print("Calibrating Enviro...");
-//      enviro.calibrate();
-      Serial.println("Done.");
+      if(enviro.calibrate()) {
+        Serial.println("Done.");
+      }
+      else {
+        Serial.println("Error calibrating the enviro.");
+        is_success = false;
+      }
 
-      Serial.print("Calibrating IMU...");
-      imu.calibrate();
-      Serial.println("Done.");
+//      Serial.print("Calibrating IMU...");
+//      imu.calibrate();
+//      Serial.println("Done.");
 
-      digitalWrite(20, LOW);
+//      digitalWrite(20, LOW);
       
       return is_success;
+return true;
     }
 
     bool update() override {
-      bool imu_success = imu.update();
-      bool pitot_success = pitot.update();
-//      bool enviro_success = enviro.update();
-      bool gps_success = gps.update();
+//      bool imu_success = imu.update();
+//      bool pitot_success = pitot.update();
+      bool enviro_success = enviro.update();
+//      bool gps_success = gps.update();
 
       // collect data from sensors
-      imu_data = imu.data();
-      pitot_data = pitot.data();
-//      enviro_data = enviro.data();
-      gps_data = gps.data();
+//      imu_data = imu.data();
+//      pitot_data = pitot.data();
+      enviro_data = enviro.data();
+//      gps_data = gps.data();
       
 
       // fill print buffer with formatted text
@@ -112,14 +117,14 @@ class CompSystem : public System {
 //            imu_data.yaw/100.0, imu_data.pitch/100.0, imu_data.roll/100.0,
 //            pitot_data.differential_pressure,
 //            enviro_data.altitude/100.0, enviro_data.temperature/100.0);
-//            
+            
 //      Serial.println(print_buffer);
 
       // Add to message buffer if configured to do so
       if(SEND_IMU)       msg_handler.add_imu(imu_data);
       if(SEND_PITOT)     msg_handler.add_pitot(pitot_data);
       if(SEND_GPS)       msg_handler.add_gps(gps_data);
-//      if(SEND_ENV)       msg_handler.add_enviro(enviro_data);
+      if(SEND_ENV)       msg_handler.add_enviro(enviro_data);
       if(SEND_BATT)      msg_handler.add_battery(batt_data);
       if(SEND_SYSTEM)    msg_handler.add_config(system_config_data);
       if(SEND_STATUS)    msg_handler.add_status(status_state_data);
@@ -156,36 +161,36 @@ class CompSystem : public System {
       }
 
 
-      msg_handler.add_imu(imu_data);
-      msg_handler.add_pitot(pitot_data);
-      msg_handler.add_enviro(enviro_data);
-      msg_handler.add_gps(gps_data);
+//      msg_handler.add_imu(imu_data);
+//      msg_handler.add_pitot(pitot_data);
+//      msg_handler.add_enviro(enviro_data);
+//      msg_handler.add_gps(gps_data);
 
-      RawMessage_t response_to_gnd = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
-
-
-      aero::def::ParsedMessage_t* radio_recv = radio.receive();
-      digitalWrite(22, LOW);
+//      RawMessage_t response_to_gnd = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
+//
+//
+//      aero::def::ParsedMessage_t* radio_recv = radio.receive();
+//      digitalWrite(22, LOW);
 
       // Receive the incoming message
-      if ( radio_recv != NULL ) {
-        if (radio_recv->m_to == aero::def::ID::Plane) {
-          digitalWrite(22, HIGH);
-          Serial.println("Message received from ground station");
-          if (radio_recv->cmds() != NULL) {
-           run_servos(radio_recv->cmds());
-           run_commands(radio_recv->cmds());
-         }
-         radio.respond(response_to_gnd);
-        }
-      }
+//      if ( radio_recv != NULL ) {
+//        if (radio_recv->m_to == aero::def::ID::Plane) {
+//          digitalWrite(22, HIGH);
+//          Serial.println("Message received from ground station");
+//          if (radio_recv->cmds() != NULL) {
+//           run_servos(radio_recv->cmds());
+//           run_commands(radio_recv->cmds());
+//         }
+//         radio.respond(response_to_gnd);
+//        }
+//      }
 
-      if(millis() - last_led_update >= 1000) {
-        digitalWrite(21, LOW);
-      }
+//      if(millis() - last_led_update >= 1000) {
+//        digitalWrite(21, LOW);
+//      }
 
 //      return imu_success && pitot_success && enviro_success && gps_success;
-      return imu_success && pitot_success && gps_success;
+  return true;
     }
 
   protected:
@@ -232,7 +237,7 @@ class CompSystem : public System {
     // Sensors
     ImuMpu9250 imu;
     PhidgetPitotTube pitot {aero::teensy35::P14_PWM};
-//    Mpl3115a2EnviroSensor enviro;
+    AdafruitBMP280EnviroSensor enviro;
     RFM95WServer radio{ aero::teensy35::P10_PWM, aero::teensy35::P34, aero::teensy35::P31 };
 #ifdef GROUND_STATION
     AdafruitGPS gps {&Serial1};

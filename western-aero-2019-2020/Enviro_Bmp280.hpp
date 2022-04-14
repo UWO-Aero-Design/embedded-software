@@ -36,9 +36,8 @@ public:
         m_data.altitude = 0;
         m_data.temperature = 0;
         
-        enviro.begin();
+        m_initialized = bmp280.begin();
     
-        m_initialized = true;
         return m_initialized;
     }
 
@@ -54,43 +53,42 @@ public:
             return false;
         }
 
-//         if(millis() - last_update >= UPDATE_DELTA) {
-          float temperature = enviro.readTemperature();
-          float pressure = enviro.readPressure();
-//          float _altitude = enviro.readAltitude(zro_alt_pressure);
-          float _altitude = enviro.readAltitude(0);
-          float agl = _altitude - zero_altitude;
-          if(agl < -10) agl = -10;
-          float biased_value = agl;
+          temperature = bmp280.readTemperature();
+          pressure = bmp280.readPressure();
+          raw_altitude = bmp280.readAltitude(ZERO_PRESSURE);
+          altitude = raw_altitude - zero_altitude;
           
           // check if error
-          if(_altitude == -999 || temperature == -999 || pressure == -999) {
+          if(altitude == NAN || temperature == NAN || pressure == NAN) {
             return false;
           }
           
-          m_data.altitude = (uint16_t)((agl * STRUCT_ALTITUDE_OFFSET));
+          m_data.altitude = (uint16_t)((altitude * STRUCT_ALTITUDE_OFFSET));
           m_data.pressure = (uint16_t)(pressure * STRUCT_PRESSURE_OFFSET);
           m_data.temperature = (uint16_t)(temperature * STRUCT_TEMPERATURE_OFFSET);
-          last_update = millis();
-//         }
           
         return true;
     }
 
-    void calibrate() {
+    bool calibrate() {
+      // If system is not initialized, return error
+        if(!m_initialized) {
+            return false;
+        }
+      
       // Amount of barometer samples for calibration
-      static const int SAMPLES = 25;
+      static constexpr const int SAMPLES = 3;
   
       float accumulated_pressure = 0.0f;
       for(int i = 0; i < SAMPLES; i++) {
-//        float alt = enviro.readAltitude(zero_al_pressure);
-        float alt = enviro.readAltitude(0);
+        float alt = bmp280.readAltitude(ZERO_PRESSURE);
         accumulated_pressure += alt;
         delay(512); // Delay for update rate
       }
   
       zero_altitude = accumulated_pressure / SAMPLES;
-      // Serial.println(zero_altitude);
+
+      return true;
       
     }
 
@@ -106,14 +104,12 @@ private:
     // Track whether sensor has been initialized
     bool m_initialized = false;
 
-    // An environment sensor
-    Adafruit_BMP280 enviro;
+    Adafruit_BMP280 bmp280;
 
+    float pressure = 0;
+    float temperature = 0;
+    float altitude = 0;
     float raw_altitude = 0;
     float zero_altitude = 0;
-    float zero_alt_pressure = enviro.readPressure();
-    static constexpr const float ELEVATION_OFFSET = 0.0f;
-
-    long last_update = 0;
-    const int UPDATE_DELTA = 512;
+    static constexpr const float ZERO_PRESSURE = 1013.25;
 };

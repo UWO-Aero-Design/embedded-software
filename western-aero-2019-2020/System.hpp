@@ -13,7 +13,7 @@
 #include "Radio.hpp"
 #include "MockData.hpp"
 #include "PitotTube.hpp"
-#include "Enviro.hpp"
+#include "Enviro_Bmp280.hpp"
 #include "GPS.hpp"
 #include "src/Rfm95w/RH_RF95.h"
 #include "Servo.hpp"
