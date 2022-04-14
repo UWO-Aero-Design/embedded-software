@@ -7,12 +7,13 @@
 #include "Wire.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "Pins.h"
 
 const uint8_t BUILTIN_LED = 13;
 const int DEFAULT_BAUD = 9600;
 //First 3 switches used to select system type while last switch used to select flight stabilization
-const uint8_t DIP_SWITCHES[] = { 24, 25, 26, 27 };
-const uint8_t AUX_CHANNEL = 12;
+const uint8_t DIP_SWITCHES[] = { Pins::DIPSWITCH_1, Pins::DIPSWITCH_2, Pins::DIPSWITCH_3, Pins::DIPSWITCH_4 };
+const uint8_t AUX_CHANNEL = Pins::AUX;
 
 constexpr int NAV_ADDRESS = 0x58; //Need to define based off onboard systems PCB
 bool nav_initialized = false;      //Stores state if nav board is initalized or not
@@ -117,11 +118,11 @@ void loop() {
 //ISR for rising edge saves the time in microseconds and attachs interrupt to falling edge
 void rising() {
   prev_time = micros();
-  attachInterrupt(digitalPinToInterrupt(AUX_CHANNEL), falling, FALLING)
+  attachInterrupt(digitalPinToInterrupt(AUX_CHANNEL), falling, FALLING);
 }
 
 //ISR for falling edge finds the pulse width of the PWM signal and resets interrupt to rising edge
 void falling() {
   aux_value = micros() - prev_time;
-  attachInterrupt(digitalPinToInterrupt(AUX_CHANNEL), rising, RISING)
+  attachInterrupt(digitalPinToInterrupt(AUX_CHANNEL), rising, RISING);
 }
