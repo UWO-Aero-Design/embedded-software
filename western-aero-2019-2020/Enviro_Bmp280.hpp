@@ -93,14 +93,9 @@ public:
       return m_zero_altitude;
     }
 
-    static constexpr const float STRUCT_ALTITUDE_OFFSET = 100.0;
-    static constexpr const float STRUCT_PRESSURE_OFFSET = 100.0;
-    static constexpr const float STRUCT_TEMPERATURE_OFFSET = 100.0;
-
 private:
 
     Adafruit_BMP280 m_bmp280;
-    
     // Track whether sensor has been initialized
     bool m_initialized = false;
 

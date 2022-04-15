@@ -17,11 +17,16 @@
 class ServoController{
   public:
   
-    ServoController() { };
+    ServoController() { test=0; };
     ~ServoController() { };
 
     // array of all 16 servos (0-15)
     Servo_t m_servos[16] = { servo0, servo1, servo2, servo3, servo4, servo5, servo6, servo7, servo8, servo9, servo10, servo11, servo12, servo13, servo14, servo15 };
+
+    uint32_t get_test() {
+      delay(200);
+      return test++;
+    }
 
     /**
      * @brief Initialize the servo controller
@@ -31,6 +36,7 @@ class ServoController{
       // quickly begin and end a transmission to determine if chip is connected
       Wire.beginTransmission(ADDRESS);
       int result = Wire.endTransmission();
+      test = 0;
 
       // wire returns '0' if the transmission was ack'd
       if(result != 0) {
@@ -53,16 +59,16 @@ class ServoController{
      * 
      * @param servo The servo of interest
      */
-    void actuate_servo(Servo_t servo, int position) {
-      m_pwm.setPWM(servo.pin, 0, position);
+    void actuate(uint8_t servo_num, int position) {
+      m_pwm.setPWM(m_servos[servo_num].pin, 0, position);
     };
 
-    void open_servo(Servo_t servo) {
-      m_pwm.setPWM(servo.pin, 0, servo.open_pos);
+    void open(uint8_t servo_num) {
+      m_pwm.setPWM(m_servos[servo_num].pin, 0, m_servos[servo_num].open_pos);
     };
 
-    void close_servo(Servo_t servo) {
-      m_pwm.setPWM(servo.pin, 0, servo.close_pos);
+    void close(uint8_t servo_num) {
+      m_pwm.setPWM(m_servos[servo_num].pin, 0, m_servos[servo_num].close_pos);
     };
 
     /**
@@ -116,6 +122,7 @@ class ServoController{
     }
 
   private:
+    uint32_t test = 0;
     constexpr static int ADDRESS = 0x47; // defined based off of v2.0 of onboard systems PCB
     bool m_initilized = false; // keep track of init state
     Adafruit_PWMServoDriver m_pwm = Adafruit_PWMServoDriver(ADDRESS); // servo driver object

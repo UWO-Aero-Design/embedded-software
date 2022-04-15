@@ -682,7 +682,7 @@ bool Adafruit_GPS::parseCoord(char *pStart, nmea_float_t *angleDegrees,
   char *p = pStart;
   if (!isEmpty(p)) {
     // get the number in DDDMM.mmmm format and break into components
-    char degreebuff[10];
+    char degreebuff[10] = {0}; // Ensure string is terminated after strncpy
     char *e = strchr(p, '.');
     if (e == NULL || e - p > 6)
       return false;                // no decimal point in range
@@ -785,7 +785,7 @@ bool Adafruit_GPS::parseTime(char *p) {
     char *dec = strchr(p, '.');
     char *comstar = min(strchr(p, ','), strchr(p, '*'));
     if (dec != NULL && comstar != NULL && dec < comstar)
-      milliseconds = atof(p) * 1000;
+      milliseconds = atof(dec) * 1000;
     else
       milliseconds = 0;
     lastTime = sentTime;
