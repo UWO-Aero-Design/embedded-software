@@ -1,9 +1,4 @@
 
-
-<!-- <p align="center">
-  <img width="200" height="200" src="logo.png">
-</p> -->
-
 # Western Aero Design Team - Embedded Software
 
 ## Goal

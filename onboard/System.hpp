@@ -7,13 +7,13 @@
 #include "Arduino.h"
 #include "src/aero-cpp-lib/include/Pins.hpp"
 #include "src/aero-cpp-lib/include/Data.hpp"
-#include "src/aero-cpp-lib/include/Message.hpp"
-#include "src/aero-cpp-lib/include/Serial.hpp"
-#include "Imu.hpp"
-#include "Radio.hpp"
+//#include "Imu_Mpu9250.hpp"
+#include "Imu_Icm20948.hpp"
+#include "Radio_Rfm95w.hpp"
 #include "MockData.hpp"
 #include "PitotTube.hpp"
-#include "Enviro.hpp"
+#include "Enviro_Bmp280.hpp"
+#include "Enviro_Mpl3115a2.hpp"
 #include "GPS.hpp"
 #include "src/Rfm95w/RH_RF95.h"
 #include "Servo.hpp"
@@ -36,8 +36,8 @@ class System {
 };
 
 #include "CompSystem.hpp"
-#include "TestSystem.hpp"
-#include "GroundStation.hpp"
+//#include "TestSystem.hpp"
+//#include "GroundStation.hpp"
 
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -52,7 +52,7 @@ class SystemSelect {
     /**
      *  @brief The different valid systems the onboard code can boot into
      */
-    enum Type {
+    typedef enum {
       //Binary bits assigned according to 3 DIP Switches (2^3 possible combinations)
       PitotDemo_t           = 0b00000000, // System for testing the pitot tube
       EnviroDemo_t          = 0b00000001, // System for testing the environment sensor
@@ -61,7 +61,7 @@ class SystemSelect {
       RadioServerDemo_t     = 0b00000101, // System for testing the radio in server mode
       IMUDemo_t             = 0b00000110, // System for testing the imu sensor
       CompSystem_t          = 0b00000111  // System for competition      
-    };
+    } SystemType;
 
      /**
      * @brief Used to get a system object from a valid system type
@@ -69,31 +69,31 @@ class SystemSelect {
      * @param type Type of system to return (SystemType)
      * @return System pointer of the correct type
     */
-    static System *select(Type type) {
+    static System *select(SystemType type) {
       switch(type) {
-        case PitotDemo_t: {
-          return new PitotTubeDemo();
-        } break;
-
-        case EnviroDemo_t: {
-          return new EnviroSensorDemo();
-        } break;
-
-        case AdafruitGPSDemo_t: {
-          return new AdafruitGPSDemo();
-        } break;
-
-        case RadioClientDemo_t: {
-          return new RadioClientDemo();
-        } break;
-
-        case RadioServerDemo_t: {
-          return new RadioServerDemo();
-        } break;
-
-        case IMUDemo_t: {
-          return new IMUSensorDemo();
-        } break;
+//        case PitotDemo_t: {
+//          return new PitotTubeDemo();
+//        } break;
+//
+//        case EnviroDemo_t: {
+//          return new EnviroSensorDemo();
+//        } break;
+//
+//        case AdafruitGPSDemo_t: {
+//          return new AdafruitGPSDemo();
+//        } break;
+//
+//        case RadioClientDemo_t: {
+//          return new RadioClientDemo();
+//        } break;
+//
+//        case RadioServerDemo_t: {
+//          return new RadioServerDemo();
+//        } break;
+//
+//        case IMUDemo_t: {
+//          return new IMUSensorDemo();
+//        } break;
 
         case CompSystem_t: {
           return new CompSystem();
@@ -111,31 +111,31 @@ class SystemSelect {
      * @param type Type of system to return (SystemType)
      * @return String containing the name of the system
      */
-    static String get_description(Type type) {
+    static String get_description(SystemType type) {
       switch(type) {
-        case PitotDemo_t: {
-          return PitotTubeDemo::DESCRIPTION;
-        } break;
-
-        case EnviroDemo_t: {
-          return EnviroSensorDemo::DESCRIPTION;
-        } break;
-
-        case AdafruitGPSDemo_t: {
-          return AdafruitGPSDemo::DESCRIPTION;
-        } break;
-
-        case RadioClientDemo_t: {
-          return RadioClientDemo::DESCRIPTION;
-        } break;
-
-        case RadioServerDemo_t: {
-          return RadioServerDemo::DESCRIPTION;
-        } break;
-
-        case IMUDemo_t: {
-          return IMUSensorDemo::DESCRIPTION;
-        } break;
+//        case PitotDemo_t: {
+//          return PitotTubeDemo::DESCRIPTION;
+//        } break;
+//
+//        case EnviroDemo_t: {
+//          return EnviroSensorDemo::DESCRIPTION;
+//        } break;
+//
+//        case AdafruitGPSDemo_t: {
+//          return AdafruitGPSDemo::DESCRIPTION;
+//        } break;
+//
+//        case RadioClientDemo_t: {
+//          return RadioClientDemo::DESCRIPTION;
+//        } break;
+//
+//        case RadioServerDemo_t: {
+//          return RadioServerDemo::DESCRIPTION;
+//        } break;
+//
+//        case IMUDemo_t: {
+//          return IMUSensorDemo::DESCRIPTION;
+//        } break;
         
         case CompSystem_t:
         default:
