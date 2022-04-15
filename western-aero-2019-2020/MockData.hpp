@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "src/aero-cpp-lib/include/Message.hpp"
+//#include "src/aero-cpp-lib/include/Message.hpp"
 
 /*!
   @brief Struct consisting of mock data to stub sensor results

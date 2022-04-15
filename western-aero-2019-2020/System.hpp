@@ -7,8 +7,6 @@
 #include "Arduino.h"
 #include "src/aero-cpp-lib/include/Pins.hpp"
 #include "src/aero-cpp-lib/include/Data.hpp"
-#include "src/aero-cpp-lib/include/Message.hpp"
-#include "src/aero-cpp-lib/include/Serial.hpp"
 #include "Imu.hpp"
 #include "Radio_Rfm95w.hpp"
 #include "MockData.hpp"
@@ -37,8 +35,8 @@ class System {
 };
 
 #include "CompSystem.hpp"
-#include "TestSystem.hpp"
-#include "GroundStation.hpp"
+//#include "TestSystem.hpp"
+//#include "GroundStation.hpp"
 
 /***************************************************************************/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -72,29 +70,29 @@ class SystemSelect {
     */
     static System *select(SystemType type) {
       switch(type) {
-        case PitotDemo_t: {
-          return new PitotTubeDemo();
-        } break;
-
-        case EnviroDemo_t: {
-          return new EnviroSensorDemo();
-        } break;
-
-        case AdafruitGPSDemo_t: {
-          return new AdafruitGPSDemo();
-        } break;
-
-        case RadioClientDemo_t: {
-          return new RadioClientDemo();
-        } break;
-
-        case RadioServerDemo_t: {
-          return new RadioServerDemo();
-        } break;
-
-        case IMUDemo_t: {
-          return new IMUSensorDemo();
-        } break;
+//        case PitotDemo_t: {
+//          return new PitotTubeDemo();
+//        } break;
+//
+//        case EnviroDemo_t: {
+//          return new EnviroSensorDemo();
+//        } break;
+//
+//        case AdafruitGPSDemo_t: {
+//          return new AdafruitGPSDemo();
+//        } break;
+//
+//        case RadioClientDemo_t: {
+//          return new RadioClientDemo();
+//        } break;
+//
+//        case RadioServerDemo_t: {
+//          return new RadioServerDemo();
+//        } break;
+//
+//        case IMUDemo_t: {
+//          return new IMUSensorDemo();
+//        } break;
 
         case CompSystem_t: {
           return new CompSystem();
@@ -114,29 +112,29 @@ class SystemSelect {
      */
     static String get_description(SystemType type) {
       switch(type) {
-        case PitotDemo_t: {
-          return PitotTubeDemo::DESCRIPTION;
-        } break;
-
-        case EnviroDemo_t: {
-          return EnviroSensorDemo::DESCRIPTION;
-        } break;
-
-        case AdafruitGPSDemo_t: {
-          return AdafruitGPSDemo::DESCRIPTION;
-        } break;
-
-        case RadioClientDemo_t: {
-          return RadioClientDemo::DESCRIPTION;
-        } break;
-
-        case RadioServerDemo_t: {
-          return RadioServerDemo::DESCRIPTION;
-        } break;
-
-        case IMUDemo_t: {
-          return IMUSensorDemo::DESCRIPTION;
-        } break;
+//        case PitotDemo_t: {
+//          return PitotTubeDemo::DESCRIPTION;
+//        } break;
+//
+//        case EnviroDemo_t: {
+//          return EnviroSensorDemo::DESCRIPTION;
+//        } break;
+//
+//        case AdafruitGPSDemo_t: {
+//          return AdafruitGPSDemo::DESCRIPTION;
+//        } break;
+//
+//        case RadioClientDemo_t: {
+//          return RadioClientDemo::DESCRIPTION;
+//        } break;
+//
+//        case RadioServerDemo_t: {
+//          return RadioServerDemo::DESCRIPTION;
+//        } break;
+//
+//        case IMUDemo_t: {
+//          return IMUSensorDemo::DESCRIPTION;
+//        } break;
         
         case CompSystem_t:
         default:
