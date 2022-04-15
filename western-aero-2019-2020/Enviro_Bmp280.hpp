@@ -55,19 +55,15 @@ public:
             return false;
         }
 
-          m_temperature = m_bmp280.readTemperature();
-          m_pressure = m_bmp280.readPressure();
+          m_data.temperature = m_bmp280.readTemperature();
+          m_data.pressure = m_bmp280.readPressure();
           m_raw_altitude = m_bmp280.readAltitude(ZERO_PRESSURE);
-          m_altitude = m_raw_altitude - m_zero_altitude;
+          m_data.altitude = m_raw_altitude - m_zero_altitude;
           
           // check if error
-          if(m_altitude == NAN || m_temperature == NAN || m_pressure == NAN) {
+          if(m_data.altitude == NAN || m_data.temperature == NAN || m_data.pressure == NAN) {
             return false;
           }
-          
-          m_data.altitude = (uint16_t)((m_altitude * STRUCT_ALTITUDE_OFFSET));
-          m_data.pressure = (uint16_t)(m_pressure * STRUCT_PRESSURE_OFFSET);
-          m_data.temperature = (uint16_t)(m_temperature * STRUCT_TEMPERATURE_OFFSET);
           
         return true;
     }
@@ -79,13 +75,12 @@ public:
         }
       
       // Amount of barometer samples for calibration
-      static constexpr const int SAMPLES = 3;
+      static constexpr const int SAMPLES = 200;
   
       float accumulated_pressure = 0.0f;
       for(int i = 0; i < SAMPLES; i++) {
         float alt = m_bmp280.readAltitude(ZERO_PRESSURE);
         accumulated_pressure += alt;
-        delay(512); // Delay for update rate
       }
   
       m_zero_altitude = accumulated_pressure / SAMPLES;
@@ -99,7 +94,6 @@ public:
     }
 
     static constexpr const float STRUCT_ALTITUDE_OFFSET = 100.0;
-    static constexpr const float STRUCT_ALTITUDE_BIAS = 10.0;
     static constexpr const float STRUCT_PRESSURE_OFFSET = 100.0;
     static constexpr const float STRUCT_TEMPERATURE_OFFSET = 100.0;
 

@@ -5,7 +5,9 @@
 #pragma once
 
 #include "System.hpp"
-#include "src/aero-cpp-lib/include/Utility.hpp"
+#include "src/Message/pb_encode.h"
+#include "src/Message/pb_decode.h"
+#include "src/Message/message.pb.h"
 #include <stdio.h>
 
 
@@ -100,6 +102,10 @@ return true;
     }
 
     bool update() override {
+      Message message = Message_init_zero;
+      load_header(&message, Message_Location::Message_Location_GROUND_STATION, packet_number++, Message_Status::Message_Status_READY, 2);
+      message.flight_stabilization = Message_FlightStabilization::Message_FlightStabilization_NONE;
+    
 //      bool imu_success = imu.update();
 //      bool pitot_success = pitot.update();
       bool enviro_success = enviro.update();
@@ -108,80 +114,46 @@ return true;
       // collect data from sensors
 //      imu_data = imu.data();
 //      pitot_data = pitot.data();
-      enviro_data = enviro.data();
-//      gps_data = gps.data();
-      
-            
-//      Serial.println(print_buffer);
-
-      // Add to message buffer if configured to do so
-//      if(SEND_IMU)       msg_handler.add_imu(imu_data);
-//      if(SEND_PITOT)     msg_handler.add_pitot(pitot_data);
-//      if(SEND_GPS)       msg_handler.add_gps(gps_data);
-//      if(SEND_ENV)       msg_handler.add_enviro(enviro_data);
-//      if(SEND_BATT)      msg_handler.add_battery(batt_data);
-//      if(SEND_SYSTEM)    msg_handler.add_config(system_config_data);
-//      if(SEND_STATUS)    msg_handler.add_status(status_state_data);
-//      if(SEND_SERVOS)    msg_handler.add_actuators(servos_data);
-//      if(SEND_AIRDATA)   msg_handler.add_airdata(airdata_data);
-//      if(SEND_CMDS)      msg_handler.add_cmds(commands_data);
-//      if(SEND_DROPALGO)  msg_handler.add_drop(dropalgo_data);
-
-      aero::def::RawMessage_t raw_msg = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd);
-      char *buf = (char *) &raw_msg;
-
-      // Send message. Make sure to skip the part of the buffer that is empty
-      for(int i = 0; i < sizeof(raw_msg); ++i) {
-        if(i == raw_msg.length+6) {
-          i = 256+6;
-        }
+      if(enviro_success) {
+        Enviro enviro_msg = Enviro_init_zero;
+        enviro_data = enviro.data();
+        enviro_msg.altitude = enviro_data.altitude;
+        enviro_msg.pressure = enviro_data.pressure;
+        enviro_msg.temperature = enviro_data.temperature;
+        message.enviro = enviro_msg;
+        message.has_enviro = true;
       }
-    
+//      gps_data = gps.data();
 
+      send_stream = pb_ostream_from_buffer(send_buffer, sizeof(send_buffer));
+      bool status = pb_encode(&send_stream, Message_fields, &message);
 
-//      algo.set_height(enviro_data.altitude / Mpl3115a2EnviroSensor::STRUCT_ALTITUDE_OFFSET);
-//      algo.set_coords(gps_data.lat / AdafruitGPS::LAT_SCALAR, gps_data.lon / AdafruitGPS::LON_SCALAR);
-//      algo.update();
+      if(status) {
+        status = radio.send(send_buffer, send_stream.bytes_written);
+        if(!status) {
+          Serial.println("Error sending");
+        }
+        delay(100);
+      }
+      else {
+        Serial.println("Error encoding");
+      }
 
       if(millis() - last_print >= 500) {
         // fill print buffer with formatted text
-        sprintf(print_buffer, "IMU [YPR]: %-7.2f %-7.2f %-7.2f\tPitot: %4i\tEnviro [A/T/P]: %-7.2f %-7.2f %-7.2f\tGPS [SAT]: %-2i",
-              imu_data.yaw / 100.0, imu_data.pitch / 100.0, imu_data.roll / 100.0,
-              pitot_data.differential_pressure,
-              (enviro_data.altitude) / 100.0, enviro_data.temperature / 100.0, enviro_data.pressure / 100.0 , gps_data.satellites);
+//        sprintf(print_buffer, "IMU [YPR]: %-7.2f %-7.2f %-7.2f\tEnviro [A/T/P]: %-7.2f %-7.2f %-7.2f\tGPS [SAT]: %-2i",
+//              imu_data.yaw, imu_data.pitch, imu_data.roll,
+//              enviro_data.altitude, enviro_data.temperature, enviro_data.pressure , gps_data.satellites);
+          sprintf(print_buffer, "Enviro [A/T/P]: %-7.2f %-7.2f %-7.2f", enviro_data.altitude, enviro_data.temperature, enviro_data.pressure);
         Serial.println(print_buffer);
 //        algo.print();
         last_print = millis();
       }
 
+      
 
-//      msg_handler.add_imu(imu_data);
-//      msg_handler.add_pitot(pitot_data);
-      msg_handler.add_enviro(enviro_data);
-//      msg_handler.add_gps(gps_data);
+      
 
-      RawMessage_t response_to_gnd = msg_handler.build(aero::def::ID::Plane, aero::def::ID::Gnd, true);
-      radio.respond(response_to_gnd);
-
-
-//      aero::def::ParsedMessage_t* radio_recv = radio.receive();
-
-      // Receive the incoming message
-//      if ( radio_recv != NULL ) {
-//        if (radio_recv->m_to == aero::def::ID::Plane) {
-//          digitalWrite(22, HIGH);
-//          Serial.println("Message received from ground station");
-//          if (radio_recv->cmds() != NULL) {
-//           run_servos(radio_recv->cmds());
-//           run_commands(radio_recv->cmds());
-//         }
-//         radio.respond(response_to_gnd);
-//        }
-//      }
-
-//      if(millis() - last_led_update >= 1000) {
-//        digitalWrite(21, LOW);
-//      }
 
 //      return imu_success && pitot_success && enviro_success && gps_success;
   return true;
@@ -192,6 +164,9 @@ return true;
   private:
     long last_print = 0;
     long last_led_update = 0;
+    uint32_t packet_number = 0;
+    uint8_t send_buffer[128];
+    pb_ostream_t send_stream;
   
     // holds the nicely formatted sensor data string for printing
     char print_buffer[256];
@@ -209,35 +184,14 @@ return true;
     aero::def::Commands_t commands_data;
     aero::def::DropAlgo_t dropalgo_data;
 
-    // Flags to tell message builder whether or not to add certain data
-    const static bool SEND_IMU = true;
-    const static bool SEND_PITOT = true;
-    const static bool SEND_GPS = true;
-    const static bool SEND_ENV = true;
-    const static bool SEND_BATT = true;
-    const static bool SEND_SYSTEM = true;
-    const static bool SEND_STATUS = true;
-    const static bool SEND_SERVOS = true;
-    const static bool SEND_AIRDATA = true;
-    const static bool SEND_CMDS = true;
-    const static bool SEND_DROPALGO = true;
-
-    // Message handler
-    aero::Message msg_handler;
-
-    // Servo controller
-    ServoController servos;
-
     // Sensors
     ImuMpu9250 imu;
     PhidgetPitotTube pitot {aero::teensy35::P14_PWM};
     AdafruitBMP280EnviroSensor enviro;
-    RFM95WServer radio{ aero::teensy35::P10_PWM, aero::teensy35::P34, aero::teensy35::P31 };
-#ifdef GROUND_STATION
-    AdafruitGPS gps {&Serial1};
-#else
+    Radio_Rfm95w radio;
     AdafruitGPS gps {&Serial3};
-#endif
+    ServoController servos;
+    
     bool gps_fix = false;
     uint8_t GPS_FIX_PIN = aero::teensy35::P16;
     DropAlgo algo = DropAlgo(28.084217, -81.965614);
@@ -248,6 +202,15 @@ return true;
     const uint8_t GLIDER_DROP_MASK     = 0b00000100;
     const uint8_t WATER_DROP_MASK      = 0b00001000;
     const uint8_t HABITATS_DROP_MASK   = 0b00010000;
+
+    void load_header(Message *msg, Message_Location recipient, uint32_t packet_number, Message_Status status, uint16_t rssi) {
+      msg->sender = Message_Location::Message_Location_PLANE;
+      msg->recipient = recipient;
+      msg->packet_number = packet_number;
+      msg->time = millis();
+      msg->status = status;
+      msg->rssi = rssi;
+    }
 
     void run_servos(aero::def::Commands_t* commands) {
       for (int i = 0; i < 8; i++) {
