@@ -90,6 +90,7 @@ class CompSystem : public System {
       bool imu_success = imu.update();
       bool enviro_success = enviro.update();
       bool gps_success = gps.update();
+      leds.update();
 
       // ---- collect data from sensors --- //
       if(imu_success) imu_data = imu.data();
@@ -163,6 +164,9 @@ class CompSystem : public System {
     Radio_Rfm95w radio;
     AdafruitGPS gps {&Serial2};
     ServoController servos;
+
+    // LEDs
+    LedController leds;
     
     bool gps_fix = false;
     uint8_t GPS_FIX_PIN = aero::teensy35::P16;
