@@ -78,6 +78,8 @@ class CompSystem : public System {
         is_success = false;
       }
 
+      leds.attach(&heart_beat_animation);
+
       Serial.println("\n");
       
       return is_success;
@@ -167,6 +169,8 @@ class CompSystem : public System {
 
     // LEDs
     LedController leds;
+    DoublePulseAnimation heart_beat_animation{Pins::WHITE_LED, 100, 100, 500};
+    
     
     bool gps_fix = false;
     uint8_t GPS_FIX_PIN = aero::teensy35::P16;
