@@ -127,3 +127,64 @@ class BlinkAnimation : public Animation {
     uint32_t last_blink = 0;
     bool state;
 };
+
+class DoublePulseAnimation : public Animation {
+  public:
+  
+    DoublePulseAnimation(uint32_t pin, uint32_t on_time, uint32_t off_time, uint32_t delay_time, bool inital_state = LOW) : on_time(on_time), off_time(off_time), delay_time(delay_time) {
+      this->pin = pin;
+      pinMode(pin, OUTPUT);
+      digitalWrite(pin, state);
+    };
+    ~DoublePulseAnimation(){};
+  
+    bool update() {
+      if(!enabled) {
+        return false;
+      }
+      
+      if(state == FIRST_ON && millis() - last_update >= on_time) {
+        state = SHORT_OFF;
+        digitalWrite(pin, LOW);
+        last_update = millis();
+        return true;
+      }
+      else if(state == SHORT_OFF && millis() - last_update >= off_time) {
+        state = SECOND_ON;
+        digitalWrite(pin, HIGH);
+        last_update = millis();
+        return true;
+      }
+      else if(state == SECOND_ON && millis() - last_update >= on_time) {
+        state = LONG_OFF;
+        digitalWrite(pin, LOW);
+        last_update = millis();
+        return true;
+      }
+      else if(state == LONG_OFF && millis() - last_update >= delay_time) {
+        state = FIRST_ON;
+        digitalWrite(pin, HIGH);
+        last_update = millis();
+        return true;
+      }
+      
+      return false;
+    }
+
+    void set_on_time(uint32_t on_time) {
+      this->on_time = on_time;
+    }
+
+    void set_off_time(uint32_t off_time) {
+      this->off_time = off_time;
+    }
+
+  private:
+
+    uint32_t on_time;
+    uint32_t off_time;
+    uint32_t delay_time;
+    uint32_t last_update = 0;
+    typedef enum { FIRST_ON, SHORT_OFF, SECOND_ON, LONG_OFF } State_t;
+    State_t state;
+};
