@@ -80,3 +80,50 @@ class LedController {
     Animation *head = NULL, *tail = NULL;
     
 };
+
+class BlinkAnimation : public Animation {
+  public:
+  
+    BlinkAnimation(uint32_t pin, uint32_t on_time, uint32_t off_time, bool inital_state = LOW) : on_time(on_time), off_time(off_time), state(inital_state) {
+      this->pin = pin;
+      pinMode(pin, OUTPUT);
+      digitalWrite(pin, state);
+    };
+    ~BlinkAnimation(){};
+  
+    bool update() {
+      if(!enabled) {
+        return false;
+      }
+      
+      if(state == HIGH && millis() - last_blink >= on_time) {
+          state = LOW;
+          digitalWrite(pin, state);
+          last_blink = millis();
+          return true;
+      }
+      else if(state == LOW && millis() - last_blink >= off_time) {
+        state = HIGH;
+        digitalWrite(pin, state);
+        last_blink = millis();
+        return true;
+      }
+      
+      return false;
+    }
+
+    void set_on_time(uint32_t on_time) {
+      this->on_time = on_time;
+    }
+
+    void set_off_time(uint32_t off_time) {
+      this->off_time = off_time;
+    }
+
+  private:
+
+    uint32_t on_time;
+    uint32_t off_time;
+    uint32_t last_blink = 0;
+    bool state;
+};
