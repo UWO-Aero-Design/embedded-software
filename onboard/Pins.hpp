@@ -36,6 +36,7 @@ typedef enum {
   SELECT = 31,
 
   // leds
+  BLUE_LED = 37,
   RED_LED = 38,
   YELLOW_LED = 39,
   WHITE_LED = 40,
