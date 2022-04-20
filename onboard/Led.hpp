@@ -188,3 +188,39 @@ class DoublePulseAnimation : public Animation {
     typedef enum { FIRST_ON, SHORT_OFF, SECOND_ON, LONG_OFF } State_t;
     State_t state;
 };
+
+class BrightnessAnimation : public Animation {
+  public:
+  
+    BrightnessAnimation(uint32_t pin, uint32_t brightness) {
+      this->pin = pin;
+      set_brightness(brightness);
+      pinMode(pin, OUTPUT);
+      analogWrite(pin, brightness);
+    };
+    ~BrightnessAnimation(){};
+  
+    bool update() {
+      if(!enabled) {
+        return false;
+      }
+      
+      if(need_to_update) {
+        analogWrite(pin, brightness);
+        need_to_update = false;
+        return true;
+      }
+
+      return false;
+    }
+
+    void set_brightness(uint32_t brightness) {
+      this->brightness = map(brightness, 0, 100, 0, 255);
+      need_to_update = true;
+    }
+
+  private:
+
+    uint32_t brightness;
+    bool need_to_update = true;
+};
