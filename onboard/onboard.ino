@@ -12,7 +12,7 @@
 
 // comment to use dip switches for system select
 // uncomment to use comp system
-#define OVERRIDE_SYS_TO_COMP_SYS
+#define OVERRIDE_SYS_TO_COMP_SYS true
 
 const long BAUD_RATE = 115200;
 
