@@ -80,8 +80,11 @@ class CompSystem : public System {
 
       leds.attach(&heart_beat_animation);
       leds.attach(&radio_animation);
+      leds.attach(&error_animation);
 
-      Serial.println("\n");
+      if(!is_success) {
+        error_animation.ping();
+      }
       
       return is_success;
       
@@ -171,6 +174,7 @@ class CompSystem : public System {
     LedController leds;
     DoublePulseAnimation heart_beat_animation{Pins::WHITE_LED, 100, 100, 500};
     HeartBeatAnimation radio_animation{Pins::YELLOW_LED, 500, HIGH, LOW};
+    HeartBeatAnimation error_animation{Pins::RED_LED, 1000, HIGH, LOW};
     
     
     bool gps_fix = false;
@@ -199,6 +203,7 @@ class CompSystem : public System {
         if (!status) {
           Serial.print("Error decoding message: ");
           Serial.println(PB_GET_ERROR(&receive_stream));
+          error_animation.ping();
         }
         else {
           // message successful decoded
@@ -206,6 +211,7 @@ class CompSystem : public System {
       }
       else {
         Serial.println("Error receiving message");
+        error_animation.ping();
       }
 
       return message_received;
@@ -282,6 +288,7 @@ class CompSystem : public System {
           break;
         default:
           Serial.println("Unknown command.");
+          error_animation.ping();
           break;
       }
       return true;
@@ -310,10 +317,12 @@ class CompSystem : public System {
         status = radio.send(send_buffer, send_stream.bytes_written);
         if(!status) {
           Serial.println("Error sending");
+          error_animation.ping();
         }
       }
       else {
         Serial.println("Error encoding");
+        error_animation.ping();
       }
     }
 
