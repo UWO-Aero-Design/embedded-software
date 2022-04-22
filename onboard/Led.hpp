@@ -75,35 +75,39 @@ class LedController {
       return true;
     }
 
-//    bool detach(Animation *animation) {
-//      if(head == null) {
-//        return false;
-//      }
-//      else {
-//        Animation *index = head;
-//        Animation *previous = NULL;
-//
-//        if(index != NULL) {
-//          if(index == animation) {
-//            head = index->next;
-//            animation_count--;
-//            return true;
-//          }
-//          else {
-//            while(index != NULL && index != animation) {
-//              previous = index;
-//              index = index->next;
-//            }
-//            if(index != NULL) {
-//              previous->next = index->next;
-//              animation_count--;
-//              return true;
-//            }
-//          }
-//        }
-//        return false;
-//      }
-//    }
+    bool detach(Animation *animation) {
+      if(head == NULL) {
+        return false;
+      }
+      else {
+        Animation *index = head;
+        Animation *previous = NULL;
+
+        if(index != NULL) {
+          if(index == animation) {
+            head = index->next;
+            animation_count--;
+            return true;
+          }
+          else {
+            while(index != NULL && index != animation) {
+              previous = index;
+              index = index->next;
+            }
+            if(index != NULL) {
+              previous->next = index->next;
+              animation_count--;
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+    }
+
+    uint32_t get_animation_count() {
+      return animation_count;
+    }
 
   private:
     uint32_t animation_count = 0;
