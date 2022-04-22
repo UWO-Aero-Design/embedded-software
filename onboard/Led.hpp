@@ -258,3 +258,42 @@ class BrightnessAnimation : public Animation {
     uint32_t brightness;
     bool need_to_update = true;
 };
+
+class HeartBeatAnimation : public Animation {
+  public:
+
+    HeartBeatAnimation(uint32_t pin, uint32_t timeout, bool keep_alive_state, bool default_state) : timeout(timeout), keep_alive_state(keep_alive_state) {
+      this->pin = pin;
+      state = default_state;
+      pinMode(pin, OUTPUT);
+      digitalWrite(pin, state);
+    };
+    ~HeartBeatAnimation(){};
+  
+    bool update() {
+      if(!enabled) {
+        return false;
+      }
+      
+      if(state == keep_alive_state && millis() - last_ping >= timeout) {
+        state = !keep_alive_state;
+        digitalWrite(pin, !keep_alive_state);
+      }
+    }
+
+    void ping() {
+      if(state != keep_alive_state) {
+        state = keep_alive_state;
+        digitalWrite(pin, keep_alive_state);
+      }
+      last_ping = millis();
+    }
+
+  private:
+
+    uint32_t timeout;
+    uint32_t last_ping = 0;
+    bool keep_alive_state;
+    bool state;
+  
+};
