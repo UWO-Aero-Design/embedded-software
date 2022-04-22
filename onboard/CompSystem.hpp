@@ -11,9 +11,6 @@
 #include "src/Message/pb_encode.h"
 #include "src/Message/pb_decode.h"
 #include "src/Message/message.pb.h"
-#include <stdio.h>
-
-#define TELEMETRY_SEND_TIMEOUT 100
 
 
 /***************************************************************************/
@@ -81,6 +78,7 @@ class CompSystem : public System {
       leds.attach(&heart_beat_animation);
       leds.attach(&radio_animation);
       leds.attach(&error_animation);
+      leds.attach(&gps_fix_animation);
 
       if(!is_success) {
         error_animation.ping();
@@ -103,6 +101,10 @@ class CompSystem : public System {
       if(enviro_success) enviro_data = enviro.data();
       if(gps_success) gps_data = gps.data();
 
+      if(gps_success && gps_data.fix == 1) {
+        gps_fix_animation.ping();
+      }
+
       // ---- receive message if ready --- //
       if(radio.ready()) {
         Message message_to_receive;
@@ -111,9 +113,11 @@ class CompSystem : public System {
           radio_animation.ping();
           
           // ---- reply with telemetry --- //
-          Serial.print("Received message (Packet: ");
-          Serial.print(message_to_receive.packet_number);
-          Serial.println("), replying with telemetry");
+          if(PRINT_RECEIVE_DEBUG) {
+            Serial.print("Received message (Packet: ");
+            Serial.print(message_to_receive.packet_number);
+            Serial.println("), replying with telemetry");
+          }
           Message message_to_send = Message_init_zero;
           if(imu_success) imu_data_to_msg(&message_to_send, &imu_data);
           if(enviro_success) enviro_data_to_msg(&message_to_send, &enviro_data);
@@ -130,9 +134,9 @@ class CompSystem : public System {
       if(millis() - last_print >= TELEMTRY_PRINT_INTERVAL) {
         // fill print buffer with formatted text
         char print_buffer[BUFFER_SIZE];
-        sprintf(print_buffer, "IMU [accel]: %-7.2f %-7.2f %-7.2f\tEnviro [A/T/P]: %-7.2f %-7.2f %-7.2f\tSats: %-i",
+        sprintf(print_buffer, "IMU [accel]: %-7.2f %-7.2f %-7.2f\tEnviro [A/T/P]: %-7.2f %-7.2f %-7.2f\tFix (sats): %-i (%-i)",
               imu_data.ax, imu_data.ay, imu_data.az,
-              enviro_data.altitude, enviro_data.temperature, enviro_data.pressure , gps_data.satellites);
+              enviro_data.altitude, enviro_data.temperature, enviro_data.pressure , gps_data.fix, gps_data.satellites);
         Serial.println(print_buffer);
         last_print = millis();
       }
@@ -145,6 +149,7 @@ class CompSystem : public System {
   private:
     long last_print = 0; /*! The last time a message was printed to the serial monitor */
     uint32_t packet_number = 0; /*! The last time a message was printed to the serial monitor */
+    const bool PRINT_RECEIVE_DEBUG = false;
     IMU imu_msg;
     Enviro enviro_msg;
     GPS gps_msg;
@@ -175,6 +180,7 @@ class CompSystem : public System {
     DoublePulseAnimation heart_beat_animation{Pins::WHITE_LED, 100, 100, 500};
     HeartBeatAnimation radio_animation{Pins::YELLOW_LED, 500, HIGH, LOW};
     HeartBeatAnimation error_animation{Pins::RED_LED, 1000, HIGH, LOW};
+    HeartBeatAnimation gps_fix_animation{Pins::BLUE_LED, 1000, HIGH, LOW};
     
     
     bool gps_fix = false;
