@@ -78,7 +78,7 @@ class CompSystem : public System {
         is_success = false;
       }
 
-//      leds.attach(&heart_beat_animation);
+      leds.attach(&heart_beat_animation);
 
       Serial.println("\n");
       
@@ -92,7 +92,7 @@ class CompSystem : public System {
       bool imu_success = imu.update();
       bool enviro_success = enviro.update();
       bool gps_success = gps.update();
-//      leds.update();
+      leds.update();
 
       // ---- collect data from sensors --- //
       if(imu_success) imu_data = imu.data();
@@ -166,8 +166,8 @@ class CompSystem : public System {
     ServoController servos;
 
     // LEDs
-//    LedController leds;
-//    DoublePulseAnimation heart_beat_animation{Pins::WHITE_LED, 100, 100, 500};
+    LedController leds;
+    DoublePulseAnimation heart_beat_animation{Pins::WHITE_LED, 100, 100, 500};
     
     
     bool gps_fix = false;

@@ -18,6 +18,7 @@
 #include "src/Rfm95w/RH_RF95.h"
 #include "Servo.hpp"
 #include "DropAlgo.hpp"
+#include "Led.hpp"
 
 // #define GROUND_STATION
 
