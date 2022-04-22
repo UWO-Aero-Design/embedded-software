@@ -78,9 +78,13 @@ class CompSystem : public System {
         is_success = false;
       }
 
-//      leds.attach(&heart_beat_animation);
+      leds.attach(&heart_beat_animation);
+      leds.attach(&radio_animation);
+      leds.attach(&error_animation);
 
-      Serial.println("\n");
+      if(!is_success) {
+        error_animation.ping();
+      }
       
       return is_success;
       
@@ -92,7 +96,7 @@ class CompSystem : public System {
       bool imu_success = imu.update();
       bool enviro_success = enviro.update();
       bool gps_success = gps.update();
-//      leds.update();
+      leds.update();
 
       // ---- collect data from sensors --- //
       if(imu_success) imu_data = imu.data();
@@ -104,6 +108,7 @@ class CompSystem : public System {
         Message message_to_receive;
         uint8_t message_bytes_received;
         if(receive_message(&message_to_receive, &message_bytes_received)) {
+          radio_animation.ping();
           
           // ---- reply with telemetry --- //
           Serial.print("Received message (Packet: ");
@@ -166,8 +171,10 @@ class CompSystem : public System {
     ServoController servos;
 
     // LEDs
-//    LedController leds;
-//    DoublePulseAnimation heart_beat_animation{Pins::WHITE_LED, 100, 100, 500};
+    LedController leds;
+    DoublePulseAnimation heart_beat_animation{Pins::WHITE_LED, 100, 100, 500};
+    HeartBeatAnimation radio_animation{Pins::YELLOW_LED, 500, HIGH, LOW};
+    HeartBeatAnimation error_animation{Pins::RED_LED, 1000, HIGH, LOW};
     
     
     bool gps_fix = false;
@@ -196,6 +203,7 @@ class CompSystem : public System {
         if (!status) {
           Serial.print("Error decoding message: ");
           Serial.println(PB_GET_ERROR(&receive_stream));
+          error_animation.ping();
         }
         else {
           // message successful decoded
@@ -203,6 +211,7 @@ class CompSystem : public System {
       }
       else {
         Serial.println("Error receiving message");
+        error_animation.ping();
       }
 
       return message_received;
@@ -279,6 +288,7 @@ class CompSystem : public System {
           break;
         default:
           Serial.println("Unknown command.");
+          error_animation.ping();
           break;
       }
       return true;
@@ -307,10 +317,12 @@ class CompSystem : public System {
         status = radio.send(send_buffer, send_stream.bytes_written);
         if(!status) {
           Serial.println("Error sending");
+          error_animation.ping();
         }
       }
       else {
         Serial.println("Error encoding");
+        error_animation.ping();
       }
     }
 
