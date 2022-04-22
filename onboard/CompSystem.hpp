@@ -79,6 +79,7 @@ class CompSystem : public System {
       }
 
       leds.attach(&heart_beat_animation);
+      leds.attach(&radio_animation);
 
       Serial.println("\n");
       
@@ -104,6 +105,7 @@ class CompSystem : public System {
         Message message_to_receive;
         uint8_t message_bytes_received;
         if(receive_message(&message_to_receive, &message_bytes_received)) {
+          radio_animation.ping();
           
           // ---- reply with telemetry --- //
           Serial.print("Received message (Packet: ");
@@ -168,6 +170,7 @@ class CompSystem : public System {
     // LEDs
     LedController leds;
     DoublePulseAnimation heart_beat_animation{Pins::WHITE_LED, 100, 100, 500};
+    HeartBeatAnimation radio_animation{Pins::YELLOW_LED, 500, HIGH, LOW};
     
     
     bool gps_fix = false;
