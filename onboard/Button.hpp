@@ -39,13 +39,13 @@ class ButtonController {
     */
     ButtonController() {
       for(int i = 0; i < BUTTON_COUNT; i++) {
-        pinMode(buttons[i].pin, INPUT);
         buttons[i].pin = pins[i];
         buttons[i].last_state = digitalRead(buttons[i].pin);
         buttons[i].last_update = 0;
         buttons[i].on_positive = [this](int button_number, void *context) {};
         buttons[i].on_negative = [this](int button_number, void *context) {};
         buttons[i].on_either = [this](int button_number, void *context) {};
+        pinMode(buttons[i].pin, INPUT);
       }
     };
 
