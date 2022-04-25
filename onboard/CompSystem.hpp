@@ -83,6 +83,14 @@ class CompSystem : public System {
       if(!is_success) {
         error_animation.ping();
       }
+
+      buttons.on(Pins::BUTTON_1, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
+        drop_pada();
+      });
+
+      buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
+        drop_pada();
+      });
       
       return is_success;
       
@@ -95,6 +103,7 @@ class CompSystem : public System {
       bool enviro_success = enviro.update();
       bool gps_success = gps.update();
       leds.update();
+      buttons.update();
 
       // ---- collect data from sensors --- //
       if(imu_success) imu_data = imu.data();
@@ -181,6 +190,9 @@ class CompSystem : public System {
     HeartBeatAnimation radio_animation{Pins::YELLOW_LED, 500, HIGH, LOW};
     HeartBeatAnimation error_animation{Pins::RED_LED, 1000, HIGH, LOW};
     HeartBeatAnimation gps_fix_animation{Pins::BLUE_LED, 1000, HIGH, LOW};
+
+    // buttons
+    ButtonController buttons;
     
     
     bool gps_fix = false;
@@ -368,5 +380,9 @@ class CompSystem : public System {
         message->gps.quality = gps_data->quality;
       }
       message->has_gps = true;
-    } 
+    }
+
+   void handle_button_callback(uint8_t button_number) {
+    Serial.println("BUTTON");
+   }
 };
