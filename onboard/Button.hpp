@@ -51,40 +51,48 @@ class ButtonController {
 
     bool update() {
       for(int i = 0; i < BUTTON_COUNT; i++) {
-//        bool state = digitalRead(buttons[i].pin);
-//        if(buttons[i].last_state != state && millis() - buttons[i].last_update >= BUTTON_DEBOUNCE) {
-//          if(state == HIGH) {
-//            Serial.print("Got HIGH state change for button_");
-//            Serial.println(i);
-////            buttons[i].on_positive(i, this);
-//          }
-//          else {
-//            Serial.print("Got LOW state change for button_");
-//            Serial.println(i);
-////            buttons[i].on_negative(i, this);
-//          }
-////          buttons[i].on_either(i, this);
-//          buttons[i].last_state = !buttons[i].last_state;
-//          buttons[i].last_update = millis();
-//        }
+        bool state = digitalRead(buttons[i].pin);
+        if(buttons[i].last_state != state && millis() - buttons[i].last_update >= BUTTON_DEBOUNCE) {
+          if(state == HIGH) {
+            buttons[i].on_positive(buttons[i].pin, this);
+          }
+          else {
+            buttons[i].on_negative(buttons[i].pin, this);
+          }
+          buttons[i].on_either(i, this);
+          buttons[i].last_state = !buttons[i].last_state;
+          buttons[i].last_update = millis();
+        }
       }
       return true;
     }
 
-    bool on(TransitionType_t transition, uint8_t button_number, std::function<void(int button_number, void *context)> action) {
-//      if(transition == TransitionType_t::RISING_EDGE) {
-//        Serial.println("Setting rising edge");
-//        buttons[button_number].on_positive = action;
-//      }
-//      else if(transition == TransitionType_t::FALLING_EDGE) {
-//        Serial.println("Setting falling edge");
-//        buttons[button_number].on_negative = action;
-//      }
-//      else if(transition == TransitionType_t::EITHER) {
-//        Serial.println("Setting either edge");
-//        buttons[button_number].on_either = action;
-//      }
+    bool on(uint8_t pin_number, TransitionType_t transition, std::function<void(uint8_t pin_number, void *context)> action) {
+      Button_t *btn;
+      btn = get_button_by_pin(pin_number);
+      if(btn == NULL) {
+        Serial.println("Error: invalid button pin");
+        return false;
+      }
+      
+      if(transition == TransitionType_t::RISING_EDGE) {
+        btn->on_positive = action;
+      }
+      else if(transition == TransitionType_t::FALLING_EDGE) {
+        btn->on_negative = action;
+      }
+      else if(transition == TransitionType_t::EITHER_EDGE) {
+        btn->on_either = action;
+      }
       return true;
+    }
+
+    Button_t *get_button_by_pin(uint8_t pin) {
+      for(int i = 0; i < BUTTON_COUNT; i++) {
+        if(buttons[i].pin == pin) return &buttons[i];
+      }
+
+      return NULL;
     }
 
   private:
