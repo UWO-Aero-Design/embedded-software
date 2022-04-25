@@ -23,7 +23,7 @@ typedef struct {
 typedef enum {
   RISING_EDGE,
   FALLING_EDGE,
-  EITHER
+  EITHER_EDGE
 } TransitionType_t;
 
 
