@@ -3,7 +3,10 @@
 #define CONNECT_FLAG 0xAA
 #define PACKET_FLAG 0xBB
 #define SERIAL_DEBOUNCE 100
+#define RADIO_LINK_TIMEOUT 1000
 
+bool radio_link_connection = false;
+long last_radio_ping = 0;
 long last_update = 0;
 
 const int LED = 33;
@@ -42,7 +45,6 @@ void setup() {
 
 void loop() {
   if(Serial.available() > 0 || millis() - last_update > SERIAL_DEBOUNCE) {
-    digitalWrite(LED, HIGH);
     int len = Serial.available();
     uint8_t data[len];
     for(int i = 0; i < len; i++) {
@@ -51,40 +53,40 @@ void loop() {
 
     if(data[0] == CONNECT_FLAG) {
       Serial.write(CONNECT_FLAG);
-      digitalWrite(LED, HIGH);
-      delay(500);
-      digitalWrite(LED, LOW);
     }
     else {
       if(len == 1) return;
       radio.send(&data[1], len-1);
     }
-    digitalWrite(LED, LOW);
     last_update = millis();
   }
   
   if (radio.available()) {
+    last_radio_ping = millis();
+    if(radio_link_connection == false) {
+      radio_link_connection = true;
+      digitalWrite(LED, HIGH);
+    }
+    
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);
 
     if (radio.recv(buf, &len)) {
-      digitalWrite(LED, HIGH);
 
       // write to serial
       for(int i = 0; i < len; i++) {
         Serial.write(buf[i]);
       }
-
-      // send rssi as well - don't want to decode packet just for this
-//      int16_t rssi = radio.lastRssi();
-//      Serial.write(highByte(rssi));
-//      Serial.write(lowByte(rssi));
       
-      digitalWrite(LED, LOW);
     }
     else {
       Serial.println("recv failed");
     }
     
+  }
+
+  if(radio_link_connection == true && millis() - last_radio_ping >= RADIO_LINK_TIMEOUT) {
+    digitalWrite(LED, LOW);
+    radio_link_connection = false;
   }
 }
