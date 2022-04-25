@@ -84,8 +84,12 @@ class CompSystem : public System {
         error_animation.ping();
       }
 
-      buttons.on(TransitionType_t::EITHER, 1, [this](int button_number, void *context) {
-        Serial.println("HELLO");
+      buttons.on(Pins::BUTTON_1, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
+        drop_pada();
+      });
+
+      buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
+        drop_pada();
       });
       
       return is_success;
