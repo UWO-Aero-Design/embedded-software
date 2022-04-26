@@ -1,9 +1,13 @@
 #include "src/Rfm95w/RH_RF95.h"
+#include "src/Message/pb_encode.h"
+#include "src/Message/pb_decode.h"
+#include "src/Message/telemetry.pb.h"
 
 #define CONNECT_FLAG 0xAA
 #define PACKET_FLAG 0xBB
 #define SERIAL_DEBOUNCE 100
 #define RADIO_LINK_TIMEOUT 1000
+#define BUFFER_SIZE 128
 
 bool radio_link_connection = false;
 long last_radio_ping = 0;
@@ -14,6 +18,8 @@ const int RESET_PIN = 8;
 
 RH_RF95 radio = RH_RF95 (10, 9);
 float RADIO_FREQ = 905.0f;
+
+Telemetry telemetry;
 
 void setup() {
   Serial.begin(115200);
@@ -40,7 +46,6 @@ void setup() {
   digitalWrite(LED, HIGH);
   delay(300);
   digitalWrite(LED, LOW);
-  Serial.println("Waiting for serial activity...");
 }
 
 void loop() {
@@ -68,15 +73,51 @@ void loop() {
       digitalWrite(LED, HIGH);
     }
     
-    uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-    uint8_t len = sizeof(buf);
+    uint8_t receive_buffer[RH_RF95_MAX_MESSAGE_LEN];
+    uint8_t receive_buffer_length = sizeof(receive_buffer);
 
-    if (radio.recv(buf, &len)) {
+    if (radio.recv(receive_buffer, &receive_buffer_length)) {
+        
+      telemetry = Telemetry_init_zero;
+      pb_istream_t decode_stream = pb_istream_from_buffer(receive_buffer, receive_buffer_length);
+      bool status = pb_decode(&decode_stream, Telemetry_fields, &telemetry);
+
+      if(status) {
+        telemetry.gnd_radio.rssi = radio.lastRssi();
+        telemetry.gnd_radio.frequency_error = radio.frequencyError();
+        telemetry.gnd_radio.snr = radio.lastSNR();
+        telemetry.has_gnd_radio = true;
+
+        uint8_t encode_buffer[BUFFER_SIZE];
+        uint8_t encode_buffer_length = sizeof(encode_buffer);
+        for(int i = 0; i < encode_buffer_length; i++) encode_buffer[i] = 0;
+        
+        pb_ostream_t encode_stream = pb_ostream_from_buffer(encode_buffer, encode_buffer_length);
+        bool status = pb_encode(&encode_stream, Telemetry_fields, &telemetry);
+        
+        if(status) {
+          for(int i = 0; i < encode_stream.bytes_written; i++) {
+            Serial.write(encode_buffer[i]);
+          }
+        }
+        else {
+          digitalWrite(LED, HIGH);
+          delay(3000);
+          digitalWrite(LED, LOW);
+          delay(3000);
+        }
+      }
+      else {
+        digitalWrite(LED, HIGH);
+        delay(1000);
+        digitalWrite(LED, LOW);
+        delay(1000);
+      }
 
       // write to serial
-      for(int i = 0; i < len; i++) {
-        Serial.write(buf[i]);
-      }
+//      for(int i = 0; i < receive_buffer_length; i++) {
+//        Serial.write(receive_buffer[i]);
+//      }
       
     }
     else {
