@@ -18,7 +18,7 @@ class Radio_Rfm95w : public aero::sensor::Radio {
     Radio_Rfm95w() {
       radio = new RH_RF95((uint8_t)Pins::RADIO_CS, (uint8_t)Pins::RADIO_INT);
       m_data.rssi = 0;
-      m_data.snr = 0;
+      m_data.frequencyError = 0;
       m_data.snr = 0;
     }
 
