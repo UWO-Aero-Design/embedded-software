@@ -10,7 +10,8 @@
 #include "System.hpp"
 #include "src/Message/pb_encode.h"
 #include "src/Message/pb_decode.h"
-#include "src/Message/message.pb.h"
+#include "src/Message/telemetry.pb.h"
+#include "src/Message/command.pb.h"
 
 
 /***************************************************************************/
@@ -102,6 +103,7 @@ class CompSystem : public System {
       bool imu_success = imu.update();
       bool enviro_success = enviro.update();
       bool gps_success = gps.update();
+      bool radio_success = radio.update();
       leds.update();
       buttons.update();
 
@@ -116,7 +118,7 @@ class CompSystem : public System {
 
       // ---- receive message if ready --- //
       if(radio.ready()) {
-        Message message_to_receive;
+        Command message_to_receive;
         uint8_t message_bytes_received;
         if(receive_message(&message_to_receive, &message_bytes_received)) {
           radio_animation.ping();
@@ -124,14 +126,16 @@ class CompSystem : public System {
           // ---- reply with telemetry --- //
           if(PRINT_RECEIVE_DEBUG) {
             Serial.print("Received message (Packet: ");
-            Serial.print(message_to_receive.packet_number);
+            Serial.print(message_to_receive.header.packet_number);
             Serial.println("), replying with telemetry");
           }
-          Message message_to_send = Message_init_zero;
+          Telemetry message_to_send = Telemetry_init_zero;
           if(imu_success) imu_data_to_msg(&message_to_send, &imu_data);
           if(enviro_success) enviro_data_to_msg(&message_to_send, &enviro_data);
           if(gps_success) gps_data_to_msg(&message_to_send, &gps_data);
-          send_telemetry(&message_to_send, &radio_data, packet_number++);
+          battery_data_to_msg(&message_to_send, &battery_data);
+          radio_data_to_msg(&message_to_send, &radio_data);
+          send_telemetry(&message_to_send, packet_number++);
           
         }
         
@@ -159,23 +163,14 @@ class CompSystem : public System {
     long last_print = 0; /*! The last time a message was printed to the serial monitor */
     uint32_t packet_number = 0; /*! The last time a message was printed to the serial monitor */
     const bool PRINT_RECEIVE_DEBUG = false;
-    IMU imu_msg;
-    Enviro enviro_msg;
-    GPS gps_msg;
 
     // Structs for data
     aero::def::IMU_t imu_data;
     aero::def::Pitot_t pitot_data;
     aero::def::GPS_t gps_data;
     aero::def::Enviro_t enviro_data;
-    aero::def::Battery_t batt_data;
+    aero::def::Battery_t battery_data;
     aero::def::Radio_t radio_data;
-    aero::def::SystemConfig_t system_config_data;
-    aero::def::Status_t status_state_data;
-    aero::def::Servos_t servos_data;
-    aero::def::AirData_t airdata_data;
-    aero::def::Commands_t commands_data;
-    aero::def::DropAlgo_t dropalgo_data;
 
     // Sensors
     ImuIcm20948 imu;
@@ -199,23 +194,23 @@ class CompSystem : public System {
     uint8_t GPS_FIX_PIN = aero::teensy35::P16;
 //    DropAlgo algo = DropAlgo(28.084217, -81.965614);
 
-    bool receive_message(Message *message, uint8_t *bytes_received) {
+    bool receive_message(Command *message, uint8_t *bytes_received) {
       bool message_received = false;
       uint8_t receive_buffer[radio.RECEIVE_BUFFER_SIZE];
       *bytes_received = radio.RECEIVE_BUFFER_SIZE;
       if(radio.receive(receive_buffer, bytes_received)) {
         // init message
-        *message = Message_init_zero;
+        *message = Command_init_zero;
         message_received = true;
 
         // set callback function for each command in command list
         // pass reference to this class so that static callback has access to instance members
-        message->commands.funcs.decode = static_command_decode_callback;
-        message->commands.arg = this;
+//        message->commands.funcs.decode = static_command_decode_callback;
+//        message->commands.arg = this;
 
         // set up receive stream and decode
         pb_istream_t receive_stream = pb_istream_from_buffer(receive_buffer, *bytes_received);
-        bool status = pb_decode(&receive_stream, Message_fields, message);
+        bool status = pb_decode(&receive_stream, Command_fields, message);
 
         // if unsuccessful
         if (!status) {
@@ -244,13 +239,14 @@ class CompSystem : public System {
      * @param status The current status of the aircraft
      * @param rssi The last RSSI of the radio
      */
-    void load_header(Message *msg, Message_Location recipient, uint32_t packet_number, Message_Status status, uint16_t rssi) {
-      msg->sender = Message_Location::Message_Location_PLANE;
-      msg->recipient = recipient;
-      msg->packet_number = packet_number;
-      msg->time = millis();
-      msg->status = status;
-      msg->rssi = rssi;
+    void load_header(Telemetry *message, Location recipient, uint32_t packet_number, Status status) {
+      message->header = Header_init_zero;
+      message->header.sender = Location::Location_PLANE;
+      message->header.receiver = recipient;
+      message->header.packet_number = packet_number;
+      message->header.time = millis();
+      message->header.status = status;
+      message->has_header = true;
     }
 
     /**
@@ -275,42 +271,43 @@ class CompSystem : public System {
       CompSystem *self = (CompSystem*)(*arg);
 
       // decode
-      Message_Command command;
-      if (istream != NULL && field->tag == Message_commands_tag) {
-        if (!pb_decode_varint32(istream, (uint32_t*)&command)) {
-          Serial.print("Error decoding command");
-          return false;
-        }
-
-        // call member function
-        self->handle_command(command);
-        return true;
-      }
-      return false;
+//      Command command;
+//      if (istream != NULL && field->tag == Message_commands_tag) {
+//        if (!pb_decode_varint32(istream, (uint32_t*)&command)) {
+//          Serial.print("Error decoding command");
+//          return false;
+//        }
+//
+//        // call member function
+//        self->handle_command(command);
+//        return true;
+//      }
+//      return false;
+return true;
     }
 
-    bool handle_command(Message_Command command) {
-      switch(command) {
-        case Message_Command_OPEN_DOORS:
-          Serial.println("Message_Command_OPEN_DOORS");
-          break;
-        case Message_Command_CLOSE_DOORS:
-          Serial.println("Message_Command_CLOSE_DOORS");
-          break;
-        case Message_Command_DROP_PAYLOADS:
-          Serial.println("Message_Command_DROP_PAYLOADS");
-          break;
-        case Message_Command_DROP_GLIDERS:
-          Serial.println("Message_Command_DROP_GLIDERS");
-          drop_pada();
-          break;
-        default:
-          Serial.println("Unknown command.");
-          error_animation.ping();
-          break;
-      }
-      return true;
-    }
+//    bool handle_command(Message_Command command) {
+//      switch(command) {
+//        case Message_Command_OPEN_DOORS:
+//          Serial.println("Message_Command_OPEN_DOORS");
+//          break;
+//        case Message_Command_CLOSE_DOORS:
+//          Serial.println("Message_Command_CLOSE_DOORS");
+//          break;
+//        case Message_Command_DROP_PAYLOADS:
+//          Serial.println("Message_Command_DROP_PAYLOADS");
+//          break;
+//        case Message_Command_DROP_GLIDERS:
+//          Serial.println("Message_Command_DROP_GLIDERS");
+//          drop_pada();
+//          break;
+//        default:
+//          Serial.println("Unknown command.");
+//          error_animation.ping();
+//          break;
+//      }
+//      return true;
+//    }
 
     bool temp = true;
     void drop_pada() {
@@ -323,13 +320,12 @@ class CompSystem : public System {
       temp = !temp;
     }
 
-    void send_telemetry(Message *message, aero::def::Radio_t *radio_data, uint32_t packet_number) {
+    void send_telemetry(Telemetry *message, uint32_t packet_number) {
       uint8_t send_buffer[BUFFER_SIZE];
-      load_header(message, Message_Location::Message_Location_GROUND_STATION, packet_number, Message_Status::Message_Status_READY, radio_data->rssi);
-      message->flight_stabilization = Message_FlightStabilization::Message_FlightStabilization_NONE;
+      load_header(message, Location::Location_GROUND_STATION, packet_number, Status::Status_READY);
       
       pb_ostream_t send_stream = pb_ostream_from_buffer(send_buffer, sizeof(send_buffer));
-      bool status = pb_encode(&send_stream, Message_fields, message);
+      bool status = pb_encode(&send_stream, Telemetry_fields, message);
 
       if(status) {
         status = radio.send(send_buffer, send_stream.bytes_written);
@@ -344,8 +340,7 @@ class CompSystem : public System {
       }
     }
 
-    void imu_data_to_msg(Message *message, aero::def::IMU_t *imu_data) {
-      message->imu = IMU_init_zero;
+    void imu_data_to_msg(Telemetry *message, aero::def::IMU_t *imu_data) {
       message->imu.ax = imu_data->ax;
       message->imu.ay = imu_data->ay;
       message->imu.az = imu_data->az;
@@ -358,16 +353,14 @@ class CompSystem : public System {
       message->has_imu = true;
     }
 
-    void enviro_data_to_msg(Message *message, aero::def::Enviro_t *enviro_data) {
-      message->enviro = Enviro_init_zero;
+    void enviro_data_to_msg(Telemetry *message, aero::def::Enviro_t *enviro_data) {
       message->enviro.altitude = enviro_data->altitude;
       message->enviro.pressure = enviro_data->pressure;
       message->enviro.temperature = enviro_data->temperature;
       message->has_enviro = true;
     }
 
-   void gps_data_to_msg(Message *message, aero::def::GPS_t *gps_data) {
-      message->gps = GPS_init_zero;
+   void gps_data_to_msg(Telemetry *message, aero::def::GPS_t *gps_data) {
       message->gps.fix = gps_data->fix;
       if(gps_data->fix) {
         message->gps.lat = gps_data->lat;
@@ -376,13 +369,22 @@ class CompSystem : public System {
         message->gps.altitude = gps_data->altitude;
         message->gps.time = gps_data->time;
         message->gps.date = gps_data->date;
-        message->gps.HDOP = gps_data->HDOP;
+        message->gps.hdop = gps_data->HDOP;
         message->gps.quality = gps_data->quality;
       }
       message->has_gps = true;
     }
 
-   void handle_button_callback(uint8_t button_number) {
-    Serial.println("BUTTON");
-   }
+    void radio_data_to_msg(Telemetry *message, aero::def::Radio_t *radio_data) {
+      message->plane_radio.rssi = radio_data->rssi;
+      message->plane_radio.frequency_error = radio_data->frequencyError;
+      message->plane_radio.snr = radio_data->snr;
+      message->has_plane_radio = true;
+    }
+
+    void battery_data_to_msg(Telemetry *message, aero::def::Battery_t *battery_data) {
+      message->battery.voltage = battery_data->voltage;
+      message->battery.current = battery_data->current;
+      message->has_battery = true;
+    }
 };
