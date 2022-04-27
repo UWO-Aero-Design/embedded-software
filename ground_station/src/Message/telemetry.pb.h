@@ -31,12 +31,13 @@ typedef struct _Telemetry {
     RadioData plane_radio;
     bool has_gnd_radio;
     RadioData gnd_radio;
+    uint32_t response_to;
 } Telemetry;
 
 
 /* Initializer values for message structs */
-#define Telemetry_init_default                   {false, Header_init_default, false, ImuData_init_default, false, GpsData_init_default, false, EnviroData_init_default, false, BatteryData_init_default, false, RadioData_init_default, false, RadioData_init_default}
-#define Telemetry_init_zero                      {false, Header_init_zero, false, ImuData_init_zero, false, GpsData_init_zero, false, EnviroData_init_zero, false, BatteryData_init_zero, false, RadioData_init_zero, false, RadioData_init_zero}
+#define Telemetry_init_default                   {false, Header_init_default, false, ImuData_init_default, false, GpsData_init_default, false, EnviroData_init_default, false, BatteryData_init_default, false, RadioData_init_default, false, RadioData_init_default, 0}
+#define Telemetry_init_zero                      {false, Header_init_zero, false, ImuData_init_zero, false, GpsData_init_zero, false, EnviroData_init_zero, false, BatteryData_init_zero, false, RadioData_init_zero, false, RadioData_init_zero, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define Telemetry_header_tag                     1
@@ -46,6 +47,7 @@ typedef struct _Telemetry {
 #define Telemetry_battery_tag                    5
 #define Telemetry_plane_radio_tag                6
 #define Telemetry_gnd_radio_tag                  7
+#define Telemetry_response_to_tag                8
 
 /* Struct field encoding specification for nanopb */
 #define Telemetry_FIELDLIST(X, a) \
@@ -55,7 +57,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  gps,               3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  enviro,            4) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  battery,           5) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  plane_radio,       6) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  gnd_radio,         7)
+X(a, STATIC,   OPTIONAL, MESSAGE,  gnd_radio,         7) \
+X(a, STATIC,   SINGULAR, UINT32,   response_to,       8)
 #define Telemetry_CALLBACK NULL
 #define Telemetry_DEFAULT NULL
 #define Telemetry_header_MSGTYPE Header
@@ -72,7 +75,7 @@ extern const pb_msgdesc_t Telemetry_msg;
 #define Telemetry_fields &Telemetry_msg
 
 /* Maximum encoded size of messages (where known) */
-#define Telemetry_size                           233
+#define Telemetry_size                           239
 
 #ifdef __cplusplus
 } /* extern "C" */
