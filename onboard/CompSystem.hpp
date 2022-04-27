@@ -120,7 +120,8 @@ class CompSystem : public System {
       if(radio.ready()) {
         Command message_to_receive;
         uint8_t message_bytes_received;
-        if(receive_message(&message_to_receive, &message_bytes_received)) {
+        uint32_t received_packet_number = 0;
+        if(receive_message(&message_to_receive, &message_bytes_received, &received_packet_number)) {
           radio_animation.ping();
           
           // ---- reply with telemetry --- //
@@ -135,6 +136,11 @@ class CompSystem : public System {
           if(gps_success) gps_data_to_msg(&message_to_send, &gps_data);
           battery_data_to_msg(&message_to_send, &battery_data);
           radio_data_to_msg(&message_to_send, &radio_data);
+          if(received_packet_number != 0) {
+            Serial.print("Acking command #");
+            Serial.println(received_packet_number);
+            message_to_send.response_to = received_packet_number;
+          }
           send_telemetry(&message_to_send, packet_number++);
           
         }
@@ -194,7 +200,8 @@ class CompSystem : public System {
     uint8_t GPS_FIX_PIN = aero::teensy35::P16;
 //    DropAlgo algo = DropAlgo(28.084217, -81.965614);
 
-    bool receive_message(Command *message, uint8_t *bytes_received) {
+    bool receive_message(Command *message, uint8_t *bytes_received, uint32_t *received_packet_number) {
+      *received_packet_number = 0;
       bool message_received = false;
       uint8_t receive_buffer[radio.RECEIVE_BUFFER_SIZE];
       *bytes_received = radio.RECEIVE_BUFFER_SIZE;
@@ -220,6 +227,9 @@ class CompSystem : public System {
         }
         else {
           // message successful decoded
+          if(message->has_actuate_group == true) {
+            *received_packet_number = message->header.packet_number;
+          }
         }
       }
       else {
@@ -240,7 +250,6 @@ class CompSystem : public System {
      * @param rssi The last RSSI of the radio
      */
     void load_header(Telemetry *message, Location recipient, uint32_t packet_number, Status status) {
-      message->header = Header_init_zero;
       message->header.sender = Location::Location_PLANE;
       message->header.receiver = recipient;
       message->header.packet_number = packet_number;
@@ -323,7 +332,7 @@ return true;
     void send_telemetry(Telemetry *message, uint32_t packet_number) {
       uint8_t send_buffer[BUFFER_SIZE];
       load_header(message, Location::Location_GROUND_STATION, packet_number, Status::Status_READY);
-      
+
       pb_ostream_t send_stream = pb_ostream_from_buffer(send_buffer, sizeof(send_buffer));
       bool status = pb_encode(&send_stream, Telemetry_fields, message);
 
@@ -365,7 +374,8 @@ return true;
       if(gps_data->fix) {
         message->gps.lat = gps_data->lat;
         message->gps.lon = gps_data->lon;
-        message->gps.speed = gps_data->satellites;
+        message->gps.satellites = gps_data->satellites;
+        message->gps.speed = gps_data->speed;
         message->gps.altitude = gps_data->altitude;
         message->gps.time = gps_data->time;
         message->gps.date = gps_data->date;
