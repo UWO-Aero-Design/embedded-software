@@ -4,9 +4,7 @@
 
 #pragma once
 
- //                        NONE means it will never be actuated
- //                            HABITAT    WATER    HABITAT
-enum CommandId { DOOR0, DOOR1, PAYLOAD0, PAYLOAD1, PAYLOAD2, GLIDER0, GLIDER1, NONE };
+enum CommandId { NONE, PADA };
 
 /*!
   @brief Representation of a servo
@@ -21,7 +19,7 @@ struct Servo_t {
 
 // defines for servo open, close and command association
 //                      OPEN CLOSE  COMMAND
-Servo_t servo0  = { 0,  100,  130,  NONE     }; 
+Servo_t servo0  = { 0,  100,  130,  PADA     }; 
 Servo_t servo1  = { 1,  100,  130,  NONE     }; 
 Servo_t servo2  = { 2,  100,  130,  NONE     };
 Servo_t servo3  = { 3,  100,  130,  NONE     };
