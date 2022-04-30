@@ -86,11 +86,11 @@ class CompSystem : public System {
       }
 
       buttons.on(Pins::BUTTON_1, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
-        drop_pada();
+        set_pada_mechanism(ServoState::ServoState_OPEN);
       });
 
       buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
-        drop_pada();
+        set_pada_mechanism(ServoState::ServoState_CLOSE);
       });
       
       return is_success;
@@ -137,8 +137,10 @@ class CompSystem : public System {
           battery_data_to_msg(&message_to_send, &battery_data);
           radio_data_to_msg(&message_to_send, &radio_data);
           if(received_packet_number != 0) {
-            Serial.print("Acking command #");
-            Serial.println(received_packet_number);
+            if(PRINT_ACK_DEBUG) {
+              Serial.print("Acking command #");
+              Serial.println(received_packet_number);
+            }
             message_to_send.response_to = received_packet_number;
           }
           send_telemetry(&message_to_send, packet_number++);
@@ -169,6 +171,7 @@ class CompSystem : public System {
     long last_print = 0; /*! The last time a message was printed to the serial monitor */
     uint32_t packet_number = 0; /*! The last time a message was printed to the serial monitor */
     const bool PRINT_RECEIVE_DEBUG = false;
+    const bool PRINT_ACK_DEBUG = false;
 
     // Structs for data
     aero::def::IMU_t imu_data;
@@ -198,7 +201,6 @@ class CompSystem : public System {
     
     bool gps_fix = false;
     uint8_t GPS_FIX_PIN = aero::teensy35::P16;
-//    DropAlgo algo = DropAlgo(28.084217, -81.965614);
 
     bool receive_message(Command *message, uint8_t *bytes_received, uint32_t *received_packet_number) {
       *received_packet_number = 0;
@@ -212,8 +214,10 @@ class CompSystem : public System {
 
         // set callback function for each command in command list
         // pass reference to this class so that static callback has access to instance members
-//        message->commands.funcs.decode = static_command_decode_callback;
-//        message->commands.arg = this;
+        message->actuate_group.funcs.decode = static_command_decode_callback;
+        message->actuate_group.arg = new CommandArg_t{ this, CommandType_t::ACTUATE_GROUP };
+        message->actuate_servo.funcs.decode = static_command_decode_callback;
+        message->actuate_servo.arg = new CommandArg_t{ this, CommandType_t::ACTUATE_SERVO };
 
         // set up receive stream and decode
         pb_istream_t receive_stream = pb_istream_from_buffer(receive_buffer, *bytes_received);
@@ -227,8 +231,10 @@ class CompSystem : public System {
         }
         else {
           // message successful decoded
-          if(message->has_actuate_group == true) {
-            *received_packet_number = message->header.packet_number;
+          *received_packet_number = message->header.packet_number;
+          if(message->reset_processor == true) {
+            Serial.println("RESET");
+            handle_processor_reset();
           }
         }
       }
@@ -258,6 +264,18 @@ class CompSystem : public System {
       message->has_header = true;
     }
 
+    typedef enum {
+      ACTUATE_GROUP,
+      FLIGHT_STABILIZATION,
+      ACTUATE_SERVO,
+      SERVO_CONFIG
+    } CommandType_t;
+
+    typedef struct {
+      System* context;
+      CommandType_t type;
+    } CommandArg_t;
+
     /**
      * @brief Callback function  wrapper to execute a member 
      * @detailed Since the PB decode routine expects a free floating function and we want to pass
@@ -272,61 +290,57 @@ class CompSystem : public System {
      * @param field The field that is passed in
      * @param arg The user defined arguments
      */
-    // TODO: accept the decode routine and command to excute with any args as well so
-    // that this call back wrapper can be used for any member function
     static bool static_command_decode_callback(pb_istream_t *istream, const pb_field_t *field, void **arg) { 
-      // arg passed in is reference to the calling class
+      // arg passed in is reference to the calling class and arguments
       // cast so we can call member function after decoding
-      CompSystem *self = (CompSystem*)(*arg);
+      CommandArg_t *args = (CommandArg_t*)(*arg);
+      CompSystem *self = args->context;
 
-      // decode
-//      Command command;
-//      if (istream != NULL && field->tag == Message_commands_tag) {
-//        if (!pb_decode_varint32(istream, (uint32_t*)&command)) {
-//          Serial.print("Error decoding command");
-//          return false;
-//        }
-//
-//        // call member function
-//        self->handle_command(command);
-//        return true;
-//      }
-//      return false;
-return true;
+      return self->handle_command(istream, field, args->type);
     }
 
-//    bool handle_command(Message_Command command) {
-//      switch(command) {
-//        case Message_Command_OPEN_DOORS:
-//          Serial.println("Message_Command_OPEN_DOORS");
-//          break;
-//        case Message_Command_CLOSE_DOORS:
-//          Serial.println("Message_Command_CLOSE_DOORS");
-//          break;
-//        case Message_Command_DROP_PAYLOADS:
-//          Serial.println("Message_Command_DROP_PAYLOADS");
-//          break;
-//        case Message_Command_DROP_GLIDERS:
-//          Serial.println("Message_Command_DROP_GLIDERS");
-//          drop_pada();
-//          break;
-//        default:
-//          Serial.println("Unknown command.");
-//          error_animation.ping();
-//          break;
-//      }
-//      return true;
-//    }
+    bool handle_command(pb_istream_t *istream, const pb_field_t *field, CommandType_t command) {
+      switch(command) {
+        case CommandType_t::ACTUATE_GROUP:
+          ActuateGroup actuate_group = ActuateGroup_init_zero;
+          return handle_actuate_group(istream);
+        case CommandType_t::FLIGHT_STABILIZATION:
+          break;
+        case CommandType_t::ACTUATE_SERVO:
+          break;
+        case CommandType_t::SERVO_CONFIG:
+          break;
+        default:
+          Serial.println("Unknown command");
+      }
+      return true;
+    }
 
-    bool temp = true;
-    void drop_pada() {
-      if(temp) {
-        for(int i = 0; i < 16; i++) servos.open(i);
+    bool handle_processor_reset() {
+      SCB_AIRCR = 0x05FA0004; // reset on Teensy
+      return true;
+    }
+
+    bool handle_actuate_group(pb_istream_t *istream) {
+      ActuateGroup actuate_group;
+      bool status = pb_decode(istream, ActuateGroup_fields, &actuate_group);
+      if(status) {
+        // TODO: check if the group is PADA
+        set_pada_mechanism(ServoState::ServoState_OPEN);
+        return true;
       }
       else {
-        for(int i = 0; i < 16; i++) servos.close(i);
+        return false;
       }
-      temp = !temp;
+    }
+
+    void set_pada_mechanism(ServoState state) {
+      if(state == ServoState::ServoState_OPEN) {
+        servos.actuate(CommandId::PADA);
+      }
+      else {
+        servos.reset(CommandId::PADA);
+      }
     }
 
     void send_telemetry(Telemetry *message, uint32_t packet_number) {
@@ -344,7 +358,8 @@ return true;
         }
       }
       else {
-        Serial.println("Error encoding");
+        Serial.print("Error encoding: ");
+        Serial.println(PB_GET_ERROR(&send_stream));
         error_animation.ping();
       }
     }
