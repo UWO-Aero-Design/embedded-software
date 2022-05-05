@@ -98,11 +98,6 @@ public:
       
         // don't request updates on antenna status
         gps.sendCommand(PGCMD_NOANTENNA);
-
-        delay(1000);
-      
-        // Ask for firmware version
-        GPSSerial.println(PMTK_Q_RELEASE);
         
         return true;
     }
