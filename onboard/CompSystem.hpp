@@ -214,10 +214,8 @@ class CompSystem : public System {
 
         // set callback function for each command in command list
         // pass reference to this class so that static callback has access to instance members
-        message->actuate_group.funcs.decode = static_command_decode_callback;
-        message->actuate_group.arg = new CommandArg_t{ this, CommandType_t::ACTUATE_GROUP };
-        message->actuate_servo.funcs.decode = static_command_decode_callback;
-        message->actuate_servo.arg = new CommandArg_t{ this, CommandType_t::ACTUATE_SERVO };
+        message->actuate_group.funcs.decode = static_actuate_group_callback;
+        message->actuate_group.arg = this;
 
         // set up receive stream and decode
         pb_istream_t receive_stream = pb_istream_from_buffer(receive_buffer, *bytes_received);
@@ -264,18 +262,6 @@ class CompSystem : public System {
       message->has_header = true;
     }
 
-    typedef enum {
-      ACTUATE_GROUP,
-      FLIGHT_STABILIZATION,
-      ACTUATE_SERVO,
-      SERVO_CONFIG
-    } CommandType_t;
-
-    typedef struct {
-      System* context;
-      CommandType_t type;
-    } CommandArg_t;
-
     /**
      * @brief Callback function  wrapper to execute a member 
      * @detailed Since the PB decode routine expects a free floating function and we want to pass
@@ -290,48 +276,27 @@ class CompSystem : public System {
      * @param field The field that is passed in
      * @param arg The user defined arguments
      */
-    static bool static_command_decode_callback(pb_istream_t *istream, const pb_field_t *field, void **arg) { 
+    static bool static_actuate_group_callback(pb_istream_t *istream, const pb_field_t *field, void **arg) { 
       // arg passed in is reference to the calling class and arguments
       // cast so we can call member function after decoding
-      CommandArg_t *args = (CommandArg_t*)(*arg);
-      CompSystem *self = args->context;
+      CompSystem *self = (CompSystem*)(*arg);
 
-      return self->handle_command(istream, field, args->type);
-    }
-
-    bool handle_command(pb_istream_t *istream, const pb_field_t *field, CommandType_t command) {
-      switch(command) {
-        case CommandType_t::ACTUATE_GROUP:
-          ActuateGroup actuate_group = ActuateGroup_init_zero;
-          return handle_actuate_group(istream);
-        case CommandType_t::FLIGHT_STABILIZATION:
-          break;
-        case CommandType_t::ACTUATE_SERVO:
-          break;
-        case CommandType_t::SERVO_CONFIG:
-          break;
-        default:
-          Serial.println("Unknown command");
-      }
-      return true;
-    }
-
-    bool handle_processor_reset() {
-      SCB_AIRCR = 0x05FA0004; // reset on Teensy
-      return true;
-    }
-
-    bool handle_actuate_group(pb_istream_t *istream) {
       ActuateGroup actuate_group;
       bool status = pb_decode(istream, ActuateGroup_fields, &actuate_group);
+
       if(status) {
-        // TODO: check if the group is PADA
-        set_pada_mechanism(ServoState::ServoState_OPEN);
+        self->set_pada_mechanism(actuate_group.state);
         return true;
       }
       else {
         return false;
       }
+    }
+    
+
+    bool handle_processor_reset() {
+      SCB_AIRCR = 0x05FA0004; // reset on Teensy
+      return true;
     }
 
     void set_pada_mechanism(ServoState state) {
