@@ -129,14 +129,14 @@ public:
       
     if(m_is_new_data) {
       if (gps.fix) {
-        Serial.print("Location: ");
-      Serial.print(gps.latitude, 4); Serial.print(gps.lat);
-      Serial.print(", ");
-      Serial.print(gps.longitude, 4); Serial.println(gps.lon);
-      Serial.print("Speed (knots): "); Serial.println(gps.speed);
-      Serial.print("Angle: "); Serial.println(gps.angle);
-      Serial.print("Altitude: "); Serial.println(gps.altitude);
-      Serial.print("Satellites: "); Serial.println((int)gps.satellites);
+//        Serial.print("Location: ");
+//      Serial.print(gps.latitude, 4); Serial.print(gps.lat);
+//      Serial.print(", ");
+//      Serial.print(gps.longitude, 4); Serial.println(gps.lon);
+//      Serial.print("Speed (knots): "); Serial.println(gps.speed);
+//      Serial.print("Angle: "); Serial.println(gps.angle);
+//      Serial.print("Altitude: "); Serial.println(gps.altitude);
+//      Serial.print("Satellites: "); Serial.println((int)gps.satellites);
         m_data.lat = gps.latitude;
         m_data.lon = gps.longitude;
         m_data.speed = gps.speed;
