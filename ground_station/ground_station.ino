@@ -22,13 +22,13 @@ float RADIO_FREQ = 905.0f;
 Telemetry telemetry;
 
 void setup() {
-  
+  pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);
   delay(300);
   digitalWrite(LED, LOW);
   
   Serial.begin(115200);
-  pinMode(LED, OUTPUT);
+  
   // manual reset hack
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, LOW);
@@ -47,6 +47,8 @@ void setup() {
     Serial.println("Radio frequency set failed");
     while(1);
   }
+
+//  radio.setTxPower(RADIO_POWER, false);
 }
 
 void loop() {
@@ -102,17 +104,9 @@ void loop() {
           }
         }
         else {
-          digitalWrite(LED, HIGH);
-          delay(3000);
-          digitalWrite(LED, LOW);
-          delay(3000);
         }
       }
       else {
-        digitalWrite(LED, HIGH);
-        delay(1000);
-        digitalWrite(LED, LOW);
-        delay(1000);
       }
 
       // write to serial
