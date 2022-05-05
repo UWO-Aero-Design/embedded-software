@@ -61,8 +61,7 @@ typedef struct _Command {
     bool has_header;
     Header header;
     bool reset_processor;
-    bool has_actuate_group;
-    ActuateGroup actuate_group;
+    pb_callback_t actuate_group;
     bool has_flight_stabilization;
     FlightStabilization flight_stabilization;
     pb_callback_t actuate_servo;
@@ -85,12 +84,12 @@ typedef struct _Command {
 
 
 /* Initializer values for message structs */
-#define Command_init_default                     {false, Header_init_default, 0, false, ActuateGroup_init_default, false, FlightStabilization_init_default, {{NULL}, NULL}, {{NULL}, NULL}}
+#define Command_init_default                     {false, Header_init_default, 0, {{NULL}, NULL}, false, FlightStabilization_init_default, {{NULL}, NULL}, {{NULL}, NULL}}
 #define ActuateGroup_init_default                {_ServoGroup_MIN, _ServoState_MIN}
 #define FlightStabilization_init_default         {_FlightStabilizationMethods_MIN, 0}
 #define ActuateServo_init_default                {0, 0, {_ServoState_MIN}}
 #define ServoConfig_init_default                 {0, 0, 0, _ServoGroup_MIN, _ServoState_MIN}
-#define Command_init_zero                        {false, Header_init_zero, 0, false, ActuateGroup_init_zero, false, FlightStabilization_init_zero, {{NULL}, NULL}, {{NULL}, NULL}}
+#define Command_init_zero                        {false, Header_init_zero, 0, {{NULL}, NULL}, false, FlightStabilization_init_zero, {{NULL}, NULL}, {{NULL}, NULL}}
 #define ActuateGroup_init_zero                   {_ServoGroup_MIN, _ServoState_MIN}
 #define FlightStabilization_init_zero            {_FlightStabilizationMethods_MIN, 0}
 #define ActuateServo_init_zero                   {0, 0, {_ServoState_MIN}}
@@ -120,7 +119,7 @@ typedef struct _Command {
 #define Command_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
 X(a, STATIC,   SINGULAR, BOOL,     reset_processor,   2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  actuate_group,     3) \
+X(a, CALLBACK, REPEATED, MESSAGE,  actuate_group,     3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  flight_stabilization,   4) \
 X(a, CALLBACK, REPEATED, MESSAGE,  actuate_servo,     5) \
 X(a, CALLBACK, REPEATED, MESSAGE,  servo_config,      6)

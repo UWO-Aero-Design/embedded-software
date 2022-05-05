@@ -86,11 +86,11 @@ class CompSystem : public System {
       }
 
       buttons.on(Pins::BUTTON_1, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
-        drop_pada();
+        set_pada_mechanism(ServoState::ServoState_OPEN);
       });
 
       buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
-        drop_pada();
+        set_pada_mechanism(ServoState::ServoState_CLOSE);
       });
       
       return is_success;
@@ -120,7 +120,8 @@ class CompSystem : public System {
       if(radio.ready()) {
         Command message_to_receive;
         uint8_t message_bytes_received;
-        if(receive_message(&message_to_receive, &message_bytes_received)) {
+        uint32_t received_packet_number = 0;
+        if(receive_message(&message_to_receive, &message_bytes_received, &received_packet_number)) {
           radio_animation.ping();
           
           // ---- reply with telemetry --- //
@@ -135,6 +136,13 @@ class CompSystem : public System {
           if(gps_success) gps_data_to_msg(&message_to_send, &gps_data);
           battery_data_to_msg(&message_to_send, &battery_data);
           radio_data_to_msg(&message_to_send, &radio_data);
+          if(received_packet_number != 0) {
+            if(PRINT_ACK_DEBUG) {
+              Serial.print("Acking command #");
+              Serial.println(received_packet_number);
+            }
+            message_to_send.response_to = received_packet_number;
+          }
           send_telemetry(&message_to_send, packet_number++);
           
         }
@@ -163,6 +171,7 @@ class CompSystem : public System {
     long last_print = 0; /*! The last time a message was printed to the serial monitor */
     uint32_t packet_number = 0; /*! The last time a message was printed to the serial monitor */
     const bool PRINT_RECEIVE_DEBUG = false;
+    const bool PRINT_ACK_DEBUG = false;
 
     // Structs for data
     aero::def::IMU_t imu_data;
@@ -192,9 +201,9 @@ class CompSystem : public System {
     
     bool gps_fix = false;
     uint8_t GPS_FIX_PIN = aero::teensy35::P16;
-//    DropAlgo algo = DropAlgo(28.084217, -81.965614);
 
-    bool receive_message(Command *message, uint8_t *bytes_received) {
+    bool receive_message(Command *message, uint8_t *bytes_received, uint32_t *received_packet_number) {
+      *received_packet_number = 0;
       bool message_received = false;
       uint8_t receive_buffer[radio.RECEIVE_BUFFER_SIZE];
       *bytes_received = radio.RECEIVE_BUFFER_SIZE;
@@ -205,8 +214,8 @@ class CompSystem : public System {
 
         // set callback function for each command in command list
         // pass reference to this class so that static callback has access to instance members
-//        message->commands.funcs.decode = static_command_decode_callback;
-//        message->commands.arg = this;
+        message->actuate_group.funcs.decode = static_actuate_group_callback;
+        message->actuate_group.arg = this;
 
         // set up receive stream and decode
         pb_istream_t receive_stream = pb_istream_from_buffer(receive_buffer, *bytes_received);
@@ -220,6 +229,11 @@ class CompSystem : public System {
         }
         else {
           // message successful decoded
+          *received_packet_number = message->header.packet_number;
+          if(message->reset_processor == true) {
+            Serial.println("RESET");
+            handle_processor_reset();
+          }
         }
       }
       else {
@@ -240,7 +254,6 @@ class CompSystem : public System {
      * @param rssi The last RSSI of the radio
      */
     void load_header(Telemetry *message, Location recipient, uint32_t packet_number, Status status) {
-      message->header = Header_init_zero;
       message->header.sender = Location::Location_PLANE;
       message->header.receiver = recipient;
       message->header.packet_number = packet_number;
@@ -263,67 +276,42 @@ class CompSystem : public System {
      * @param field The field that is passed in
      * @param arg The user defined arguments
      */
-    // TODO: accept the decode routine and command to excute with any args as well so
-    // that this call back wrapper can be used for any member function
-    static bool static_command_decode_callback(pb_istream_t *istream, const pb_field_t *field, void **arg) { 
-      // arg passed in is reference to the calling class
+    static bool static_actuate_group_callback(pb_istream_t *istream, const pb_field_t *field, void **arg) { 
+      // arg passed in is reference to the calling class and arguments
       // cast so we can call member function after decoding
       CompSystem *self = (CompSystem*)(*arg);
 
-      // decode
-//      Command command;
-//      if (istream != NULL && field->tag == Message_commands_tag) {
-//        if (!pb_decode_varint32(istream, (uint32_t*)&command)) {
-//          Serial.print("Error decoding command");
-//          return false;
-//        }
-//
-//        // call member function
-//        self->handle_command(command);
-//        return true;
-//      }
-//      return false;
-return true;
-    }
+      ActuateGroup actuate_group;
+      bool status = pb_decode(istream, ActuateGroup_fields, &actuate_group);
 
-//    bool handle_command(Message_Command command) {
-//      switch(command) {
-//        case Message_Command_OPEN_DOORS:
-//          Serial.println("Message_Command_OPEN_DOORS");
-//          break;
-//        case Message_Command_CLOSE_DOORS:
-//          Serial.println("Message_Command_CLOSE_DOORS");
-//          break;
-//        case Message_Command_DROP_PAYLOADS:
-//          Serial.println("Message_Command_DROP_PAYLOADS");
-//          break;
-//        case Message_Command_DROP_GLIDERS:
-//          Serial.println("Message_Command_DROP_GLIDERS");
-//          drop_pada();
-//          break;
-//        default:
-//          Serial.println("Unknown command.");
-//          error_animation.ping();
-//          break;
-//      }
-//      return true;
-//    }
-
-    bool temp = true;
-    void drop_pada() {
-      if(temp) {
-        for(int i = 0; i < 16; i++) servos.open(i);
+      if(status) {
+        self->set_pada_mechanism(actuate_group.state);
+        return true;
       }
       else {
-        for(int i = 0; i < 16; i++) servos.close(i);
+        return false;
       }
-      temp = !temp;
+    }
+    
+
+    bool handle_processor_reset() {
+      SCB_AIRCR = 0x05FA0004; // reset on Teensy
+      return true;
+    }
+
+    void set_pada_mechanism(ServoState state) {
+      if(state == ServoState::ServoState_OPEN) {
+        servos.actuate(CommandId::PADA);
+      }
+      else {
+        servos.reset(CommandId::PADA);
+      }
     }
 
     void send_telemetry(Telemetry *message, uint32_t packet_number) {
       uint8_t send_buffer[BUFFER_SIZE];
       load_header(message, Location::Location_GROUND_STATION, packet_number, Status::Status_READY);
-      
+
       pb_ostream_t send_stream = pb_ostream_from_buffer(send_buffer, sizeof(send_buffer));
       bool status = pb_encode(&send_stream, Telemetry_fields, message);
 
@@ -335,7 +323,8 @@ return true;
         }
       }
       else {
-        Serial.println("Error encoding");
+        Serial.print("Error encoding: ");
+        Serial.println(PB_GET_ERROR(&send_stream));
         error_animation.ping();
       }
     }
@@ -365,7 +354,8 @@ return true;
       if(gps_data->fix) {
         message->gps.lat = gps_data->lat;
         message->gps.lon = gps_data->lon;
-        message->gps.speed = gps_data->satellites;
+        message->gps.satellites = gps_data->satellites;
+        message->gps.speed = gps_data->speed;
         message->gps.altitude = gps_data->altitude;
         message->gps.time = gps_data->time;
         message->gps.date = gps_data->date;
