@@ -18,10 +18,11 @@ struct Servo_t {
 
 
 // defines for servo open, close and command association
+// open is drop position
 //                      OPEN CLOSE  COMMAND
-Servo_t servo0  = { 0,  100,  130,  PADA     }; 
-Servo_t servo1  = { 1,  100,  130,  NONE     }; 
-Servo_t servo2  = { 2,  100,  130,  NONE     };
+Servo_t servo0  = { 0,  180,  280,  PADA     }; // nice almost
+Servo_t servo1  = { 1,  270,  160,  PADA     }; // nice
+Servo_t servo2  = { 2,  340,  220,  PADA     }; // nice
 Servo_t servo3  = { 3,  100,  130,  NONE     };
 Servo_t servo4  = { 4,  100,  130,  NONE     };
 Servo_t servo5  = { 5,  100,  130,  NONE     };
