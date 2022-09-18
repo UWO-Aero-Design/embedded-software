@@ -17,7 +17,8 @@ const int LED = 33;
 const int RESET_PIN = 8;
 
 RH_RF95 radio = RH_RF95 (10, 9);
-float RADIO_FREQ = 905.0f;
+float RADIO_FREQ = 433;
+#define RADIO_POWER 23
 
 Telemetry telemetry;
 
@@ -48,7 +49,7 @@ void setup() {
     while(1);
   }
 
-//  radio.setTxPower(RADIO_POWER, false);
+  radio.setTxPower(RADIO_POWER, false);
 }
 
 void loop() {
@@ -104,9 +105,11 @@ void loop() {
           }
         }
         else {
+          error();
         }
       }
       else {
+        error();
       }
 
       // write to serial
@@ -117,6 +120,7 @@ void loop() {
     }
     else {
       Serial.println("recv failed");
+      error();
     }
     
   }
@@ -125,4 +129,13 @@ void loop() {
     digitalWrite(LED, LOW);
     radio_link_connection = false;
   }
+}
+
+void error() {
+  for(int i = 0; i < 5; i++) {
+      digitalWrite(LED, HIGH);
+      delay(100);
+      digitalWrite(LED, LOW);
+      delay(100);
+    }
 }

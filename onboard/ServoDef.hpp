@@ -19,10 +19,10 @@ struct Servo_t {
 
 // defines for servo open, close and command association
 //                      OPEN CLOSE  COMMAND
-Servo_t servo0  = { 0,  100,  130,  PADA     }; 
-Servo_t servo1  = { 1,  100,  130,  NONE     }; 
-Servo_t servo2  = { 2,  100,  130,  NONE     };
-Servo_t servo3  = { 3,  100,  130,  NONE     };
+Servo_t servo0  = { 0,  190,  280,  PADA     }; // FRONT RIGHT
+Servo_t servo1  = { 1,  350,  250,  PADA     }; // BACK
+Servo_t servo2  = { 2,  180,  100,  NONE     };
+Servo_t servo3  = { 3,  200,  130,  PADA     }; // FRONT LEFT
 Servo_t servo4  = { 4,  100,  130,  NONE     };
 Servo_t servo5  = { 5,  100,  130,  NONE     };
 Servo_t servo6  = { 6,  100,  130,  NONE     };
