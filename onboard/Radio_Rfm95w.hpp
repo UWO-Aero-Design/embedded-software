@@ -47,7 +47,7 @@ class Radio_Rfm95w : public aero::sensor::Radio {
       }
 
       // Set radio power
-      //    radio->setTxPower(RADIO_POWER, false);
+         radio->setTxPower(RADIO_POWER, false);
 
       return true;
     }
@@ -76,7 +76,7 @@ class Radio_Rfm95w : public aero::sensor::Radio {
     RH_RF95* radio;
 
   private:
-    static constexpr float RADIO_FREQ = 905.0f;
+    static constexpr float RADIO_FREQ = 433 ;
     static constexpr int RADIO_POWER = 23; // Max power
 
 };
