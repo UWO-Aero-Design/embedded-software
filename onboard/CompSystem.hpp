@@ -92,6 +92,8 @@ class CompSystem : public System {
       buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
         set_pada_mechanism(ServoState::ServoState_CLOSE);
       });
+
+      servos.reset(CommandId::PADA);
       
       return is_success;
       
