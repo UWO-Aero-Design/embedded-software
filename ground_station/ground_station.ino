@@ -104,9 +104,11 @@ void loop() {
           }
         }
         else {
+          error();
         }
       }
       else {
+        error();
       }
 
       // write to serial
@@ -117,6 +119,7 @@ void loop() {
     }
     else {
       Serial.println("recv failed");
+      error();
     }
     
   }
@@ -125,4 +128,13 @@ void loop() {
     digitalWrite(LED, LOW);
     radio_link_connection = false;
   }
+}
+
+void error() {
+  for(int i = 0; i < 5; i++) {
+      digitalWrite(LED, HIGH);
+      delay(100);
+      digitalWrite(LED, LOW);
+      delay(100);
+    }
 }
