@@ -133,7 +133,7 @@ class CompSystem : public System {
           Telemetry message_to_send = Telemetry_init_zero;
           if(imu_success) imu_data_to_msg(&message_to_send, &imu_data);
           if(enviro_success) enviro_data_to_msg(&message_to_send, &enviro_data);
-          if(gps_success) gps_data_to_msg(&message_to_send, &gps_data);
+//          if(gps_success) gps_data_to_msg(&message_to_send, &gps_data);
           battery_data_to_msg(&message_to_send, &battery_data);
           radio_data_to_msg(&message_to_send, &radio_data);
           if(received_packet_number != 0) {
