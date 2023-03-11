@@ -91,15 +91,18 @@ public:
      * @return false If update failed
      */
     bool init() override {
-        gps.begin(GPS_BAUD_RATE);
-        
-        gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // The data we are requesting
-        gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
+
+        if (gps.begin(GPS_BAUD_RATE)) {
+          gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // The data we are requesting
+          gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
       
-        // don't request updates on antenna status
-        gps.sendCommand(PGCMD_NOANTENNA);
+          // don't request updates on antenna status
+          gps.sendCommand(PGCMD_NOANTENNA);
         
-        return true;
+          return true;
+        }
+
+        return false;
     }
 
     long last_update = 0;

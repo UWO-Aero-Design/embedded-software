@@ -12,6 +12,7 @@
 #include "src/Message/pb_decode.h"
 #include "src/Message/telemetry.pb.h"
 #include "src/Message/command.pb.h"
+#include <Servo.h>
 
 
 /***************************************************************************/
@@ -56,18 +57,29 @@ class CompSystem : public System {
       }
       if (radio.init()) {
         Serial.println("Radio online.");
+        Serial.println("Sending hello world");
+        const char* msg = "Hello, world!";
+        radio.send((uint8_t*)msg, strlen(msg));
       }
       else {
         Serial.println("Error connecting to radio.");
         is_success = false;
       }
-      if (servos.init()) {
-        Serial.println("Servo controller online.");
-      }
-      else {
-        Serial.println("Error connecting to servo controller.");
-        is_success = false;
-      }
+
+//      if (servos.init()) {
+//        Serial.println("Servo controller online.");
+//      }
+//      else {
+//        Serial.println("Error connecting to servo controller.");
+//        is_success = false;
+//      }
+      dropServo.attach(29);
+      dropServo.write(20);
+
+      state = ServoState::ServoState_CLOSE;
+
+      // Relay Pins
+      
       if (gps.init()) {
         Serial.println("GPS online.");
       }
@@ -86,14 +98,34 @@ class CompSystem : public System {
       }
 
       buttons.on(Pins::BUTTON_1, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
-        set_pada_mechanism(ServoState::ServoState_OPEN);
+//        set_pada_mechanism(ServoState::ServoState_OPEN);
+//        if(state == ServoState::ServoState_CLOSE) {
+//          set_pada_mechanism(ServoState::ServoState_OPEN);
+//          state = ServoState::ServoState_OPEN;
+//          Serial.println("OPEN");
+//        } else {
+//          set_pada_mechanism(ServoState::ServoState_CLOSE);
+//          state = ServoState::ServoState_CLOSE;
+//          Serial.println("CLOSE");
+//        }
+//        Serial.println("Button 1 pressed");
       });
 
       buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
-        set_pada_mechanism(ServoState::ServoState_CLOSE);
+//        set_pada_mechanism(ServoState::ServoState_CLOSE);
+        if(state == ServoState::ServoState_CLOSE) {
+          set_pada_mechanism(ServoState::ServoState_OPEN);
+          state = ServoState::ServoState_OPEN;
+          Serial.println("OPEN");
+        } else {
+          set_pada_mechanism(ServoState::ServoState_CLOSE);
+          state = ServoState::ServoState_CLOSE;
+          Serial.println("CLOSE");
+        }
+         Serial.println("Button 2 pressed");
       });
 
-      servos.reset(CommandId::PADA);
+//      servos.reset(CommandId::PADA);
       
       return is_success;
       
@@ -105,9 +137,11 @@ class CompSystem : public System {
       bool imu_success = imu.update();
       bool enviro_success = enviro.update();
       bool gps_success = gps.update();
-      bool radio_success = radio.update();
+//      bool radio_success = radio.update();
+      bool radio_success = true;
       leds.update();
       buttons.update();
+ 
 
       // ---- collect data from sensors --- //
       if(imu_success) imu_data = imu.data();
@@ -120,6 +154,7 @@ class CompSystem : public System {
 
       // ---- receive message if ready --- //
       if(radio.ready()) {
+        Serial.println("Sending message");
         Command message_to_receive;
         uint8_t message_bytes_received;
         uint32_t received_packet_number = 0;
@@ -152,17 +187,41 @@ class CompSystem : public System {
         // update radio data
         radio_data = radio.data();
       }
+      
+//      Serial.println(enviro_data.altitude);
+//      delay(1000);
+
+//        Telemetry message_to_send = Telemetry_init_zero;
+//        enviro_data_to_msg(&message_to_send, &enviro_data);
+//        if(imu_success) imu_data_to_msg(&message_to_send, &imu_data);
+////        if(gps_success) gps_data_to_msg(&message_to_send, &gps_data);
+//        battery_data_to_msg(&message_to_send, &battery_data);
+//        radio_data_to_msg(&message_to_send, &radio_data);
+//        send_telemetry(&message_to_send, packet_number++);
+
+        
+        
+//        if(radio.ready()) {
+//          Serial.println("Received a message");
+//          Command message_to_receive;
+//          uint8_t message_bytes_received;
+//          uint32_t received_packet_number = 0;
+//          if(receive_message(&message_to_receive, &message_bytes_received, &received_packet_number)) Serial.println("Received command from ground station");
+//        }
+        
+        delay(500);
+      
 
       // ---- print debug data --- //
-      if(millis() - last_print >= TELEMTRY_PRINT_INTERVAL) {
-        // fill print buffer with formatted text
-        char print_buffer[BUFFER_SIZE];
-        sprintf(print_buffer, "IMU [accel]: %-7.2f %-7.2f %-7.2f\tEnviro [A/T/P]: %-7.2f %-7.2f %-7.2f\tFix (sats): %-i (%-i)",
-              imu_data.ax, imu_data.ay, imu_data.az,
-              enviro_data.altitude, enviro_data.temperature, enviro_data.pressure , gps_data.fix, gps_data.satellites);
-        Serial.println(print_buffer);
-        last_print = millis();
-      }
+//      if(millis() - last_print >= TELEMTRY_PRINT_INTERVAL) {
+//        // fill print buffer with formatted text
+//        char print_buffer[BUFFER_SIZE];
+//        sprintf(print_buffer, "IMU [accel]: %-7.2f %-7.2f %-7.2f\tEnviro [A/T/P]: %-7.2f %-7.2f %-7.2f\tFix (sats): %-i (%-i)",
+//              imu_data.ax, imu_data.ay, imu_data.az,
+//              enviro_data.altitude, enviro_data.temperature, enviro_data.pressure , gps_data.fix, gps_data.satellites);
+//        Serial.println(print_buffer);
+//        last_print = millis();
+//      }
 
       return true;
     }
@@ -188,11 +247,13 @@ class CompSystem : public System {
     AdafruitBMP280EnviroSensor enviro;
     Radio_Rfm95w radio;
     AdafruitGPS gps {&Serial2};
-    ServoController servos;
+//    ServoController servos;
+    Servo dropServo;
+    ServoState state;
 
     // LEDs
     LedController leds;
-    DoublePulseAnimation heart_beat_animation{Pins::WHITE_LED, 100, 100, 500};
+    DoublePulseAnimation heart_beat_animation{Pins::YELLOW_LED, 100, 100, 500};
     HeartBeatAnimation radio_animation{Pins::YELLOW_LED, 500, HIGH, LOW};
     HeartBeatAnimation error_animation{Pins::RED_LED, 1000, HIGH, LOW};
     HeartBeatAnimation gps_fix_animation{Pins::BLUE_LED, 1000, HIGH, LOW};
@@ -283,6 +344,8 @@ class CompSystem : public System {
       // cast so we can call member function after decoding
       CompSystem *self = (CompSystem*)(*arg);
 
+      Serial.println("Servo's actuated");
+
       ActuateGroup actuate_group;
       bool status = pb_decode(istream, ActuateGroup_fields, &actuate_group);
 
@@ -303,10 +366,14 @@ class CompSystem : public System {
 
     void set_pada_mechanism(ServoState state) {
       if(state == ServoState::ServoState_OPEN) {
-        servos.actuate(CommandId::PADA);
+//        servos.actuate(CommandId::PADA);
+        Serial.println("Opening Pada Drop");
+        dropServo.write(120);
       }
       else {
-        servos.reset(CommandId::PADA);
+//        servos.reset(CommandId::PADA);
+        Serial.println("Closing Pada Drop");
+        dropServo.write(20);
       }
     }
 

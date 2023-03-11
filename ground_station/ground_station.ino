@@ -28,7 +28,7 @@ void setup() {
   delay(300);
   digitalWrite(LED, LOW);
   
-  Serial.begin(115200);
+  Serial.begin(9600);
   
   // manual reset hack
   pinMode(RESET_PIN, OUTPUT);
@@ -41,6 +41,8 @@ void setup() {
     digitalWrite(LED, HIGH);
     Serial.println("Radio init failed");
     while(1);
+  } else {
+    Serial.println("Radio initialized");
   }
 
   if (!radio.setFrequency(RADIO_FREQ)) {
@@ -49,10 +51,18 @@ void setup() {
     while(1);
   }
 
+  radio.setModemConfig(RH_RF95::Bw500Cr45Sf128);
+
+  radio.setSignalBandwidth(125000);
+
   radio.setTxPower(RADIO_POWER, false);
+
+        const char* msg = "Hello, world!";
+        if (radio.send((uint8_t*)msg, strlen(msg))) Serial.println("Hello world sent");
 }
 
 void loop() {
+  
   if(Serial.available() > 0 || millis() - last_update > SERIAL_DEBOUNCE) {
     int len = Serial.available();
     uint8_t data[len];

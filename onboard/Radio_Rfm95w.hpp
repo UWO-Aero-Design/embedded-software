@@ -41,10 +41,15 @@ class Radio_Rfm95w : public aero::sensor::Radio {
         return false;
       }
 
+
       // Set radio frequency
       if (!radio->setFrequency(RADIO_FREQ)) {
         return false;
       }
+
+      radio->setModemConfig(RH_RF95::Bw500Cr45Sf128);
+
+      radio->setSignalBandwidth(125000);
 
       // Set radio power
          radio->setTxPower(RADIO_POWER, false);
@@ -59,7 +64,7 @@ class Radio_Rfm95w : public aero::sensor::Radio {
       return true;
     }
 
-    bool ready() override {
+    bool ready() override { 
       return radio->available();
     }
 
@@ -71,12 +76,20 @@ class Radio_Rfm95w : public aero::sensor::Radio {
       return radio->send(buf, len);
     }
 
+    void setModeRx() {
+      radio->setModeRx();
+    }
+
+    void setModeTx() {
+      radio->setModeTx();
+    }
+
   protected:
     // Radio object
     RH_RF95* radio;
 
   private:
-    static constexpr float RADIO_FREQ = 433 ;
+    static constexpr float RADIO_FREQ = 433;
     static constexpr int RADIO_POWER = 23; // Max power
 
 };
