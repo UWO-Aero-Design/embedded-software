@@ -61,13 +61,13 @@ class CompSystem : public System {
         Serial.println("Error connecting to radio.");
         is_success = false;
       }
-      if (servos.init()) {
-        Serial.println("Servo controller online.");
-      }
-      else {
-        Serial.println("Error connecting to servo controller.");
-        is_success = false;
-      }
+      // if (servos.init()) {
+      //   Serial.println("Servo controller online.");
+      // }
+      // else {
+      //   Serial.println("Error connecting to servo controller.");
+      //   is_success = false;
+      // }
       if (gps.init()) {
         Serial.println("GPS online.");
       }
@@ -76,24 +76,24 @@ class CompSystem : public System {
         is_success = false;
       }
 
-      leds.attach(&heart_beat_animation);
-      leds.attach(&radio_animation);
-      leds.attach(&error_animation);
-      leds.attach(&gps_fix_animation);
+      // leds.attach(&heart_beat_animation);
+      // leds.attach(&radio_animation);
+      // leds.attach(&error_animation);
+      // leds.attach(&gps_fix_animation);
 
-      if(!is_success) {
-        error_animation.ping();
-      }
+      // if(!is_success) {
+      //   error_animation.ping();
+      // }
 
-      buttons.on(Pins::BUTTON_1, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
-        set_pada_mechanism(ServoState::ServoState_OPEN);
-      });
+      // buttons.on(Pins::BUTTON_1, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
+      //   set_pada_mechanism(ServoState::ServoState_OPEN);
+      // });
 
-      buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
-        set_pada_mechanism(ServoState::ServoState_CLOSE);
-      });
+      // buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
+      //   set_pada_mechanism(ServoState::ServoState_CLOSE);
+      // });
 
-      servos.reset(CommandId::PADA);
+      // servos.reset(CommandId::PADA);
       
       return is_success;
       
@@ -106,8 +106,8 @@ class CompSystem : public System {
       bool enviro_success = enviro.update();
       bool gps_success = gps.update();
       bool radio_success = radio.update();
-      leds.update();
-      buttons.update();
+      // leds.update();
+      // buttons.update();
 
       // ---- collect data from sensors --- //
       if(imu_success) imu_data = imu.data();
@@ -302,12 +302,12 @@ class CompSystem : public System {
     }
 
     void set_pada_mechanism(ServoState state) {
-      if(state == ServoState::ServoState_OPEN) {
-        servos.actuate(CommandId::PADA);
-      }
-      else {
-        servos.reset(CommandId::PADA);
-      }
+      // if(state == ServoState::ServoState_OPEN) {
+      //   servos.actuate(CommandId::PADA);
+      // }
+      // else {
+      //   servos.reset(CommandId::PADA);
+      // }
     }
 
     void send_telemetry(Telemetry *message, uint32_t packet_number) {

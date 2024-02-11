@@ -13,10 +13,10 @@ bool radio_link_connection = false;
 long last_radio_ping = 0;
 long last_update = 0;
 
-const int LED = 33;
-const int RESET_PIN = 8;
+const int LED = 13;
+const int RESET_PIN = 9;
 
-RH_RF95 radio = RH_RF95 (10, 9);
+RH_RF95 radio = RH_RF95 (8, 2);
 float RADIO_FREQ = 433;
 #define RADIO_POWER 23
 
@@ -28,7 +28,8 @@ void setup() {
   delay(300);
   digitalWrite(LED, LOW);
   
-  Serial.begin(115200);
+  Serial.begin(9600);
+  Serial.println("Starting");
   
   // manual reset hack
   pinMode(RESET_PIN, OUTPUT);
@@ -40,20 +41,36 @@ void setup() {
   if(!radio.init()) {
     digitalWrite(LED, HIGH);
     Serial.println("Radio init failed");
-    while(1);
+    error();
+  }
+  else{
+    Serial.println("Radio initialized succesfully");
   }
 
   if (!radio.setFrequency(RADIO_FREQ)) {
     digitalWrite(LED, HIGH);
     Serial.println("Radio frequency set failed");
-    while(1);
+    error();
+  }
+  else{
+    Serial.println("Radio frequency set succesfully");
   }
 
   radio.setTxPower(RADIO_POWER, false);
 }
 
 void loop() {
-  if(Serial.available() > 0 || millis() - last_update > SERIAL_DEBOUNCE) {
+  //|| millis() - last_update > SERIAL_DEBOUNCE
+
+  // while(!Serial.available()){
+  //   Serial.println("Serial NOT available");
+  // }
+  if(radio.available()){
+    Serial.println("Radio Available");
+  }
+
+  if(Serial.available() > 0) {
+    Serial.println("Serial Available");
     int len = Serial.available();
     uint8_t data[len];
     for(int i = 0; i < len; i++) {
@@ -69,12 +86,14 @@ void loop() {
     }
     last_update = millis();
   }
+    
+  
   
   if (radio.available()) {
     last_radio_ping = millis();
     if(radio_link_connection == false) {
       radio_link_connection = true;
-      digitalWrite(LED, HIGH);
+       digitalWrite(LED, HIGH);
     }
     
     uint8_t receive_buffer[RH_RF95_MAX_MESSAGE_LEN];
@@ -91,6 +110,7 @@ void loop() {
         telemetry.gnd_radio.frequency_error = radio.frequencyError();
         telemetry.gnd_radio.snr = radio.lastSNR();
         telemetry.has_gnd_radio = true;
+        Serial.println(telemetry.gnd_radio.rssi);
 
         uint8_t encode_buffer[BUFFER_SIZE];
         uint8_t encode_buffer_length = sizeof(encode_buffer);
@@ -105,17 +125,19 @@ void loop() {
           }
         }
         else {
+          Serial.println("Error in decoding");
           error();
         }
       }
       else {
+        Serial.println("Error in status");
         error();
       }
 
-      // write to serial
-//      for(int i = 0; i < receive_buffer_length; i++) {
-//        Serial.write(receive_buffer[i]);
-//      }
+     // write to serial
+     for(int i = 0; i < receive_buffer_length; i++) {
+       Serial.write(receive_buffer[i]);
+     }
       
     }
     else {
@@ -132,10 +154,11 @@ void loop() {
 }
 
 void error() {
-  for(int i = 0; i < 5; i++) {
+  Serial.println("Error Ocurred");
+  while(1) {
       digitalWrite(LED, HIGH);
-      delay(100);
+      delay(1000);
       digitalWrite(LED, LOW);
-      delay(100);
+      delay(1000);
     }
 }

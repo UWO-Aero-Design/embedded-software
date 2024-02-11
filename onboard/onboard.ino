@@ -14,7 +14,7 @@
 // uncomment to use comp system
 #define OVERRIDE_SYS_TO_COMP_SYS true
 
-const long BAUD_RATE = 115200;
+const long BAUD_RATE = 9600;
 
 // first 3 switches used to select system type while last switch used to select flight stabilization
 const uint8_t DIP_SWITCHES[] = { Pins::DIPSWITCH_1, Pins::DIPSWITCH_2, Pins::DIPSWITCH_3, Pins::DIPSWITCH_4 };

@@ -1,0 +1,172 @@
+diff --git a/onboard/CompSystem.hpp b/onboard/CompSystem.hpp
+index 772be6e..fd1b67f 100644
+--- a/onboard/CompSystem.hpp
++++ b/onboard/CompSystem.hpp
+@@ -61,13 +61,13 @@ class CompSystem : public System {
+         Serial.println("Error connecting to radio.");
+         is_success = false;
+       }
+-      if (servos.init()) {
+-        Serial.println("Servo controller online.");
+-      }
+-      else {
+-        Serial.println("Error connecting to servo controller.");
+-        is_success = false;
+-      }
++      // if (servos.init()) {
++      //   Serial.println("Servo controller online.");
++      // }
++      // else {
++      //   Serial.println("Error connecting to servo controller.");
++      //   is_success = false;
++      // }
+       if (gps.init()) {
+         Serial.println("GPS online.");
+       }
+@@ -76,24 +76,24 @@ class CompSystem : public System {
+         is_success = false;
+       }
+ 
+-      leds.attach(&heart_beat_animation);
+-      leds.attach(&radio_animation);
+-      leds.attach(&error_animation);
+-      leds.attach(&gps_fix_animation);
++      // leds.attach(&heart_beat_animation);
++      // leds.attach(&radio_animation);
++      // leds.attach(&error_animation);
++      // leds.attach(&gps_fix_animation);
+ 
+-      if(!is_success) {
+-        error_animation.ping();
+-      }
++      // if(!is_success) {
++      //   error_animation.ping();
++      // }
+ 
+-      buttons.on(Pins::BUTTON_1, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
+-        set_pada_mechanism(ServoState::ServoState_OPEN);
+-      });
++      // buttons.on(Pins::BUTTON_1, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
++      //   set_pada_mechanism(ServoState::ServoState_OPEN);
++      // });
+ 
+-      buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
+-        set_pada_mechanism(ServoState::ServoState_CLOSE);
+-      });
++      // buttons.on(Pins::BUTTON_2, TransitionType_t::RISING_EDGE, [this](int button_number, void *context) {
++      //   set_pada_mechanism(ServoState::ServoState_CLOSE);
++      // });
+ 
+-      servos.reset(CommandId::PADA);
++      // servos.reset(CommandId::PADA);
+       
+       return is_success;
+       
+@@ -106,8 +106,8 @@ class CompSystem : public System {
+       bool enviro_success = enviro.update();
+       bool gps_success = gps.update();
+       bool radio_success = radio.update();
+-      leds.update();
+-      buttons.update();
++      // leds.update();
++      // buttons.update();
+ 
+       // ---- collect data from sensors --- //
+       if(imu_success) imu_data = imu.data();
+diff --git a/onboard/onboard.ino b/onboard/onboard.ino
+index fa90432..ba83cb2 100644
+--- a/onboard/onboard.ino
++++ b/onboard/onboard.ino
+@@ -20,12 +20,6 @@ const long BAUD_RATE = 115200;
+ const uint8_t DIP_SWITCHES[] = { Pins::DIPSWITCH_1, Pins::DIPSWITCH_2, Pins::DIPSWITCH_3, Pins::DIPSWITCH_4 };
+ const uint8_t AUX_CHANNEL = Pins::AUX;
+ 
+-bool nav_initialized = false;      //Stores state if nav board is initalized or not
+-
+-//aux_value stores the PWM input from the aux channel
+-volatile int aux_value = 0;
+-//prev_time stores the last time that a rising edge was noticed on the aux-channel
+-volatile long prev_time = 0;
+ 
+ System *sys = NULL;
+ 
+@@ -57,15 +51,9 @@ void setup() {
+ 
+   // select system
+   sys = SystemSelect::select(system_selection);
+-
+-  // read flight stabilization mode from dip switch 4
+-//  pinMode(DIP_SWITCHES[3], INPUT);
+-//  flight_stable = digitalRead(Pins::DIPSWITCH_4);
+   
+   Serial.print("Booting in ");
+   Serial.println(SystemSelect::get_description(system_selection));
+-//  Serial.print(" mode with flight stabilization ");
+-//  Serial.println(flight_stable);
+ 
+   // init the created system
+   if(sys->init()) {
+@@ -74,63 +62,9 @@ void setup() {
+   else {
+     Serial.println("\nSystem started with errors.\n\n");
+   }
+-//  
+-//  //Adjustments to system selection based on if flight_stabilization is enabled
+-//  if (flight_stable){
+-//    attachInterrupt(digitalPinToInterrupt(AUX_CHANNEL), rising, RISING);
+-//    
+-//    //Initialize i2c with Navigation Teensy
+-//    Wire.beginTransmission(Addresses::NAV_BOARD);
+-//    int response = Wire.endTransmission();
+-//
+-//    if(response != 0){
+-//      nav_initialized = false;
+-//      Serial.println ("Comms not established with nav board");
+-//    }
+-//    else{
+-//      nav_initialized = true;
+-//      Serial.println ("Comms established with nav board");
+-//    }
+-//  }
+ }
+ 
+ void loop() {
+   //Update the system
+   sys->update();
+-//  //This sequence of code is used to generate a cool light sequence for the plane 
+-//  if(state && millis() - last_update >= 100) {
+-//    state = !state;
+-//    digitalWrite(23, state);
+-//    last_update = millis();
+-//  }
+-//  if(!state && millis() - last_update >= 500) {
+-//    state = !state;
+-//    digitalWrite(23, state);
+-//    last_update = millis();
+-//  }
+-//
+-//  //Update nav_board with status of flight control
+-//  if (flight_stable){
+-//    Wire.beginTransmission(Addresses::NAV_BOARD);
+-//    //If aux_value > 1750, switch is ON. If less than 1750, switch is OFF
+-//    if (aux_value>1750){
+-//      Wire.write(1);
+-//    }
+-//    else{
+-//      Wire.write(0);
+-//    }
+-//    Wire.endTransmission();
+-//  }
+ }
+-
+-//ISR for rising edge saves the time in microseconds and attachs interrupt to falling edge
+-//void rising() {
+-//  prev_time = micros();
+-//  attachInterrupt(digitalPinToInterrupt(AUX_CHANNEL), falling, FALLING);
+-//}
+-
+-//ISR for falling edge finds the pulse width of the PWM signal and resets interrupt to rising edge
+-//void falling() {
+-//  aux_value = micros() - prev_time;
+-//  attachInterrupt(digitalPinToInterrupt(AUX_CHANNEL), rising, RISING);
+-//}
