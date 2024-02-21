@@ -150,8 +150,8 @@ class CompSystem : public System {
         // }
         
         // update radio data
-        radio_data = radio.data();
-      }
+      //   radio_data = radio.data();
+      // }
 
       // ---- print debug data --- //
       if(millis() - last_print >= TELEMTRY_PRINT_INTERVAL) {
