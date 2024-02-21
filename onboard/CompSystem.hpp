@@ -119,11 +119,11 @@ class CompSystem : public System {
       }
 
       // ---- receive message if ready --- //
-      if(radio.ready()) {
-        Command message_to_receive;
-        uint8_t message_bytes_received;
-        uint32_t received_packet_number = 0;
-        if(receive_message(&message_to_receive, &message_bytes_received, &received_packet_number)) {
+      // if(radio.ready()) {
+      //   Command message_to_receive;
+      //   uint8_t message_bytes_received;
+      //   uint32_t received_packet_number = 0;
+      //   if(receive_message(&message_to_receive, &message_bytes_received, &received_packet_number)) {
           radio_animation.ping();
           
           // ---- reply with telemetry --- //
@@ -147,7 +147,7 @@ class CompSystem : public System {
           }
           send_telemetry(&message_to_send, packet_number++);
           
-        }
+        // }
         
         // update radio data
         radio_data = radio.data();
