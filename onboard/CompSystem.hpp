@@ -127,24 +127,24 @@ class CompSystem : public System {
           radio_animation.ping();
           
           // ---- reply with telemetry --- //
-          if(PRINT_RECEIVE_DEBUG) {
-            Serial.print("Received message (Packet: ");
-            Serial.print(message_to_receive.header.packet_number);
-            Serial.println("), replying with telemetry");
-          }
+          // if(PRINT_RECEIVE_DEBUG) {
+          //   Serial.print("Received message (Packet: ");
+          //   Serial.print(message_to_receive.header.packet_number);
+          //   Serial.println("), replying with telemetry");
+          // }
           Telemetry message_to_send = Telemetry_init_zero;
           if(imu_success) imu_data_to_msg(&message_to_send, &imu_data);
           if(enviro_success) enviro_data_to_msg(&message_to_send, &enviro_data);
 //          if(gps_success) gps_data_to_msg(&message_to_send, &gps_data);
           battery_data_to_msg(&message_to_send, &battery_data);
           radio_data_to_msg(&message_to_send, &radio_data);
-          if(received_packet_number != 0) {
-            if(PRINT_ACK_DEBUG) {
-              Serial.print("Acking command #");
-              Serial.println(received_packet_number);
-            }
-            message_to_send.response_to = received_packet_number;
-          }
+          // if(received_packet_number != 0) {
+          //   if(PRINT_ACK_DEBUG) {
+          //     Serial.print("Acking command #");
+          //     Serial.println(received_packet_number);
+          //   }
+          //   message_to_send.response_to = received_packet_number;
+          // }
           send_telemetry(&message_to_send, packet_number++);
           
         // }
