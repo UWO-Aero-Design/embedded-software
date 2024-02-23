@@ -279,6 +279,8 @@ class HeartBeatAnimation : public Animation {
         state = !keep_alive_state;
         digitalWrite(pin, !keep_alive_state);
       }
+
+      return true;
     }
 
     void ping() {
