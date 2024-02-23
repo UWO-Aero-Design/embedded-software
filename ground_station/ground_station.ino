@@ -40,20 +40,25 @@ void loop() {
 
     if(radio.recv(radioReceiveBuffer, &receiveBufferLength)) {
       if(receiveBufferLength != 0) {
-        Serial.print("Received ");
-        Serial.print(receiveBufferLength);
-        Serial.print(" bytes: ");
-        for(uint8_t i = 0; i < receiveBufferLength; i++) {
-          Serial.print(radioReceiveBuffer[i], HEX);
-        }
-        Serial.println("");
-        // Serial.write(radioReceiveBuffer, receiveBufferLength);
+        Serial.write(radioReceiveBuffer, receiveBufferLength);
       }
     }
     else {
       error();
     }
     
+  }
+
+  if(Serial.available() >= 1) {
+    uint8_t length = Serial.read();
+    if(length <= RH_RF95_MAX_MESSAGE_LEN) {
+      uint8_t buf[length+1];
+      buf[0] = length;
+      for(uint8_t i = 0; i < length; i++) {
+        buf[i+1] = Serial.read();
+      }
+      radio.send(buf, length+1);
+    }
   }
 }
 
